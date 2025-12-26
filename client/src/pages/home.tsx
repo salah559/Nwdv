@@ -310,14 +310,8 @@ function ServiceCard({ emoji, title, description, index }: { emoji: string, titl
       </div>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative z-10">
-        <div className="text-6xl mb-8 transform transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 inline-block">
-          {emoji === "🚀" ? (
-            <motion.span animate={{ y: [0, -10, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>{emoji}</motion.span>
-          ) : emoji === "⚙️" ? (
-            <motion.span animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}>{emoji}</motion.span>
-          ) : (
-            <span>{emoji}</span>
-          )}
+        <div className="text-6xl mb-8 inline-flex items-center justify-center w-20 h-20">
+          {emoji}
         </div>
         <h3 className="text-3xl font-display font-bold mb-4 group-hover:text-primary transition-colors">{title}</h3>
         <p className="text-gray-400 text-lg leading-relaxed group-hover:text-gray-300 font-light">
