@@ -80,8 +80,7 @@ export default function Home() {
                 size="lg" 
                 className="bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:scale-105 btn-pulse group"
                 onClick={() => {
-                  const element = document.getElementById('projects');
-                  if (element) element.scrollIntoView({ behavior: 'smooth' });
+                  window.location.href = '/contact';
                 }}
               >
                 Get Your Website <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -206,7 +205,9 @@ export default function Home() {
               <Button 
                 size="lg" 
                 className="bg-white text-black hover:bg-gray-200 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg"
-                onClick={() => window.open('https://wa.me/213663699433?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%AA%D8%B7%D9%88%D9%8A%D8%B1%20%D8%A7%D9%84%D9%85%D9%88%D8%A7%D9%82%D8%B9', '_blank')}
+                onClick={() => {
+                  window.location.href = '/contact';
+                }}
               >
                 Let's Talk
               </Button>
