@@ -76,10 +76,25 @@ export default function Home() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-6">
-              <Button size="lg" className="bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:scale-105 btn-pulse group">
+              <Button 
+                size="lg" 
+                className="bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:scale-105 btn-pulse group"
+                onClick={() => {
+                  const element = document.getElementById('projects');
+                  if (element) element.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 Get Your Website <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="border-white/10 text-white hover:bg-white/5 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:border-primary/50">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-white/10 text-white hover:bg-white/5 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:border-primary/50"
+                onClick={() => {
+                  const element = document.getElementById('projects');
+                  if (element) element.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 View Projects
               </Button>
             </div>
@@ -188,7 +203,11 @@ export default function Home() {
               Get your website in the shortest time with the highest professionalism and lowest prices.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-black hover:bg-gray-200 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg">
+              <Button 
+                size="lg" 
+                className="bg-white text-black hover:bg-gray-200 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg"
+                onClick={() => window.open('https://wa.me/213663699433?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%AA%D8%B7%D9%88%D9%8A%D8%B1%20%D8%A7%D9%84%D9%85%D9%88%D8%A7%D9%82%D8%B9', '_blank')}
+              >
                 Let's Talk
               </Button>
               <Button 
