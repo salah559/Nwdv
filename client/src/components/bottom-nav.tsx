@@ -27,7 +27,7 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[9999] safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-[9999] safe-area-inset-bottom md:hidden">
       {/* Backdrop blur effect */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-900/90 to-slate-900/40 backdrop-blur-xl" />
       

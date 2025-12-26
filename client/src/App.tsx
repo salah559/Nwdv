@@ -29,7 +29,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <div className="pb-24">
+        <div className="pb-24 md:pb-0">
           <Router />
         </div>
         <BottomNav />
