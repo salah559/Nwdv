@@ -22,101 +22,177 @@ export function BottomNav() {
     setActiveId(newActiveId);
   }, [location]);
 
-  const handleNavigate = (path: string, id: string) => {
-    setActiveId(id);
+  const handleNavigate = (path: string) => {
     window.location.href = path;
   };
 
+  const activeIndex = NAV_ITEMS.findIndex((item) => item.id === activeId);
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-[9999] safe-area-inset-bottom md:hidden">
-      {/* Backdrop blur effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-900/90 to-slate-900/40 backdrop-blur-xl" />
+      {/* Backdrop - modern glassmorphism */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" />
       
-      {/* Top border glow */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
-      <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-cyan-500/5 to-transparent pointer-events-none" />
+      {/* Premium gradient border top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-60" />
+      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-cyan-400/10 via-cyan-400/5 to-transparent pointer-events-none blur-sm" />
+      
+      {/* Animated particles effect background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-40 h-40 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl"
+            animate={{
+              x: [0, 20, -20, 0],
+              y: [0, 10, -10, 0],
+              opacity: [0.1, 0.2, 0.1],
+            }}
+            transition={{
+              duration: 6 + i * 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{
+              left: `${20 + i * 30}%`,
+              top: `${-50 + i * 30}%`,
+            }}
+          />
+        ))}
+      </div>
       
       <div className="relative">
-        <div className="max-w-full mx-auto px-3 sm:px-4 pt-2 pb-3 sm:pb-4">
-          <div className="flex items-center justify-around gap-1 sm:gap-2">
-            {/* Animated background pill */}
+        <div className="max-w-full mx-auto px-2 pt-3 pb-4">
+          <div className="flex items-center justify-around gap-0.5">
+            {/* Animated highlight background */}
             <motion.div
-              className="absolute top-2 sm:top-3 h-12 sm:h-14 bg-gradient-to-br from-cyan-500/15 to-blue-500/10 rounded-2xl blur-md"
-              layoutId="navBgPill"
+              className="absolute left-2 right-2 h-14 bg-gradient-to-r from-cyan-500/20 via-blue-500/25 to-cyan-500/20 rounded-xl"
+              layoutId="navHighlight"
               initial={false}
               transition={{
                 type: "spring",
-                stiffness: 300,
-                damping: 25,
-                mass: 0.8,
+                stiffness: 250,
+                damping: 20,
+                mass: 0.6,
               }}
               style={{
-                width: `calc(${100 / NAV_ITEMS.length}% - 8px)`,
-                left: `calc(${(NAV_ITEMS.findIndex((item) => item.id === activeId) * 100) / NAV_ITEMS.length}% + 4px)`,
+                width: `calc(${100 / NAV_ITEMS.length}% - 4px)`,
+                left: `calc(${activeIndex * (100 / NAV_ITEMS.length)}% + 8px)`,
+              }}
+            />
+
+            {/* Glow effect for active item */}
+            <motion.div
+              className="absolute left-0 right-0 h-20 bg-gradient-to-b from-cyan-500/10 to-transparent blur-xl pointer-events-none"
+              animate={{
+                opacity: [0.3, 0.6, 0.3],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+              }}
+              style={{
+                top: "-10px",
+                left: `${activeIndex * (100 / NAV_ITEMS.length) + 8}%`,
+                width: `${100 / NAV_ITEMS.length}%`,
               }}
             />
 
             {/* Nav items */}
-            {NAV_ITEMS.map((item) => {
+            {NAV_ITEMS.map((item, index) => {
               const Icon = item.icon;
               const isActive = activeId === item.id;
 
               return (
                 <motion.button
                   key={item.id}
-                  onClick={() => handleNavigate(item.path, item.id)}
-                  className="relative flex flex-col items-center gap-0.5 sm:gap-1 flex-1 py-2 sm:py-3 px-2 rounded-2xl transition-colors duration-300 group"
-                  whileTap={{ scale: 0.92 }}
-                  whileHover={{ scale: 1.05 }}
+                  onClick={() => handleNavigate(item.path)}
+                  className="relative flex flex-col items-center justify-center gap-1 flex-1 py-2 px-1 rounded-xl z-10 group cursor-pointer overflow-hidden"
+                  whileTap={{ 
+                    scale: 0.88,
+                  }}
+                  whileHover={{ 
+                    scale: isActive ? 1 : 1.08,
+                  }}
                 >
-                  {/* Hover background */}
-                  {!isActive && (
-                    <div className="absolute inset-0 bg-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  )}
-                  
-                  <div className="relative z-10">
+                  {/* Hover ripple effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-white/10 rounded-xl"
+                    initial={false}
+                    animate={{
+                      scale: isActive ? 1 : 0,
+                      opacity: 0,
+                    }}
+                    transition={{
+                      duration: 0.4,
+                    }}
+                  />
+
+                  <div className="relative z-10 flex flex-col items-center gap-1">
+                    {/* Icon container */}
                     <motion.div
+                      className="relative flex items-center justify-center"
                       animate={{
-                        scale: isActive ? 1.3 : 1,
-                        y: isActive ? -2 : 0,
+                        scale: isActive ? 1.25 : 1,
+                        y: isActive ? -3 : 0,
                       }}
                       transition={{
                         type: "spring",
                         stiffness: 300,
-                        damping: 25,
-                        mass: 0.8,
+                        damping: 20,
+                        mass: 0.5,
                       }}
-                      className="flex justify-center"
                     >
+                      {/* Icon glow */}
+                      {isActive && (
+                        <motion.div
+                          className="absolute inset-0 bg-cyan-400/40 rounded-full blur-lg"
+                          animate={{
+                            scale: [1, 1.3, 1],
+                            opacity: [0.6, 0.3, 0.6],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                          }}
+                        />
+                      )}
+
                       <motion.div
                         animate={{
-                          color: isActive ? "rgb(6, 182, 212)" : "rgb(148, 163, 184)",
+                          color: isActive ? "rgb(34, 211, 238)" : "rgb(156, 163, 175)",
                           filter: isActive
-                            ? "drop-shadow(0 0 12px rgba(6, 182, 212, 0.5))"
-                            : "drop-shadow(0 0 0px rgba(6, 182, 212, 0))",
+                            ? "drop-shadow(0 0 8px rgba(34, 211, 238, 0.6))"
+                            : "drop-shadow(0 0 0px)",
                         }}
                         transition={{
                           type: "spring",
                           stiffness: 300,
-                          damping: 25,
+                          damping: 20,
                         }}
                       >
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
+                        <Icon 
+                          className="w-5 h-5 sm:w-6 sm:h-6 relative z-10" 
+                          strokeWidth={2.2}
+                          fill={isActive ? "currentColor" : "none"}
+                        />
                       </motion.div>
                     </motion.div>
 
+                    {/* Label with stagger animation */}
                     <motion.span
-                      className="text-[10px] sm:text-xs font-semibold tracking-wide uppercase block mt-0.5"
+                      className="text-[9px] sm:text-xs font-bold tracking-wider uppercase block leading-tight h-3"
                       animate={{
-                        color: isActive ? "rgb(6, 182, 212)" : "rgb(148, 163, 184)",
+                        color: isActive ? "rgb(34, 211, 238)" : "rgb(156, 163, 175)",
                         textShadow: isActive
-                          ? "0 0 8px rgba(6, 182, 212, 0.4)"
-                          : "0 0 0px rgba(6, 182, 212, 0)",
+                          ? "0 0 10px rgba(34, 211, 238, 0.5)"
+                          : "none",
+                        opacity: isActive ? 1 : 0.7,
                       }}
                       transition={{
                         type: "spring",
                         stiffness: 300,
-                        damping: 25,
+                        damping: 20,
                       }}
                     >
                       {item.label}
