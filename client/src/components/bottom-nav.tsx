@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Home, Share2, Info, Mail } from "lucide-react";
+import { Home, Share2, Info, Mail, DollarSign } from "lucide-react";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home", icon: Home, path: "/" },
   { id: "projects", label: "Projects", icon: Share2, path: "/projects" },
+  { id: "pricing", label: "Pricing", icon: DollarSign, path: "/pricing" },
   { id: "about", label: "About", icon: Info, path: "/about" },
   { id: "contact", label: "Contact", icon: Mail, path: "/contact" },
 ];
