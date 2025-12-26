@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,30 +59,60 @@ export function Navbar() {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="mt-2 container mx-auto max-w-4xl md:hidden">
-          <div className="glass-nav rounded-2xl border border-white/10 p-4 flex flex-col gap-2">
-            {navLinks.map((link) => (
-              <a 
-                key={link.name} 
-                href={link.href}
-                className="text-sm font-semibold text-gray-300 hover:text-white transition-colors py-3 px-4 rounded-xl hover:bg-white/5 font-ui uppercase tracking-widest"
-                onClick={() => setIsOpen(false)}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className="mt-2 container mx-auto max-w-4xl md:hidden"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div 
+              className="glass-nav rounded-2xl border border-white/10 p-4 flex flex-col gap-2"
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+              {navLinks.map((link, idx) => (
+                <motion.a 
+                  key={link.name} 
+                  href={link.href}
+                  className="text-sm font-semibold text-gray-300 hover:text-white transition-colors py-3 px-4 rounded-xl hover:bg-white/5 font-ui uppercase tracking-widest group"
+                  onClick={() => setIsOpen(false)}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, delay: idx * 0.05 }}
+                  whileHover={{ 
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    x: 8
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {link.name}
+                </motion.a>
+              ))}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, delay: navLinks.length * 0.05 }}
               >
-                {link.name}
-              </a>
-            ))}
-            <Link href="/contact">
-              <Button 
-                className="w-full bg-primary text-black hover:bg-cyan-400 font-ui uppercase font-bold text-xs h-10 rounded-xl mt-2 transition-all duration-300 shadow-[0_0_20px_rgba(6,255,240,0.2)]"
-                onClick={() => setIsOpen(false)}
-              >
-                Contact Us
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
+                <Link href="/contact">
+                  <Button 
+                    className="w-full bg-primary text-black hover:bg-cyan-400 font-ui uppercase font-bold text-xs h-10 rounded-xl mt-2 transition-all duration-300 shadow-[0_0_20px_rgba(6,255,240,0.2)]"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Contact Us
+                  </Button>
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
