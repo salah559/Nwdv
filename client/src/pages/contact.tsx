@@ -11,11 +11,33 @@ export default function Contact() {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    alert("Thank you for reaching out! We'll be in touch soon.");
-    setFormData({ name: "", email: "", message: "" });
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        alert(data.error || "Error sending message");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error sending message");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -83,8 +105,8 @@ export default function Contact() {
                     required
                   />
                 </div>
-                <Button type="submit" size="lg" className="w-full bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest">
-                  Send Message
+                <Button type="submit" size="lg" disabled={isLoading} className="w-full bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest disabled:opacity-50">
+                  {isLoading ? "Sending..." : "Send Message"}
                 </Button>
               </form>
             </motion.div>
