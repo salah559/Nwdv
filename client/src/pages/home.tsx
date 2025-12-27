@@ -244,20 +244,9 @@ export default function Home() {
               <Button 
                 size="lg" 
                 className="bg-white text-black hover:bg-gray-200 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg relative overflow-hidden"
-                onClick={handleAdminClick}
+                onClick={() => setLocation("/contact")}
               >
-                {countdown > 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <span className="text-lg font-bold">{countdown}</span>
-                    <span className="text-xs">seconds...</span>
-                  </motion.div>
-                ) : (
-                  "Let's Talk"
-                )}
+                Let's Talk
               </Button>
               <Button 
                 size="lg" 
