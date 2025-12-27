@@ -2,6 +2,8 @@ import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring } from "framer-motion";
 import { ArrowRight, Code, Zap, Rocket, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
@@ -10,6 +12,28 @@ export default function Home() {
     damping: 30,
     restDelta: 0.001
   });
+  
+  const [countdown, setCountdown] = useState(0);
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (countdown === 0) return;
+    
+    const timer = setTimeout(() => {
+      if (countdown === 1) {
+        setCountdown(0);
+        setLocation("/admin/messages");
+      } else {
+        setCountdown(countdown - 1);
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [countdown, setLocation]);
+
+  const handleAdminClick = () => {
+    setCountdown(7);
+  };
 
   return (
     <div className="min-h-screen text-foreground overflow-hidden selection:bg-primary/30 relative">
@@ -204,12 +228,21 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-white text-black hover:bg-gray-200 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg"
-                onClick={() => {
-                  window.location.href = '/contact';
-                }}
+                className="bg-white text-black hover:bg-gray-200 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg relative overflow-hidden"
+                onClick={handleAdminClick}
               >
-                Let's Talk
+                {countdown > 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <span className="text-lg font-bold">{countdown}</span>
+                    <span className="text-xs">seconds...</span>
+                  </motion.div>
+                ) : (
+                  "Let's Talk"
+                )}
               </Button>
               <Button 
                 size="lg" 
