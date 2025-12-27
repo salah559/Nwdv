@@ -22,21 +22,25 @@ export async function registerRoutes(
   // Admin login endpoint
   app.post("/api/admin/login", async (req, res) => {
     try {
+      console.log("Login request received:", { body: req.body });
       const { password } = req.body;
 
       if (!password) {
+        console.log("No password provided");
         return res.status(400).json({ error: "Password required" });
       }
 
       if (password !== ADMIN_PASSWORD) {
+        console.log("Invalid password attempt");
         return res.status(401).json({ error: "Invalid password" });
       }
 
       const token = generateToken();
+      console.log("Login successful, token generated");
       res.json({ success: true, token, message: "Logged in successfully" });
     } catch (error) {
       console.error("Error during login:", error);
-      res.status(500).json({ error: "Login failed" });
+      res.status(500).json({ error: "Login failed: " + (error instanceof Error ? error.message : String(error)) });
     }
   });
 
