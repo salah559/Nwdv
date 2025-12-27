@@ -22,7 +22,7 @@ export default function Home() {
     const timer = setTimeout(() => {
       if (countdown === 1) {
         setCountdown(0);
-        setLocation("/admin/messages");
+        setLocation("/admin/login");
       } else {
         setCountdown(countdown - 1);
       }
@@ -33,6 +33,7 @@ export default function Home() {
 
   const handleAdminClick = () => {
     setCountdown(7);
+    localStorage.setItem("redirectFromHome", "true");
   };
 
   return (
