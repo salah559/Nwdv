@@ -73,6 +73,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Register API routes FIRST (before static middleware)
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

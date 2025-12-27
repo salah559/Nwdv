@@ -40,7 +40,9 @@ export async function registerRoutes(
       res.json({ success: true, token, message: "Logged in successfully" });
     } catch (error) {
       console.error("Error during login:", error);
-      res.status(500).json({ error: "Login failed: " + (error instanceof Error ? error.message : String(error)) });
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error details:", errorMsg);
+      res.status(500).json({ error: "Server error: " + errorMsg });
     }
   });
 

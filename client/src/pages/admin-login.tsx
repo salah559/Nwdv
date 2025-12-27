@@ -16,23 +16,39 @@ export default function AdminLogin() {
     setError("");
 
     try {
+      console.log("Submitting login request with password...");
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
 
-      const data = await response.json();
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Array.from(response.headers.entries()));
+
+      const text = await response.text();
+      console.log("Response body:", text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error("Failed to parse response:", parseErr);
+        setError("Invalid response from server");
+        return;
+      }
 
       if (response.ok) {
+        console.log("Login successful!");
         localStorage.setItem("adminToken", data.token);
         setLocation("/admin/messages");
       } else {
+        console.log("Login failed:", data);
         setError(data.error || "Invalid password");
       }
     } catch (err) {
-      console.error("Error:", err);
-      setError("Error logging in");
+      console.error("Request error:", err);
+      setError("Error connecting to server: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsLoading(false);
     }
