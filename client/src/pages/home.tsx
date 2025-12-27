@@ -74,11 +74,25 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-3xl pointer-events-auto"
           >
-            <div className="inline-block px-3 py-1 mb-4 border border-primary/30 rounded-full bg-primary/10">
-              <span className="text-xs font-ui font-bold tracking-[0.2em] text-primary uppercase">
-                Digital Excellence
-              </span>
-            </div>
+            <button
+              onClick={handleAdminClick}
+              className="inline-block px-3 py-1 mb-4 border border-primary/30 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
+            >
+              {countdown > 0 ? (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-xs font-ui font-bold tracking-[0.2em] text-primary uppercase flex items-center gap-2"
+                >
+                  <span className="text-sm font-bold">{countdown}</span>
+                  <span>seconds...</span>
+                </motion.span>
+              ) : (
+                <span className="text-xs font-ui font-bold tracking-[0.2em] text-primary uppercase">
+                  Digital Excellence
+                </span>
+              )}
+            </button>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.2] mb-6">
               <div className="inline-block px-2 rounded max-w-full">
@@ -105,7 +119,7 @@ export default function Home() {
                 size="lg" 
                 className="bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:scale-105 btn-pulse group"
                 onClick={() => {
-                  window.location.href = '/contact';
+                  setLocation("/contact");
                 }}
               >
                 Get Your Website <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
