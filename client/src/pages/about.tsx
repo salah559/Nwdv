@@ -15,7 +15,7 @@ export default function About() {
       icon: Box,
     },
     {
-      name: "Zerafi Oussama",
+      name: "anis",
       role: "SEO Expert",
       icon: TrendingUp,
     },
