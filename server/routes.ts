@@ -44,5 +44,17 @@ export async function registerRoutes(
     }
   });
 
+  // Delete a contact message
+  app.delete("/api/contact/messages/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteContactMessage(id);
+      res.json({ success: true, message: "Message deleted" });
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      res.status(500).json({ error: "Failed to delete message" });
+    }
+  });
+
   return httpServer;
 }

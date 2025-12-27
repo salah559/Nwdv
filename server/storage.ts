@@ -18,6 +18,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   saveContactMessage(name: string, email: string, message: string): Promise<ContactMessage>;
   getAllContactMessages(): Promise<ContactMessage[]>;
+  deleteContactMessage(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -61,7 +62,14 @@ export class MemStorage implements IStorage {
   }
 
   async getAllContactMessages(): Promise<ContactMessage[]> {
-    return Array.from(this.contactMessages.values());
+    return Array.from(this.contactMessages.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async deleteContactMessage(id: string): Promise<void> {
+    this.contactMessages.delete(id);
+    console.log(`Contact message deleted: ${id}`);
   }
 }
 
