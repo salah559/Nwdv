@@ -11,6 +11,12 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import Pricing from "@/pages/pricing";
 import Admin from "@/pages/admin";
+import AdminLogin from "@/pages/admin-login";
+
+function ProtectedRoute({ component: Component }: { component: any }) {
+  const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+  return token ? <Component /> : <AdminLogin />;
+}
 
 function Router() {
   return (
@@ -20,7 +26,10 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/contact" component={Contact} />
-      <Route path="/admin/messages" component={Admin} />
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/messages">
+        {() => <ProtectedRoute component={Admin} />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

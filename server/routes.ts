@@ -2,6 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
+const ADMIN_PASSWORD = "salaho55";
+
+// Simple token generation (in production, use proper JWT)
+function generateToken(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -11,6 +18,27 @@ export async function registerRoutes(
 
   // use storage to perform CRUD operations on the storage interface
   // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+
+  // Admin login endpoint
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { password } = req.body;
+
+      if (!password) {
+        return res.status(400).json({ error: "Password required" });
+      }
+
+      if (password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ error: "Invalid password" });
+      }
+
+      const token = generateToken();
+      res.json({ success: true, token, message: "Logged in successfully" });
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
 
   // Contact message endpoint
   app.post("/api/contact", async (req, res) => {

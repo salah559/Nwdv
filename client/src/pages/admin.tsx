@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/navbar";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Trash2, Mail, User, MessageSquare, Calendar } from "lucide-react";
+import { Trash2, Mail, User, MessageSquare, Calendar, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ContactMessage {
@@ -16,10 +17,16 @@ export default function Admin() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     fetchMessages();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    setLocation("/admin/login");
+  };
 
   const fetchMessages = async () => {
     try {
@@ -67,14 +74,24 @@ export default function Admin() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-12"
+            className="mb-12 flex items-center justify-between"
           >
-            <h1 className="text-5xl md:text-6xl font-display font-bold mb-4">
-              Admin <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Messages</span>
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              {messages.length} message{messages.length !== 1 ? "s" : ""} received
-            </p>
+            <div>
+              <h1 className="text-5xl md:text-6xl font-display font-bold mb-4">
+                Admin <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Messages</span>
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                {messages.length} message{messages.length !== 1 ? "s" : ""} received
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-400 transition-all"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm font-bold uppercase">Logout</span>
+            </button>
           </motion.div>
 
           {error && (
