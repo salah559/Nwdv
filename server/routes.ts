@@ -1,8 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-
-const ADMIN_PASSWORD = "salaho55";
+import nodemailer from "nodemailer";
 
 // Simple token generation (in production, use proper JWT)
 function generateToken(): string {

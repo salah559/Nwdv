@@ -13,28 +13,7 @@ export default function Home() {
     restDelta: 0.001
   });
   
-  const [countdown, setCountdown] = useState(0);
   const [, setLocation] = useLocation();
-
-  useEffect(() => {
-    if (countdown === 0) return;
-    
-    const timer = setTimeout(() => {
-      if (countdown === 1) {
-        setCountdown(0);
-        setLocation("/admin/login");
-      } else {
-        setCountdown(countdown - 1);
-      }
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [countdown, setLocation]);
-
-  const handleAdminClick = () => {
-    setCountdown(7);
-    localStorage.setItem("redirectFromHome", "true");
-  };
 
   return (
     <div className="min-h-screen text-foreground overflow-hidden selection:bg-primary/30 relative">
@@ -74,25 +53,11 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-3xl pointer-events-auto"
           >
-            <button
-              onClick={handleAdminClick}
-              className="inline-block px-3 py-1 mb-4 border border-primary/30 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
-            >
-              {countdown > 0 ? (
-                <motion.span
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-xs font-ui font-bold tracking-[0.2em] text-primary uppercase flex items-center gap-2"
-                >
-                  <span className="text-sm font-bold">{countdown}</span>
-                  <span>seconds...</span>
-                </motion.span>
-              ) : (
-                <span className="text-xs font-ui font-bold tracking-[0.2em] text-primary uppercase">
-                  Digital Excellence
-                </span>
-              )}
-            </button>
+            <div className="inline-block px-3 py-1 mb-4 border border-primary/30 rounded-full bg-primary/10">
+              <span className="text-xs font-ui font-bold tracking-[0.2em] text-primary uppercase">
+                Digital Excellence
+              </span>
+            </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.2] mb-6">
               <div className="inline-block px-2 rounded max-w-full">
