@@ -16,7 +16,6 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-// Project Schema
 export const projectSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, "Title is required"),
@@ -25,6 +24,7 @@ export const projectSchema = z.object({
   image: z.string().url("Must be a valid image URL"),
   link: z.string().url("Must be a valid project URL"),
   createdAt: z.any().optional(),
+  isFavorite: z.boolean().default(false).optional(),
 });
 
 export type Project = z.infer<typeof projectSchema>;

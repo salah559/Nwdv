@@ -57,6 +57,7 @@ import {
   MapPin,
   Image as ImageIcon,
   Globe,
+  Star,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -353,6 +354,11 @@ function ProjectsTab({ projects, queryClient }: { projects?: Project[]; queryCli
                   <Trash2 className="w-5 h-5 text-destructive" />
                 </Button>
               </div>
+              {project.isFavorite && (
+                <div className="absolute top-2 right-2 bg-yellow-500/90 text-black p-1.5 rounded-full z-10 shadow-lg">
+                  <Star className="w-4 h-4 fill-black" />
+                </div>
+              )}
             </div>
             <CardHeader className="p-4">
               <CardTitle className="text-lg">{project.title}</CardTitle>
@@ -390,7 +396,7 @@ function ProjectDialog({ open, onOpenChange, initialData, queryClient }: {
   queryClient: any;
 }) {
   const [formData, setFormData] = useState<Partial<Project>>({
-    title: "", description: "", type: "", image: "", link: "",
+    title: "", description: "", type: "", image: "", link: "", isFavorite: false,
   });
   const [imgPreview, setImgPreview] = useState("");
 
@@ -399,7 +405,7 @@ function ProjectDialog({ open, onOpenChange, initialData, queryClient }: {
       setFormData(initialData);
       setImgPreview(initialData.image ?? "");
     } else {
-      setFormData({ title: "", description: "", type: "", image: "", link: "" });
+      setFormData({ title: "", description: "", type: "", image: "", link: "", isFavorite: false });
       setImgPreview("");
     }
   }, [initialData, open]);
@@ -473,6 +479,18 @@ function ProjectDialog({ open, onOpenChange, initialData, queryClient }: {
           <div className="space-y-2">
             <label className="text-sm font-medium">Project Link</label>
             <Input value={formData.link} onChange={e => setFormData({...formData, link: e.target.value})} placeholder="https://..." required />
+          </div>
+          <div className="flex items-center gap-2 py-2">
+            <input 
+              type="checkbox" 
+              id="isFavorite" 
+              checked={formData.isFavorite || false} 
+              onChange={e => setFormData({...formData, isFavorite: e.target.checked})}
+              className="w-4 h-4 rounded border-white/20 bg-white/5 accent-primary"
+            />
+            <label htmlFor="isFavorite" className="text-sm font-medium flex items-center gap-1 cursor-pointer">
+              Mark as Favorite (Shows on Home Page) <Star className="w-4 h-4 text-yellow-500 fill-yellow-500/50" />
+            </label>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Description</label>

@@ -1,9 +1,13 @@
 import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { ArrowRight, Code, Zap, Rocket, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, Code, Zap, Rocket, ExternalLink, Mail, MapPin, Phone, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { Project } from "@shared/schema";
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
@@ -14,6 +18,20 @@ export default function Home() {
   });
   
   const [, setLocation] = useLocation();
+
+  const { data: projects, isLoading: isLoadingProjects } = useQuery({
+    queryKey: ["home-favorite-projects"],
+    queryFn: async () => {
+      const q = query(
+        collection(db, "projects"), 
+        where("isFavorite", "==", true),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() })) as Project[];
+    }
+  });
 
   return (
     <div className="min-h-screen text-foreground overflow-hidden selection:bg-primary/30 relative">
@@ -170,24 +188,25 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-            <ProjectCard 
-              index={0}
-              title="Nova Restaurant"
-              description="Demo restaurant website • 2025"
-              link="https://salah559.github.io/Nova-restaurants-/"
-            />
-            <ProjectCard 
-              index={1}
-              title="Enova"
-              description="Demo e-commerce store • 2025"
-              link="https://enova-tau.vercel.app/"
-            />
-            <ProjectCard 
-              index={2}
-              title="Sweet"
-              description="Demo candy shop • 2025"
-              link="https://snaky666.github.io/sweet-/#products"
-            />
+            {isLoadingProjects ? (
+              <div className="col-span-1 md:col-span-3 flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : projects && projects.length > 0 ? (
+              projects.map((project, idx) => (
+                <ProjectCard 
+                  key={project.id}
+                  index={idx}
+                  title={project.title}
+                  description={project.description}
+                  link={project.link}
+                />
+              ))
+            ) : (
+              <div className="col-span-1 md:col-span-3 text-center text-muted-foreground py-8">
+                No featured projects right now.
+              </div>
+            )}
           </div>
         </div>
       </section>
