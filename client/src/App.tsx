@@ -11,6 +11,7 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import Pricing from "@/pages/pricing";
 import Admin from "@/pages/admin";
+import { LangProvider } from "@/lib/i18n";
 
 function Router() {
   return (
@@ -28,15 +29,17 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <div className="pb-24 md:pb-0">
-          <Router />
-        </div>
-        <BottomNav />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <LangProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <div className="pb-24 md:pb-0">
+            <Router />
+          </div>
+          <BottomNav />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </LangProvider>
   );
 }
 
