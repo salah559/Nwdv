@@ -2,19 +2,29 @@ import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, Timestamp, getDoc, doc } from "firebase/firestore";
 import { toast } from "sonner";
 
-export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+const DEFAULT_SITE_INFO = {
+  location: "Algiers, Algeria",
+  email: "novawebdv@gmail.com",
+  phone: "+213 663 699 433",
+  phoneRaw: "213663699433",
+  whatsappMessage: "مرحباً، أريد الاستفسار عن خدمات تطوير المواقع",
+};
 
+export default function Contact() {
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [siteInfo, setSiteInfo] = useState(DEFAULT_SITE_INFO);
+
+  useEffect(() => {
+    getDoc(doc(db, "settings", "siteInfo")).then(snap => {
+      if (snap.exists()) setSiteInfo({ ...DEFAULT_SITE_INFO, ...snap.data() as typeof DEFAULT_SITE_INFO });
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +132,7 @@ export default function Contact() {
                     <MapPin className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <h4 className="font-bold text-lg mb-1">Location</h4>
-                      <p className="text-gray-400">Algiers, Algeria</p>
+                      <p className="text-gray-400">{siteInfo.location}</p>
                     </div>
                   </div>
 
@@ -130,8 +140,8 @@ export default function Contact() {
                     <Mail className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <h4 className="font-bold text-lg mb-1">Email</h4>
-                      <a href="mailto:novawebdv@gmail.com" className="text-primary hover:text-cyan-400 transition-colors">
-                        novawebdv@gmail.com
+                      <a href={`mailto:${siteInfo.email}`} className="text-primary hover:text-cyan-400 transition-colors">
+                        {siteInfo.email}
                       </a>
                     </div>
                   </div>
@@ -140,8 +150,8 @@ export default function Contact() {
                     <Phone className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
                       <h4 className="font-bold text-lg mb-1">Phone</h4>
-                      <a href="tel:+213663699433" className="text-primary hover:text-cyan-400 transition-colors">
-                        +213 663 699 433
+                      <a href={`tel:+${siteInfo.phoneRaw}`} className="text-primary hover:text-cyan-400 transition-colors">
+                        {siteInfo.phone}
                       </a>
                     </div>
                   </div>
@@ -151,7 +161,7 @@ export default function Contact() {
               <Button
                 size="lg"
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-ui font-bold uppercase tracking-widest h-16 rounded-xl btn-pulse"
-                onClick={() => window.open('https://wa.me/213663699433?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%AA%D8%B7%D9%88%D9%8A%D8%B1%20%D8%A7%D9%84%D9%85%D9%88%D8%A7%D9%82%D8%B9', '_blank')}
+                onClick={() => window.open(`https://wa.me/${siteInfo.phoneRaw}?text=${encodeURIComponent(siteInfo.whatsappMessage)}`, '_blank')}
               >
                 Chat on WhatsApp
               </Button>

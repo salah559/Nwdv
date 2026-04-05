@@ -39,10 +39,9 @@ import {
   DialogFooter, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
 } from "@/components/ui/dialog";
 import { 
-  LayoutDashboard, 
+  LayoutDashboard,
   MessageSquare, 
   FolderPlus, 
   Settings, 
@@ -52,7 +51,12 @@ import {
   Edit2,
   CheckCircle2,
   Unlock,
-  Lock
+  Lock,
+  Mail,
+  Phone,
+  MapPin,
+  Image as ImageIcon,
+  Globe,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -63,19 +67,17 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const queryClient = useQueryClient();
 
-  // Authentication Logic
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const settingsRef = doc(db, "settings", "admin");
       const settingsSnap = await getDoc(settingsRef);
       
-      let correctCode = "admin123"; // Default code
+      let correctCode = "admin123";
       
       if (settingsSnap.exists()) {
         correctCode = settingsSnap.data().adminCode;
       } else {
-        // Initialize default settings if not exists
         await setDoc(settingsRef, { adminCode: "admin123", lastUpdated: Timestamp.now() });
       }
 
@@ -162,53 +164,162 @@ export default function Admin() {
           </Button>
         </div>
 
-        <Tabs defaultValue="projects" className="space-y-8">
-          <TabsList className="bg-white/5 border border-white/10 h-14 p-1 rounded-xl">
-            <TabsTrigger value="projects" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <FolderPlus className="w-4 h-4 mr-2" /> Projects
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <MessageSquare className="w-4 h-4 mr-2" /> Messages
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Settings className="w-4 h-4 mr-2" /> Settings
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="projects" className="space-y-6">
-            <ProjectsTab />
-          </TabsContent>
-
-          <TabsContent value="messages">
-            <MessagesTab />
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <SettingsTab onUpdatePassword={(newPass) => {
-              setPassword(newPass);
-            }} />
-          </TabsContent>
-        </Tabs>
+        <AdminTabs queryClient={queryClient} onUpdatePassword={(newPass) => setPassword(newPass)} />
       </div>
     </div>
   );
 }
 
-// --- SUB-COMPONENTS ---
+function AdminTabs({ queryClient, onUpdatePassword }: { queryClient: any; onUpdatePassword: (p: string) => void }) {
+  // Fetch counts for badges
+  const { data: messages } = useQuery({
+    queryKey: ["messages"],
+    queryFn: async () => {
+      const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() })) as ContactMessage[];
+    }
+  });
 
-function ProjectsTab() {
-  const queryClient = useQueryClient();
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-
-  const { data: projects, isLoading } = useQuery({
+  const { data: projects } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
       const q = query(collection(db, "projects"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() })) as Project[];
     }
   });
+
+  const unreadCount = messages?.filter(m => m.status === "unread").length ?? 0;
+
+  return (
+    <Tabs defaultValue="dashboard" className="space-y-8">
+      <TabsList className="bg-white/5 border border-white/10 h-14 p-1 rounded-xl flex-wrap gap-1">
+        <TabsTrigger value="dashboard" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
+        </TabsTrigger>
+        <TabsTrigger value="projects" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <FolderPlus className="w-4 h-4 mr-2" /> Projects
+        </TabsTrigger>
+        <TabsTrigger value="messages" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground relative">
+          <MessageSquare className="w-4 h-4 mr-2" /> Messages
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-primary text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              {unreadCount}
+            </span>
+          )}
+        </TabsTrigger>
+        <TabsTrigger value="settings" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <Settings className="w-4 h-4 mr-2" /> Settings
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="dashboard">
+        <DashboardTab projects={projects ?? []} messages={messages ?? []} unreadCount={unreadCount} />
+      </TabsContent>
+
+      <TabsContent value="projects">
+        <ProjectsTab projects={projects} queryClient={queryClient} />
+      </TabsContent>
+
+      <TabsContent value="messages">
+        <MessagesTab messages={messages} queryClient={queryClient} />
+      </TabsContent>
+
+      <TabsContent value="settings">
+        <SettingsTab onUpdatePassword={onUpdatePassword} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+// --- DASHBOARD ---
+function DashboardTab({ projects, messages, unreadCount }: { projects: Project[]; messages: ContactMessage[]; unreadCount: number }) {
+  const recentMessages = messages.slice(0, 5);
+
+  return (
+    <div className="space-y-8">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
+          <Card className="glass border-white/10">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10">
+                <FolderPlus className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Projects</p>
+                <p className="text-4xl font-bold">{projects.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card className="glass border-white/10">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-purple-500/10">
+                <MessageSquare className="w-7 h-7 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Messages</p>
+                <p className="text-4xl font-bold">{messages.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Card className="glass border-primary/20 ring-1 ring-primary/30">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/20">
+                <MessageSquare className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Unread Messages</p>
+                <p className="text-4xl font-bold text-primary">{unreadCount}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Recent Messages */}
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Recent Messages</h2>
+        {recentMessages.length === 0 ? (
+          <Card className="glass border-white/5">
+            <CardContent className="py-12 text-center text-muted-foreground">No messages yet.</CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {recentMessages.map(msg => (
+              <Card key={msg.id} className={`glass border-white/10 ${msg.status === "unread" ? "ring-1 ring-primary/40 bg-primary/5" : ""}`}>
+                <CardContent className="p-4 flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${msg.status === "unread" ? "bg-primary" : "bg-muted-foreground"}`} />
+                    <div>
+                      <p className="font-semibold">{msg.name} <span className="text-xs text-muted-foreground">— {msg.email}</span></p>
+                      <p className="text-sm text-gray-400 line-clamp-1">{msg.message}</p>
+                    </div>
+                  </div>
+                  <a href={`mailto:${msg.email}`} className="text-primary hover:text-cyan-400 transition-colors flex-shrink-0" title="Reply">
+                    <Mail className="w-4 h-4" />
+                  </a>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- PROJECTS ---
+function ProjectsTab({ projects, queryClient }: { projects?: Project[]; queryClient: any }) {
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -220,8 +331,6 @@ function ProjectsTab() {
     }
   });
 
-  if (isLoading) return <div className="text-center py-20">Loading projects...</div>;
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -232,7 +341,7 @@ function ProjectsTab() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects?.map((project) => (
+        {(projects ?? []).map((project) => (
           <Card key={project.id} className="glass group border-white/10 overflow-hidden">
             <div className="relative h-40 bg-muted">
               <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
@@ -268,42 +377,39 @@ function ProjectsTab() {
           }
         }}
         initialData={editingProject || undefined}
+        queryClient={queryClient}
       />
     </div>
   );
 }
 
-function ProjectDialog({ open, onOpenChange, initialData }: { open: boolean, onOpenChange: (open: boolean) => void, initialData?: Project }) {
-  const queryClient = useQueryClient();
+function ProjectDialog({ open, onOpenChange, initialData, queryClient }: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  initialData?: Project;
+  queryClient: any;
+}) {
   const [formData, setFormData] = useState<Partial<Project>>({
-    title: "",
-    description: "",
-    type: "",
-    image: "",
-    link: "",
+    title: "", description: "", type: "", image: "", link: "",
   });
+  const [imgPreview, setImgPreview] = useState("");
 
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
+      setImgPreview(initialData.image ?? "");
     } else {
       setFormData({ title: "", description: "", type: "", image: "", link: "" });
+      setImgPreview("");
     }
   }, [initialData, open]);
 
   const mutation = useMutation({
     mutationFn: async (data: Partial<Project>) => {
       if (initialData?.id) {
-        await updateDoc(doc(db, "projects", initialData.id), {
-          ...data,
-          updatedAt: Timestamp.now()
-        });
+        await updateDoc(doc(db, "projects", initialData.id), { ...data, updatedAt: Timestamp.now() });
       } else {
-        await addDoc(collection(db, "projects"), {
-          ...data,
-          createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now()
-        });
+        await addDoc(collection(db, "projects"), { ...data, createdAt: Timestamp.now(), updatedAt: Timestamp.now() });
       }
     },
     onSuccess: () => {
@@ -328,54 +434,49 @@ function ProjectDialog({ open, onOpenChange, initialData }: { open: boolean, onO
           <DialogTitle>{initialData ? "Edit Project" : "Add New Project"}</DialogTitle>
           <DialogDescription>Fill in project details. All fields are required.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Title</label>
-              <Input 
-                value={formData.title} 
-                onChange={e => setFormData({...formData, title: e.target.value})}
-                placeholder="Project Name"
-                required
-              />
+              <Input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Project Name" required />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Type</label>
-              <Input 
-                value={formData.type} 
-                onChange={e => setFormData({...formData, type: e.target.value})}
-                placeholder="e.g. E-commerce • 2024"
-                required
-              />
+              <Input value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} placeholder="e.g. E-commerce • 2025" required />
             </div>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Image URL</label>
             <Input 
               value={formData.image} 
-              onChange={e => setFormData({...formData, image: e.target.value})}
-              placeholder="https://images.unsplash.com/..."
-              required
+              onChange={e => { setFormData({...formData, image: e.target.value}); setImgPreview(e.target.value); }}
+              placeholder="https://images.unsplash.com/..." 
+              required 
             />
+            {/* Image preview */}
+            {imgPreview && (
+              <div className="relative h-32 rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                <img 
+                  src={imgPreview} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover"
+                  onError={() => setImgPreview("")}
+                />
+              </div>
+            )}
+            {!imgPreview && (
+              <div className="h-32 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground gap-2">
+                <ImageIcon className="w-5 h-5" /> <span className="text-sm">Image preview</span>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Project Link</label>
-            <Input 
-              value={formData.link} 
-              onChange={e => setFormData({...formData, link: e.target.value})}
-              placeholder="https://..."
-              required
-            />
+            <Input value={formData.link} onChange={e => setFormData({...formData, link: e.target.value})} placeholder="https://..." required />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Description</label>
-            <Textarea 
-              value={formData.description} 
-              onChange={e => setFormData({...formData, description: e.target.value})}
-              placeholder="Brief overview of the project..."
-              className="h-24"
-              required
-            />
+            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Brief overview of the project..." className="h-24" required />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={mutation.isPending}>
@@ -388,20 +489,10 @@ function ProjectDialog({ open, onOpenChange, initialData }: { open: boolean, onO
   );
 }
 
-function MessagesTab() {
-  const queryClient = useQueryClient();
-  
-  const { data: messages, isLoading } = useQuery({
-    queryKey: ["messages"],
-    queryFn: async () => {
-      const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ContactMessage[];
-    }
-  });
-
+// --- MESSAGES ---
+function MessagesTab({ messages, queryClient }: { messages?: ContactMessage[]; queryClient: any }) {
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string, status: string }) => {
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
       await updateDoc(doc(db, "messages", id), { status });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["messages"] })
@@ -417,36 +508,39 @@ function MessagesTab() {
     }
   });
 
-  if (isLoading) return <div className="text-center py-20">Loading messages...</div>;
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">User Inquiries</h2>
-        <span className="text-sm text-muted-foreground">{messages?.length} total messages</span>
+        <span className="text-sm text-muted-foreground">{messages?.length ?? 0} total messages</span>
       </div>
 
       <div className="space-y-4">
-        {messages?.map((msg) => (
-          <Card key={msg.id} className={`glass border-white/10 transition-all ${msg.status === 'unread' ? 'ring-1 ring-primary/40 bg-primary/5' : ''}`}>
+        {(messages ?? []).map((msg) => (
+          <Card key={msg.id} className={`glass border-white/10 transition-all ${msg.status === "unread" ? "ring-1 ring-primary/40 bg-primary/5" : ""}`}>
             <CardHeader className="flex flex-row justify-between items-start pb-2">
               <div className="flex gap-3 items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${msg.status === 'unread' ? 'bg-primary' : 'bg-muted'}`}>
-                  {msg.status === 'unread' ? <MessageSquare className="w-4 h-4 text-black" /> : <CheckCircle2 className="w-4 h-4" />}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${msg.status === "unread" ? "bg-primary" : "bg-muted"}`}>
+                  {msg.status === "unread" ? <MessageSquare className="w-4 h-4 text-black" /> : <CheckCircle2 className="w-4 h-4" />}
                 </div>
                 <div>
                   <CardTitle className="text-lg">{msg.name}</CardTitle>
                   <CardDescription>{msg.email}</CardDescription>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <a href={`mailto:${msg.email}?subject=Re: Your inquiry`}>
+                  <Button size="sm" variant="outline" className="h-8 gap-1">
+                    <Mail className="w-3 h-3" /> Reply
+                  </Button>
+                </a>
                 <Button 
                   size="sm" 
                   variant="outline" 
                   className="h-8"
-                  onClick={() => updateStatus.mutate({ id: msg.id!, status: msg.status === 'unread' ? 'read' : 'unread' })}
+                  onClick={() => updateStatus.mutate({ id: msg.id!, status: msg.status === "unread" ? "read" : "unread" })}
                 >
-                  Mark as {msg.status === 'unread' ? 'Read' : 'Unread'}
+                  Mark as {msg.status === "unread" ? "Read" : "Unread"}
                 </Button>
                 <Button size="sm" variant="ghost" className="h-8 text-destructive hover:bg-destructive/10" onClick={() => deleteMutation.mutate(msg.id!)}>
                   <Trash2 className="w-4 h-4" />
@@ -456,12 +550,12 @@ function MessagesTab() {
             <CardContent>
               <p className="text-gray-300 bg-black/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">{msg.message}</p>
               <div className="mt-4 text-xs text-muted-foreground">
-                Received on: {msg.createdAt && (msg.createdAt as any).toDate ? (msg.createdAt as any).toDate().toLocaleString() : 'Just now'}
+                Received: {msg.createdAt && (msg.createdAt as any).toDate ? (msg.createdAt as any).toDate().toLocaleString() : "Just now"}
               </div>
             </CardContent>
           </Card>
         ))}
-        {messages?.length === 0 && (
+        {(messages?.length ?? 0) === 0 && (
           <div className="text-center py-20 glass rounded-2xl border border-white/5">
             <MessageSquare className="w-12 h-12 text-muted mx-auto mb-4" />
             <p className="text-muted-foreground">No messages found yet</p>
@@ -472,47 +566,143 @@ function MessagesTab() {
   );
 }
 
+// --- SETTINGS ---
 function SettingsTab({ onUpdatePassword }: { onUpdatePassword: (pass: string) => void }) {
   const [newCode, setNewCode] = useState("");
-  const [currentCode, setCurrentCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCodeLoading, setIsCodeLoading] = useState(false);
 
+  // Contact info state
+  const [siteInfo, setSiteInfo] = useState({
+    location: "Algiers, Algeria",
+    email: "novawebdv@gmail.com",
+    phone: "+213 663 699 433",
+    phoneRaw: "213663699433",
+    whatsappMessage: "مرحباً، أريد الاستفسار عن خدمات تطوير المواقع",
+  });
+  const [isSiteLoading, setIsSiteLoading] = useState(false);
+
+  // Load current site info
   useEffect(() => {
-    const fetchCurrent = async () => {
-      const settingsSnap = await getDoc(doc(db, "settings", "admin"));
-      if (settingsSnap.exists()) {
-        setCurrentCode(settingsSnap.data().adminCode);
+    const fetchSiteInfo = async () => {
+      const snap = await getDoc(doc(db, "settings", "siteInfo"));
+      if (snap.exists()) {
+        setSiteInfo({ ...siteInfo, ...snap.data() });
       }
     };
-    fetchCurrent();
+    fetchSiteInfo();
   }, []);
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdateCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newCode.length < 4) {
-      toast.error("Code must be at least 4 characters long");
+      toast.error("Code must be at least 4 characters");
       return;
     }
-    
-    setIsLoading(true);
+    setIsCodeLoading(true);
     try {
-      await setDoc(doc(db, "settings", "admin"), {
-        adminCode: newCode,
-        lastUpdated: Timestamp.now()
-      });
+      await setDoc(doc(db, "settings", "admin"), { adminCode: newCode, lastUpdated: Timestamp.now() });
       onUpdatePassword(newCode);
-      setCurrentCode(newCode);
       setNewCode("");
       toast.success("Security code updated successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update security code");
     } finally {
-      setIsLoading(false);
+      setIsCodeLoading(false);
+    }
+  };
+
+  const handleUpdateSiteInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSiteLoading(true);
+    try {
+      await setDoc(doc(db, "settings", "siteInfo"), { ...siteInfo, lastUpdated: Timestamp.now() });
+      toast.success("Contact info updated successfully");
+    } catch {
+      toast.error("Failed to update contact info");
+    } finally {
+      setIsSiteLoading(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-10">
+    <div className="max-w-2xl mx-auto py-6 space-y-8">
+      {/* Contact Info */}
+      <Card className="glass border-white/10 shadow-2xl overflow-hidden">
+        <div className="bg-cyan-500/20 h-2" />
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center gap-2">
+            <Globe className="w-6 h-6 text-primary" /> Contact Page Info
+          </CardTitle>
+          <CardDescription>Edit the information displayed on the Contact Us page</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleUpdateSiteInfo} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <MapPin className="w-4 h-4" /> Location
+              </label>
+              <Input
+                value={siteInfo.location}
+                onChange={e => setSiteInfo({ ...siteInfo, location: e.target.value })}
+                placeholder="e.g. Algiers, Algeria"
+                className="bg-white/5 border-white/10"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Mail className="w-4 h-4" /> Email
+              </label>
+              <Input
+                type="email"
+                value={siteInfo.email}
+                onChange={e => setSiteInfo({ ...siteInfo, email: e.target.value })}
+                placeholder="contact@example.com"
+                className="bg-white/5 border-white/10"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Phone className="w-4 h-4" /> Phone (Display)
+                </label>
+                <Input
+                  value={siteInfo.phone}
+                  onChange={e => setSiteInfo({ ...siteInfo, phone: e.target.value })}
+                  placeholder="+213 663 699 433"
+                  className="bg-white/5 border-white/10"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Phone (Raw)</label>
+                <Input
+                  value={siteInfo.phoneRaw}
+                  onChange={e => setSiteInfo({ ...siteInfo, phoneRaw: e.target.value })}
+                  placeholder="213663699433"
+                  className="bg-white/5 border-white/10"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">WhatsApp Message</label>
+              <Input
+                value={siteInfo.whatsappMessage}
+                onChange={e => setSiteInfo({ ...siteInfo, whatsappMessage: e.target.value })}
+                placeholder="WhatsApp pre-filled message"
+                className="bg-white/5 border-white/10"
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full h-12 font-bold uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 text-white"
+              disabled={isSiteLoading}
+            >
+              {isSiteLoading ? "Saving..." : "Save Contact Info"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Security Code */}
       <Card className="glass border-white/10 shadow-2xl overflow-hidden">
         <div className="bg-primary/20 h-2" />
         <CardHeader>
@@ -521,39 +711,31 @@ function SettingsTab({ onUpdatePassword }: { onUpdatePassword: (pass: string) =>
           </CardTitle>
           <CardDescription>Update your dashboard access credentials</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 mb-6">
-            <p className="text-sm text-gray-400">Current Security Code</p>
-            <p className="text-2xl font-mono mt-1 tracking-widest text-primary">****</p>
-            <p className="text-xs text-gray-500 mt-2 italic">Last updated: Automatic tracking enabled</p>
-          </div>
-
-          <form onSubmit={handleUpdate} className="space-y-4">
+        <CardContent>
+          <form onSubmit={handleUpdateCode} className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">New Security Code</label>
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Enter new 4+ digit code"
-                  value={newCode}
-                  onChange={(e) => setNewCode(e.target.value)}
-                  className="bg-white/5 border-white/10 h-14 text-lg font-mono focus:ring-primary"
-                  required
-                />
-              </div>
+              <Input
+                type="text"
+                placeholder="Enter new 4+ character code"
+                value={newCode}
+                onChange={(e) => setNewCode(e.target.value)}
+                className="bg-white/5 border-white/10 h-14 text-lg font-mono"
+                required
+              />
             </div>
             <Button 
               type="submit" 
-              className="w-full h-14 text-lg font-bold uppercase tracking-widest bg-primary hover:bg-cyan-400 text-black shadow-lg shadow-primary/20"
-              disabled={isLoading}
+              className="w-full h-14 text-lg font-bold uppercase tracking-widest bg-primary hover:bg-cyan-400 text-black"
+              disabled={isCodeLoading}
             >
-              {isLoading ? "Updating..." : "Update Security Code"}
+              {isCodeLoading ? "Updating..." : "Update Security Code"}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="bg-white/5 p-4 flex gap-2">
           <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-          <p className="text-xs text-gray-400">Security codes are encrypted and stored securely in Firestore. Changing this code will require it for your next login.</p>
+          <p className="text-xs text-gray-400">Security codes are stored securely in Firestore.</p>
         </CardFooter>
       </Card>
     </div>
