@@ -17,6 +17,12 @@ export default function Projects() {
     }
   });
 
+  if (isLoading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-10 h-10 animate-spin text-primary" />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -43,7 +49,7 @@ export default function Projects() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects.map((project, idx) => (
+            {(projects ?? []).map((project, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
