@@ -16,7 +16,6 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-
 // Project Schema
 export const projectSchema = z.object({
   id: z.string().optional(),
