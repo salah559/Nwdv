@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import nodemailer from "nodemailer";
 
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
+
 // Simple token generation (in production, use proper JWT)
 function generateToken(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
