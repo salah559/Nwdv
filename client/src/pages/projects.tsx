@@ -6,10 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query } from "firebase/firestore";
 import { Project } from "@shared/schema";
-import { useLocation } from "wouter";
 
 export default function Projects() {
-  const [, setLocation] = useLocation();
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projects"],
@@ -65,7 +63,7 @@ export default function Projects() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: idx * 0.08 }}
                 whileHover={{ y: -6 }}
-                onClick={() => setLocation(`/projects/${project.id}`)}
+                onClick={() => window.open(project.link, '_blank')}
                 className="group glass rounded-2xl border border-white/5 overflow-hidden hover:border-primary/40 transition-all duration-500 cursor-pointer hover:shadow-[0_20px_60px_rgba(6,255,240,0.1)]"
               >
                 {/* Image */}
