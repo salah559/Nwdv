@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { Project } from "@shared/schema";
 
 export default function Home() {
@@ -24,12 +24,18 @@ export default function Home() {
     queryFn: async () => {
       const q = query(
         collection(db, "projects"), 
-        where("isFavorite", "==", true),
-        orderBy("createdAt", "desc"),
-        limit(3)
+        where("isFavorite", "==", true)
       );
       const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() })) as Project[];
+      const results = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Project[];
+      // Sort client-side to avoid needing a Firebase composite index
+      return results
+        .sort((a, b) => {
+          const aTime = (a.createdAt as any)?.toMillis?.() ?? 0;
+          const bTime = (b.createdAt as any)?.toMillis?.() ?? 0;
+          return bTime - aTime;
+        })
+        .slice(0, 3);
     }
   });
 
