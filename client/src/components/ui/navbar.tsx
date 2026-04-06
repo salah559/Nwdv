@@ -58,7 +58,6 @@ export function Navbar() {
     { key: "nav_home" as const, href: "/" },
     { key: "nav_about" as const, href: "/about" },
     { key: "nav_projects" as const, href: "/projects" },
-    { key: "nav_pricing" as const, href: "/pricing" },
   ];
 
   return (

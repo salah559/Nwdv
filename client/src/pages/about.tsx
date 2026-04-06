@@ -1,31 +1,8 @@
 import { Navbar } from "@/components/ui/navbar";
 import { motion } from "framer-motion";
-import { Users, Target, Rocket, Shield, Box, TrendingUp } from "lucide-react";
+import { Users, Target, Rocket, Shield } from "lucide-react";
 
 export default function About() {
-  const team = [
-    {
-      name: "Bouazza SalahEddine",
-      role: "full stack developer",
-      icon: Users,
-    },
-    {
-      name: "Madi Mohamed Elhadi",
-      role: "3D Designer",
-      icon: Box,
-    },
-    {
-      name: "anis",
-      role: "SEO Expert",
-      icon: TrendingUp,
-    },
-    {
-      name: "Kebsi Islam",
-      role: "full stack developer",
-      icon: Users,
-    }
-  ];
-
   const features = [
     {
       icon: <Users className="w-8 h-8 text-primary" />,
@@ -80,27 +57,16 @@ export default function About() {
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-display font-bold mb-4 text-white">Our Experts</h2>
-            <div className="w-20 h-1 bg-primary mx-auto" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
-            {team.map((member, idx) => {
-              const IconComponent = member.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  className="glass-panel p-10 rounded-3xl border border-white/10 hover:border-primary/30 transition-all text-center group"
-                >
-                  <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <IconComponent className="w-10 h-10 text-primary" />
-                  </div>
-                  <h3 className="text-2xl font-display font-bold mb-2 text-white">{member.name}</h3>
-                  <p className="text-primary font-ui uppercase tracking-widest text-sm">{member.role}</p>
-                </motion.div>
-              );
-            })}
+            <div className="w-20 h-1 bg-primary mx-auto mb-12" />
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto glass-panel p-8 rounded-3xl border border-white/10"
+            >
+              فريق Novaweb مؤلف من نخبة من المختصين في تطوير الويب، التصميم، وتحسين محركات البحث. نجمع بين الخبرة التقنية العميقة والإبداع في التصميم لنقدم حلولاً رقمية متكاملة تلبي أعلى معايير الجودة. نؤمن بأن كل مشروع يستحق فريقاً متخصصاً ومتفانياً يعمل بشغف لتحقيق رؤيتك وتجاوز توقعاتك.
+            </motion.p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

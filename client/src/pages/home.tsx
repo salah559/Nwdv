@@ -1,8 +1,7 @@
 import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { ArrowRight, Code, Zap, Rocket, ExternalLink, Mail, MapPin, Phone, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowRight, ExternalLink, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
@@ -251,74 +250,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative py-20 z-10 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="glass-panel rounded-3xl p-12 md:p-16 border border-white/10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-              <div className="space-y-6">
-                <div className="text-3xl font-bold font-display tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
-                  NOVAWEB
-                </div>
-                <p className="text-gray-400 leading-relaxed font-ui tracking-wide">
-                  Building the digital future with precision, performance, and passion.
-                </p>
-              </div>
-              
-              <div className="space-y-6">
-                <h4 className="text-white font-display font-bold text-lg uppercase tracking-widest">Navigation</h4>
-                <ul className="space-y-4">
-                  <li><a href="#" className="text-gray-400 hover:text-primary transition-colors font-ui uppercase tracking-widest text-sm">Home</a></li>
-                  <li><a href="#services" className="text-gray-400 hover:text-primary transition-colors font-ui uppercase tracking-widest text-sm">Services</a></li>
-                  <li><a href="#projects" className="text-gray-400 hover:text-primary transition-colors font-ui uppercase tracking-widest text-sm">Projects</a></li>
-                </ul>
-              </div>
-
-              <div className="space-y-6">
-                <h4 className="text-white font-display font-bold text-lg uppercase tracking-widest">Connect</h4>
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-3 text-gray-400 group cursor-pointer hover:text-white transition-colors">
-                    <Mail size={18} className="text-primary" />
-                    <span className="font-ui tracking-widest text-sm">hello@novaweb.digital</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-400 group cursor-pointer hover:text-white transition-colors">
-                    <Phone size={18} className="text-primary" />
-                    <span className="font-ui tracking-widest text-sm">+213 (0) 555 000 000</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <h4 className="text-white font-display font-bold text-lg uppercase tracking-widest">Follow Us</h4>
-                <div className="flex gap-4">
-                  <a href="#" className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/50 hover:bg-primary/10 transition-all duration-300">
-                    <span className="sr-only">Twitter</span>
-                    <div className="w-5 h-5 bg-gray-400 rounded-sm" />
-                  </a>
-                  <a href="#" className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/50 hover:bg-primary/10 transition-all duration-300">
-                    <span className="sr-only">LinkedIn</span>
-                    <div className="w-5 h-5 bg-gray-400 rounded-sm" />
-                  </a>
-                  <a href="https://wa.me/213663699433" target="_blank" className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/50 hover:bg-primary/10 transition-all duration-300">
-                    <span className="sr-only">WhatsApp</span>
-                    <div className="w-5 h-5 bg-gray-400 rounded-sm" />
-                  </a>
-                </div>
-              </div>
-            </div>
-            
-            <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-              <p className="text-gray-500 text-sm font-ui tracking-widest">
-                © 2025 NOVAWEB. ALL RIGHTS RESERVED.
-              </p>
-              <div className="flex gap-8">
-                <a href="#" className="text-xs text-gray-500 hover:text-white font-ui uppercase tracking-[0.2em]">Privacy Policy</a>
-                <a href="#" className="text-xs text-gray-500 hover:text-white font-ui uppercase tracking-[0.2em]">Terms of Service</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
