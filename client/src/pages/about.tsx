@@ -65,7 +65,7 @@ export default function About() {
               transition={{ duration: 0.7 }}
               className="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto glass-panel p-8 rounded-3xl border border-white/10"
             >
-              فريق Novaweb مؤلف من نخبة من المختصين في تطوير الويب، التصميم، وتحسين محركات البحث. نجمع بين الخبرة التقنية العميقة والإبداع في التصميم لنقدم حلولاً رقمية متكاملة تلبي أعلى معايير الجودة. نؤمن بأن كل مشروع يستحق فريقاً متخصصاً ومتفانياً يعمل بشغف لتحقيق رؤيتك وتجاوز توقعاتك.
+              We are a leading digital agency, creating high-performance web experiences designed specifically to drive your business growth and increase revenue, with a focus on delivering tangible results and sustainable success for your company.
             </motion.p>
           </div>
 
