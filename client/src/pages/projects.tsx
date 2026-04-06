@@ -1,19 +1,27 @@
 import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2, ArrowUpRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore";
 import { Project } from "@shared/schema";
+import { useLocation } from "wouter";
 
 export default function Projects() {
+  const [, setLocation] = useLocation();
+
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
-      const q = query(collection(db, "projects"), orderBy("createdAt", "desc"));
+      const q = query(collection(db, "projects"));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+      const results = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+      return results.sort((a, b) => {
+        const aTime = (a.createdAt as any)?.toMillis?.() ?? 0;
+        const bTime = (b.createdAt as any)?.toMillis?.() ?? 0;
+        return bTime - aTime;
+      });
     }
   });
 
@@ -51,28 +59,55 @@ export default function Projects() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {(projects ?? []).map((project, idx) => (
               <motion.div
-                key={idx}
+                key={project.id ?? idx}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                onClick={() => window.open(project.link, '_blank')}
-                className="group glass rounded-xl border border-white/5 overflow-hidden hover:border-primary/50 transition-all duration-300 hover:bg-white/5 cursor-pointer"
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: idx * 0.08 }}
+                whileHover={{ y: -6 }}
+                onClick={() => setLocation(`/projects/${project.id}`)}
+                className="group glass rounded-2xl border border-white/5 overflow-hidden hover:border-primary/40 transition-all duration-500 cursor-pointer hover:shadow-[0_20px_60px_rgba(6,255,240,0.1)]"
               >
+                {/* Image */}
                 <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-purple-500/20">
                   <img 
                     src={project.image} 
                     alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  {/* Hover arrow */}
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                    <div className="p-2 bg-primary rounded-xl shadow-[0_0_15px_rgba(6,255,240,0.6)]">
+                      <ArrowUpRight className="w-4 h-4 text-black" />
+                    </div>
+                  </div>
+                  {/* Featured badge */}
+                  {project.isFavorite && (
+                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-yellow-500/90 rounded-full text-black text-[10px] font-bold uppercase tracking-widest">
+                      ⭐ Featured
+                    </div>
+                  )}
                 </div>
+
+                {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-2xl font-display font-bold mb-2 group-hover:text-primary transition-colors">
+                  <p className="text-xs text-primary/60 font-ui uppercase tracking-widest mb-2">{project.type}</p>
+                  <h3 className="text-xl font-display font-bold mb-2 group-hover:text-primary transition-colors duration-300">
                     {project.title}
                   </h3>
-                  <p className="text-sm text-gray-400 mb-3">{project.type}</p>
-                  <p className="text-gray-300 mb-4">{project.description}</p>
-                  <div className="flex items-center gap-2 text-primary font-ui font-bold uppercase text-sm tracking-wider group-hover:gap-3 transition-all">
-                    Visit Project <ExternalLink className="w-4 h-4" />
+                  <p className="text-sm text-gray-400 mb-5 line-clamp-2 leading-relaxed">{project.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-primary font-ui font-bold uppercase text-xs tracking-wider">
+                      View Details <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); window.open(project.link, '_blank'); }}
+                      className="p-2 bg-white/5 rounded-lg border border-white/10 hover:border-primary/50 hover:bg-primary/10 transition-all duration-300"
+                      title="Visit website"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-gray-400 hover:text-primary transition-colors" />
+                    </button>
                   </div>
                 </div>
               </motion.div>

@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { ArrowRight, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowRight, ExternalLink, Loader2, ArrowUpRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
@@ -202,8 +202,10 @@ export default function Home() {
                 <ProjectCard 
                   key={project.id}
                   index={idx}
+                  id={project.id!}
                   title={project.title}
                   description={project.description}
+                  image={project.image}
                   link={project.link}
                 />
               ))
@@ -280,30 +282,54 @@ function ServiceCard({ emoji, title, description, index }: { emoji: string, titl
   );
 }
 
-function ProjectCard({ title, description, link, index }: { title: string, description: string, link: string, index: number }) {
+function ProjectCard({ id, title, description, image, link, index }: { id: string, title: string, description: string, image: string, link: string, index: number }) {
+  const [, setLocation] = useLocation();
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, delay: index * 0.1 }}
-      className={`group p-10 glass rounded-3xl border border-white/5 card-hover cursor-pointer relative overflow-hidden ${index === 1 ? 'md:-translate-y-8' : ''}`}
-      onClick={() => window.open(link, '_blank')}
+      whileHover={{ y: -6 }}
+      className={`group glass rounded-3xl border border-white/5 hover:border-primary/40 cursor-pointer relative overflow-hidden transition-all duration-500 hover:shadow-[0_20px_60px_rgba(6,255,240,0.12)] ${index === 1 ? 'md:-translate-y-8' : ''}`}
+      onClick={() => setLocation(`/projects/${id}`)}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="relative z-10">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="text-xs font-ui font-bold text-primary/40 mb-2 uppercase tracking-[0.3em]">Project 0{index + 1}</div>
-            <h3 className="text-3xl font-display font-bold group-hover:text-primary transition-colors">{title}</h3>
-            <p className="text-base text-gray-500 mt-3 font-light">{description}</p>
-          </div>
-          <div className="p-3 bg-white/5 rounded-2xl group-hover:bg-primary/20 transition-all duration-300 group-hover:rotate-12">
-            <ExternalLink className="w-6 h-6 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" />
+      {/* Image */}
+      <div className="relative h-52 overflow-hidden">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+          <div className="p-2 bg-primary rounded-xl shadow-[0_0_15px_rgba(6,255,240,0.5)]">
+            <ArrowUpRight className="w-4 h-4 text-black" />
           </div>
         </div>
-        <div className="inline-block mt-4 px-6 py-3 bg-primary/10 border border-primary/30 rounded-xl text-sm font-ui font-bold text-primary uppercase tracking-widest group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_20px_rgba(6,255,240,0.5)] transition-all">
-          Explore Case Study →
+        <div className="absolute bottom-3 left-4 text-xs font-ui font-bold text-primary/60 uppercase tracking-[0.3em]">
+          Project 0{index + 1}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-8 relative z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="relative z-10">
+          <h3 className="text-2xl font-display font-bold mb-3 group-hover:text-primary transition-colors duration-300">{title}</h3>
+          <p className="text-sm text-gray-500 mb-6 leading-relaxed line-clamp-2">{description}</p>
+          <div className="flex items-center justify-between">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 border border-primary/30 rounded-xl text-sm font-ui font-bold text-primary uppercase tracking-widest group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_20px_rgba(6,255,240,0.4)] transition-all duration-300">
+              View Details →
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); window.open(link, '_blank'); }}
+              className="p-2.5 bg-white/5 rounded-xl border border-white/10 hover:border-primary/50 hover:bg-primary/10 transition-all duration-300 group/ext"
+              title="Visit website"
+            >
+              <ExternalLink className="w-4 h-4 text-gray-400 group-hover/ext:text-primary transition-colors" />
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
