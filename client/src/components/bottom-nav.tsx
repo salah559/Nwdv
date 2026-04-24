@@ -12,7 +12,6 @@ export function BottomNav() {
     { id: "home", label: t("nav_home"), icon: Home, path: "/" },
     { id: "projects", label: t("nav_projects"), icon: Share2, path: "/projects" },
     { id: "about", label: t("nav_about"), icon: Info, path: "/about" },
-    { id: "pricing", label: t("nav_pricing"), icon: CreditCard, path: "/pricing" },
     { id: "contact", label: t("nav_contact"), icon: Mail, path: "/contact" },
   ];
 

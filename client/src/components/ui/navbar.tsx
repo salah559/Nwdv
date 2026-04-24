@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLang, Lang } from "@/lib/i18n";
@@ -51,7 +51,6 @@ function LangSwitcher({ mobile = false }: { mobile?: boolean }) {
 }
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
   const { t } = useLang();
   const [location] = useLocation();
 
@@ -59,13 +58,12 @@ export function Navbar() {
     { key: "nav_home" as const, href: "/" },
     { key: "nav_about" as const, href: "/about" },
     { key: "nav_projects" as const, href: "/projects" },
-    { key: "nav_pricing" as const, href: "/pricing" },
   ];
 
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4 md:px-0 hidden md:block">
       <div className="container mx-auto max-w-5xl">
-        <div className="relative glass-nav rounded-2xl border border-white/10 px-6 h-14 flex items-center justify-between transition-all duration-300 hover:border-white/20">
+        <div className="relative glass-nav rounded-2xl border border-white/10 px-6 h-14 flex items-center justify-between transition-all duration-300 hover:border-white/20 !overflow-visible">
           {/* Logo */}
           <Link href="/">
             <span className="text-base font-bold font-display tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 cursor-pointer hover:opacity-80 transition-opacity">
