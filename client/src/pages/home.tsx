@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Project } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
+import { CircularGallery } from "@/components/ui/CircularGallery";
 
 export default function Home() {
   const { t } = useLang();
@@ -34,8 +35,7 @@ export default function Home() {
           const aTime = (a.createdAt as any)?.toMillis?.() ?? 0;
           const bTime = (b.createdAt as any)?.toMillis?.() ?? 0;
           return bTime - aTime;
-        })
-        .slice(0, 3);
+        });
     }
   });
 
@@ -191,25 +191,21 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+          <div className="w-full">
             {isLoadingProjects ? (
-              <div className="col-span-1 md:col-span-3 flex justify-center py-12">
+              <div className="flex justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : projects && projects.length > 0 ? (
-              projects.map((project, idx) => (
-                <ProjectCard 
-                  key={project.id}
-                  index={idx}
-                  title={project.title}
-                  description={project.description}
-                  image={project.image}
-                  link={project.link}
-                  t={t}
-                />
-              ))
+              <CircularGallery 
+                items={projects.map(p => ({ image: p.image, text: p.title }))} 
+                bend={3} 
+                textColor="#06fff0" 
+                borderRadius={0.05} 
+                font="bold 30px Orbitron" 
+              />
             ) : (
-              <div className="col-span-1 md:col-span-3 text-center text-muted-foreground py-8">
+              <div className="text-center text-muted-foreground py-8">
                 No featured projects right now.
               </div>
             )}
