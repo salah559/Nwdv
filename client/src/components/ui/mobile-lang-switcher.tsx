@@ -12,16 +12,25 @@ const LANGS: { code: Lang; label: string; flag: string }[] = [
 export function MobileLangSwitcher() {
   const { lang, setLang } = useLang();
   const [open, setOpen] = useState(false);
+  const current = LANGS.find(l => l.code === lang) ?? LANGS[0];
   
   return (
-    <div className="fixed bottom-24 right-4 z-[9999] md:hidden">
+    <div className="fixed top-4 right-4 z-[9999] md:hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white shadow-lg active:scale-95 transition-all"
+      >
+        <Globe className="w-4 h-4 text-primary" />
+        <span className="text-xs font-bold uppercase tracking-wider">{current.flag} {current.code}</span>
+      </button>
+
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            className="absolute bottom-16 right-0 bg-[#0d1117] border border-white/10 rounded-2xl shadow-2xl overflow-hidden min-w-[140px]"
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            className="absolute top-12 right-0 bg-[#0d1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[120px]"
           >
             {LANGS.map(l => (
               <button
@@ -36,14 +45,6 @@ export function MobileLangSwitcher() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-black shadow-[0_0_20px_rgba(6,255,240,0.4)] hover:scale-105 active:scale-95 transition-all"
-        aria-label="Change Language"
-      >
-        {open ? <ChevronUp className="w-6 h-6 rotate-180 transition-transform" /> : <Globe className="w-7 h-7" />}
-      </button>
     </div>
   );
 }

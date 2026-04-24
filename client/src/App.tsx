@@ -14,6 +14,7 @@ import Admin from "@/pages/admin";
 import Pricing from "@/pages/pricing";
 import { LangProvider } from "@/lib/i18n";
 import { MobileLangSwitcher } from "@/components/ui/mobile-lang-switcher";
+import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <div className="pb-24 md:pb-0">
             <Router />
           </div>
+          <WhatsAppButton />
           <MobileLangSwitcher />
           <BottomNav />
         </TooltipProvider>
