@@ -66,9 +66,18 @@ export function Navbar() {
         <div className="relative glass-nav rounded-2xl border border-white/10 px-6 h-14 flex items-center justify-between transition-all duration-300 hover:border-white/20 !overflow-visible">
           {/* Logo */}
           <Link href="/">
-            <span className="text-base font-bold font-display tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 cursor-pointer hover:opacity-80 transition-opacity">
-              NOVAWEB
-            </span>
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative w-10 h-10 flex items-center justify-center">
+                <img 
+                  src="/assets/logo.png" 
+                  alt="Novaweb Logo" 
+                  className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(6,255,240,0.5)] group-hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+              <span className="text-base font-bold font-display tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 hover:opacity-80 transition-opacity">
+                NOVAWEB
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}

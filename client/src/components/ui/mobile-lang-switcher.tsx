@@ -9,16 +9,20 @@ const LANGS: { code: Lang; label: string; flag: string }[] = [
   { code: "fr", label: "Français", flag: "🇫🇷" },
 ];
 
-export function MobileLangSwitcher() {
+export function MobileLangSwitcher({ isHeader = false }: { isHeader?: boolean }) {
   const { lang, setLang } = useLang();
   const [open, setOpen] = useState(false);
   const current = LANGS.find(l => l.code === lang) ?? LANGS[0];
   
+  const containerClass = isHeader 
+    ? "relative" 
+    : "fixed top-4 right-4 z-[9999] md:hidden";
+
   return (
-    <div className="fixed top-4 right-4 z-[9999] md:hidden">
+    <div className={containerClass}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white shadow-lg active:scale-95 transition-all"
+        className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white shadow-lg active:scale-95 transition-all"
       >
         <Globe className="w-4 h-4 text-primary" />
         <span className="text-xs font-bold uppercase tracking-wider">{current.flag} {current.code}</span>
@@ -30,7 +34,7 @@ export function MobileLangSwitcher() {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute top-12 right-0 bg-[#0d1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[120px]"
+            className={`absolute ${isHeader ? "top-10" : "top-12"} right-0 bg-[#0d1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[120px] z-[200]`}
           >
             {LANGS.map(l => (
               <button
