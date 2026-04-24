@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, Timestamp, getDoc, doc } from "firebase/firestore";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
 
 const DEFAULT_SITE_INFO = {
   location: "Algiers, Algeria",
@@ -50,6 +51,7 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEO title={t("nav_contact")} />
       {/* Hero */}
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-background to-background/50">
         <div className="container mx-auto max-w-4xl">

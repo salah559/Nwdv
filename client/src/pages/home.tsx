@@ -7,6 +7,8 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Project } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
   const { t } = useLang();
@@ -41,6 +43,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen text-foreground overflow-hidden selection:bg-primary/30 relative">
+      <SEO />
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-purple-500 z-[60] origin-left"
@@ -191,11 +194,15 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
             {isLoadingProjects ? (
-              <div className="col-span-1 md:col-span-3 flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
+              Array(3).fill(0).map((_, i) => (
+                <div key={i} className="space-y-4">
+                  <Skeleton className="h-[300px] w-full rounded-2xl bg-white/5" />
+                  <Skeleton className="h-6 w-3/4 bg-white/5" />
+                  <Skeleton className="h-4 w-1/2 bg-white/5" />
+                </div>
+              ))
             ) : projects && projects.length > 0 ? (
               projects.map((project, idx) => (
                 <ProjectCard 
@@ -297,6 +304,7 @@ function ProjectCard({ title, description, image, link, index, t }: { title: str
         <img
           src={image}
           alt={title}
+          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />

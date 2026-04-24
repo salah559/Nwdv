@@ -6,6 +6,8 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query } from "firebase/firestore";
 import { Project } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Projects() {
   const { t } = useLang();
@@ -24,14 +26,12 @@ export default function Projects() {
     }
   });
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Loader2 className="w-10 h-10 animate-spin text-primary" />
-    </div>
-  );
+  // No early return for loading to show skeletons in the main layout
+  const displayProjects = projects || [];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEO title={t("nav_projects")} />
       {/* Hero */}
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-background to-background/50">
         <div className="container mx-auto max-w-5xl">
@@ -54,7 +54,15 @@ export default function Projects() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {(projects ?? []).map((project, idx) => (
+            {isLoading ? (
+              Array(6).fill(0).map((_, i) => (
+                <div key={i} className="space-y-4">
+                  <Skeleton className="h-48 w-full rounded-2xl bg-white/5" />
+                  <Skeleton className="h-6 w-3/4 bg-white/5" />
+                  <Skeleton className="h-4 w-1/2 bg-white/5" />
+                </div>
+              ))
+            ) : displayProjects.map((project, idx) => (
               <motion.div
                 key={project.id ?? idx}
                 initial={{ opacity: 0, y: 20 }}
@@ -70,6 +78,7 @@ export default function Projects() {
                   <img 
                     src={project.image} 
                     alt={project.title}
+                    loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

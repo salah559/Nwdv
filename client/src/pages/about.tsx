@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Users, Target, Rocket, Shield } from "lucide-react";
 import { useLang } from "@/lib/i18n";
+import { SEO } from "@/components/SEO";
 
 export default function About() {
   const { t } = useLang();
@@ -29,6 +30,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
+      <SEO title={t("nav_about")} />
       {/* Background elements */}
       <div className="fixed inset-0 bg-black/40 z-[-10]" />
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 to-transparent z-[-11]" />

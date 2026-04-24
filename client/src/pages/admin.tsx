@@ -62,6 +62,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Project, ContactMessage, AdminSettings } from "@shared/schema";
+import { useLang } from "@/lib/i18n";
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -124,8 +125,8 @@ export default function Admin() {
 
           <Card className="glass border-white/10">
             <CardHeader>
-              <CardTitle>Login</CardTitle>
-              <CardDescription>Protected area for management</CardDescription>
+              <CardTitle>{t("admin_login_title") || "Login"}</CardTitle>
+              <CardDescription>{t("admin_login_sub") || "Protected area for management"}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-4">
@@ -140,7 +141,7 @@ export default function Admin() {
                   />
                 </div>
                 <Button type="submit" className="w-full uppercase font-bold tracking-widest">
-                  Unlock Dashboard <Unlock className="ml-2 w-4 h-4" />
+                  {t("admin_login_btn") || "Unlock Dashboard"} <Unlock className="ml-2 w-4 h-4" />
                 </Button>
               </form>
             </CardContent>
@@ -157,11 +158,11 @@ export default function Admin() {
       <div className="container mx-auto max-w-7xl pt-32 pb-20 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
           <div>
-            <h1 className="text-5xl font-display font-bold">Admin <span className="text-primary">Panel</span></h1>
-            <p className="text-muted-foreground mt-2">Manage your projects and communications</p>
+            <h1 className="text-5xl font-display font-bold">{t("admin_panel") || "Admin"} <span className="text-primary">{t("admin_panel_accent") || "Panel"}</span></h1>
+            <p className="text-muted-foreground mt-2">{t("admin_panel_sub") || "Manage your projects and communications"}</p>
           </div>
           <Button variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={handleLogout}>
-            Logout
+            {t("admin_logout") || "Logout"}
           </Button>
         </div>
 
@@ -197,13 +198,13 @@ function AdminTabs({ queryClient, onUpdatePassword }: { queryClient: any; onUpda
     <Tabs defaultValue="dashboard" className="space-y-8">
       <TabsList className="bg-white/5 border border-white/10 h-14 p-1 rounded-xl flex-wrap gap-1">
         <TabsTrigger value="dashboard" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
+          <LayoutDashboard className="w-4 h-4 mr-2" /> {t("admin_dashboard")}
         </TabsTrigger>
         <TabsTrigger value="projects" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <FolderPlus className="w-4 h-4 mr-2" /> Projects
+          <FolderPlus className="w-4 h-4 mr-2" /> {t("admin_projects")}
         </TabsTrigger>
         <TabsTrigger value="messages" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground relative">
-          <MessageSquare className="w-4 h-4 mr-2" /> Messages
+          <MessageSquare className="w-4 h-4 mr-2" /> {t("admin_messages")}
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-primary text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
               {unreadCount}
@@ -211,7 +212,7 @@ function AdminTabs({ queryClient, onUpdatePassword }: { queryClient: any; onUpda
           )}
         </TabsTrigger>
         <TabsTrigger value="settings" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <Settings className="w-4 h-4 mr-2" /> Settings
+          <Settings className="w-4 h-4 mr-2" /> {t("admin_settings")}
         </TabsTrigger>
       </TabsList>
 
@@ -249,7 +250,7 @@ function DashboardTab({ projects, messages, unreadCount }: { projects: Project[]
                 <FolderPlus className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Projects</p>
+                <p className="text-sm text-muted-foreground">{t("admin_total_projects")}</p>
                 <p className="text-4xl font-bold">{projects.length}</p>
               </div>
             </CardContent>
@@ -263,7 +264,7 @@ function DashboardTab({ projects, messages, unreadCount }: { projects: Project[]
                 <MessageSquare className="w-7 h-7 text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Messages</p>
+                <p className="text-sm text-muted-foreground">{t("admin_total_messages")}</p>
                 <p className="text-4xl font-bold">{messages.length}</p>
               </div>
             </CardContent>
@@ -277,7 +278,7 @@ function DashboardTab({ projects, messages, unreadCount }: { projects: Project[]
                 <MessageSquare className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Unread Messages</p>
+                <p className="text-sm text-muted-foreground">{t("admin_unread_messages")}</p>
                 <p className="text-4xl font-bold text-primary">{unreadCount}</p>
               </div>
             </CardContent>
@@ -287,7 +288,7 @@ function DashboardTab({ projects, messages, unreadCount }: { projects: Project[]
 
       {/* Recent Messages */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">Recent Messages</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("admin_recent_messages")}</h2>
         {recentMessages.length === 0 ? (
           <Card className="glass border-white/5">
             <CardContent className="py-12 text-center text-muted-foreground">No messages yet.</CardContent>
@@ -334,10 +335,10 @@ function ProjectsTab({ projects, queryClient }: { projects?: Project[]; queryCli
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Manage Portfolio</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">{t("admin_manage_portfolio")}</h2>
         <Button onClick={() => setIsAddOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Project
+          <Plus className="w-4 h-4" /> {t("admin_add_project")}
         </Button>
       </div>
 
@@ -437,7 +438,7 @@ function ProjectDialog({ open, onOpenChange, initialData, queryClient }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass border-white/20 text-white max-w-lg">
         <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Project" : "Add New Project"}</DialogTitle>
+          <DialogTitle>{initialData ? t("admin_edit_project") : t("admin_add_project")}</DialogTitle>
           <DialogDescription>Fill in project details. All fields are required.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
@@ -529,8 +530,8 @@ function MessagesTab({ messages, queryClient }: { messages?: ContactMessage[]; q
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">User Inquiries</h2>
-        <span className="text-sm text-muted-foreground">{messages?.length ?? 0} total messages</span>
+        <h2 className="text-2xl font-bold">{t("admin_user_inquiries")}</h2>
+        <span className="text-sm text-muted-foreground">{messages?.length ?? 0} {t("admin_total_msg")}</span>
       </div>
 
       <div className="space-y-4">
@@ -649,9 +650,9 @@ function SettingsTab({ onUpdatePassword }: { onUpdatePassword: (pass: string) =>
         <div className="bg-cyan-500/20 h-2" />
         <CardHeader>
           <CardTitle className="text-2xl flex items-center gap-2">
-            <Globe className="w-6 h-6 text-primary" /> Contact Page Info
+            <Globe className="w-6 h-6 text-primary" /> {t("admin_contact_page_info")}
           </CardTitle>
-          <CardDescription>Edit the information displayed on the Contact Us page</CardDescription>
+          <CardDescription>{t("admin_contact_page_desc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleUpdateSiteInfo} className="space-y-4">
