@@ -174,6 +174,7 @@ export default function Admin() {
 }
 
 function AdminTabs({ queryClient, onUpdatePassword }: { queryClient: any; onUpdatePassword: (p: string) => void }) {
+  const { t } = useLang();
   // Fetch counts for badges
   const { data: messages } = useQuery({
     queryKey: ["messages"],
@@ -238,6 +239,7 @@ function AdminTabs({ queryClient, onUpdatePassword }: { queryClient: any; onUpda
 
 // --- DASHBOARD ---
 function DashboardTab({ projects, messages, unreadCount }: { projects: Project[]; messages: ContactMessage[]; unreadCount: number }) {
+  const { t } = useLang();
   const recentMessages = messages.slice(0, 5);
 
   return (
@@ -321,6 +323,7 @@ function DashboardTab({ projects, messages, unreadCount }: { projects: Project[]
 
 // --- PROJECTS ---
 function ProjectsTab({ projects, queryClient }: { projects?: Project[]; queryClient: any }) {
+  const { t } = useLang();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
@@ -397,6 +400,7 @@ function ProjectDialog({ open, onOpenChange, initialData, queryClient }: {
   initialData?: Project;
   queryClient: any;
 }) {
+  const { t } = useLang();
   const [formData, setFormData] = useState<Partial<Project>>({
     title: "", description: "", type: "", image: "", link: "", isFavorite: false,
   });
@@ -511,6 +515,7 @@ function ProjectDialog({ open, onOpenChange, initialData, queryClient }: {
 
 // --- MESSAGES ---
 function MessagesTab({ messages, queryClient }: { messages?: ContactMessage[]; queryClient: any }) {
+  const { t } = useLang();
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       await updateDoc(doc(db, "messages", id), { status });
@@ -588,6 +593,7 @@ function MessagesTab({ messages, queryClient }: { messages?: ContactMessage[]; q
 
 // --- SETTINGS ---
 function SettingsTab({ onUpdatePassword }: { onUpdatePassword: (pass: string) => void }) {
+  const { t } = useLang();
   const [newCode, setNewCode] = useState("");
   const [isCodeLoading, setIsCodeLoading] = useState(false);
 
