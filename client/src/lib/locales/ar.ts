@@ -42,7 +42,7 @@ export const ar = {
   contact_h1: "تواصل", contact_h1_accent: "معنا", contact_sub: "أخبرنا عن مشروعك — عادةً ما نرد خلال 24 ساعة.",
   contact_name: "اسمك", contact_email: "بريدك الإلكتروني", contact_message: "الرسالة", contact_send: "إرسال الرسالة", contact_sending: "جارٍ الإرسال...",
   contact_info_title: "معلومات التواصل", contact_location: "الموقع", contact_whatsapp: "تواصل عبر واتساب",
-  admin_login_title: "دخول الإدارة", admin_login_sub: "أدخل رمز الأمان للمتابعة", admin_login_btn: "فتح لوحة التحكم",
+  admin_login_title: "دخول الإدارة", admin_login_sub: "أدخل رمز الأمان للمتابعة", admin_login_btn: "فتح لوحة التحكم", admin_enter_code: "أدخل رمز الأمان",
   admin_dashboard: "لوحة التحكم", admin_projects: "المشاريع", admin_messages: "الرسائل", admin_settings: "الإعدادات",
   admin_logout: "تسجيل الخروج", admin_panel: "لوحة", admin_panel_accent: "التحكم", admin_panel_sub: "إدارة مشاريعك واتصالاتك",
   admin_total_projects: "إجمالي المشاريع", admin_total_messages: "إجمالي الرسائل", admin_unread_messages: "رسائل غير مقروءة",

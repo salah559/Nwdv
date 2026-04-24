@@ -42,7 +42,7 @@ export const fr = {
   contact_h1: "Contactez", contact_h1_accent: "nous", contact_sub: "Parlez-nous de votre projet — nous répondons généralement dans les 24 heures.",
   contact_name: "Votre nom", contact_email: "Votre email", contact_message: "Message", contact_send: "Envoyer le message", contact_sending: "Envoi en cours...",
   contact_info_title: "Nos contacts", contact_location: "Localisation", contact_whatsapp: "Discuter sur WhatsApp",
-  admin_login_title: "Accès Admin", admin_login_sub: "Entrez votre code de sécurité pour continuer", admin_login_btn: "Déverrouiller le tableau de bord",
+  admin_login_title: "Accès Admin", admin_login_sub: "Entrez le code de sécurité pour continuer", admin_login_btn: "Déverrouiller le tableau de bord", admin_enter_code: "Entrez le code de sécurité",
   admin_dashboard: "Tableau de bord", admin_projects: "Projets", admin_messages: "Messages", admin_settings: "Paramètres",
   admin_logout: "Déconnexion", admin_panel: "Panneau", admin_panel_accent: "d'administration", admin_panel_sub: "Gérez vos projets et communications",
   admin_total_projects: "Total Projets", admin_total_messages: "Total Messages", admin_unread_messages: "Messages non lus",

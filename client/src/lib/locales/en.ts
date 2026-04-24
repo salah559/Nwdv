@@ -42,7 +42,7 @@ export const en = {
   contact_h1: "Contact", contact_h1_accent: "Us", contact_sub: "Tell us about your project — we usually reply within 24 hours.",
   contact_name: "Your Name", contact_email: "Your Email", contact_message: "Message", contact_send: "Send Message", contact_sending: "Sending...",
   contact_info_title: "Our Contacts", contact_location: "Location", contact_whatsapp: "Chat on WhatsApp",
-  admin_login_title: "Admin Access", admin_login_sub: "Enter your security code to continue", admin_login_btn: "Unlock Dashboard",
+  admin_login_title: "Admin Login", admin_login_sub: "Enter security code to continue", admin_login_btn: "Unlock Dashboard", admin_enter_code: "Enter security code",
   admin_dashboard: "Dashboard", admin_projects: "Projects", admin_messages: "Messages", admin_settings: "Settings",
   admin_logout: "Logout", admin_panel: "Admin", admin_panel_accent: "Panel", admin_panel_sub: "Manage your projects and communications",
   admin_total_projects: "Total Projects", admin_total_messages: "Total Messages", admin_unread_messages: "Unread Messages",

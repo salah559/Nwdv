@@ -65,6 +65,7 @@ import { Project, ContactMessage, AdminSettings } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
 
 export default function Admin() {
+  const { t } = useLang();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const queryClient = useQueryClient();
@@ -119,8 +120,8 @@ export default function Admin() {
             <div className="inline-flex p-4 rounded-2xl bg-primary/10 mb-4">
               <Lock className="w-12 h-12 text-primary" />
             </div>
-            <h1 className="text-4xl font-display font-bold mb-2">Admin Access</h1>
-            <p className="text-muted-foreground">Enter your security code to continue</p>
+            <h1 className="text-4xl font-display font-bold mb-2">{t("admin_login_title") || "Admin Access"}</h1>
+            <p className="text-muted-foreground">{t("admin_login_sub") || "Enter your security code to continue"}</p>
           </div>
 
           <Card className="glass border-white/10">
@@ -133,7 +134,7 @@ export default function Admin() {
                 <div className="space-y-2">
                   <Input
                     type="password"
-                    placeholder="Enter security code"
+                    placeholder={t("admin_enter_code") || "Enter security code"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="bg-white/5 border-white/10"
