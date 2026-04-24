@@ -13,7 +13,7 @@ import About from "@/pages/about";
 import Admin from "@/pages/admin";
 import Pricing from "@/pages/pricing";
 import { LangProvider } from "@/lib/i18n";
-import { MobileHeader } from "@/components/ui/mobile-header";
+import { MobileLangSwitcher } from "@/components/ui/mobile-lang-switcher";
 import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 
 function Router() {
@@ -37,11 +37,11 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Navbar />
-          <MobileHeader />
-          <div className="pb-24 pt-20 md:pt-0 md:pb-0">
+          <div className="pb-24 md:pb-0">
             <Router />
           </div>
           <WhatsAppButton />
+          <MobileLangSwitcher />
           <BottomNav />
         </TooltipProvider>
       </QueryClientProvider>
