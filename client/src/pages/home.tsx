@@ -324,6 +324,3 @@ function ProjectCard({ title, description, image, link, index, t }: { title: str
     </motion.div>
   );
 }
-.div>
-  );
-}
