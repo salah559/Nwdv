@@ -1,57 +1,57 @@
-import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 
 export default function Pricing() {
+  const { t } = useLang();
+  
   const pricingPlans = [
     {
-      title: "Portfolio",
+      title: t("plan1_title"),
       price: "7,000",
-      description: "Perfect for showcase websites and portfolios",
+      description: t("plan1_desc"),
       features: [
-        "Responsive Design",
-        "Contact Form",
-        "SEO Optimized",
-        "Fast Loading",
-        "Mobile Friendly",
+        t("plan1_f1"),
+        t("plan1_f2"),
+        t("plan1_f3"),
+        t("plan1_f4"),
+        t("plan1_f5"),
       ],
     },
     {
-      title: "Store Website",
+      title: t("plan2_title"),
       price: "17,000 - 25,000",
-      description: "E-commerce solution for online selling",
+      description: t("plan2_desc"),
       features: [
-        "Product Catalog",
-        "Shopping Cart",
-        "Payment Integration",
-        "Inventory Management",
-        "Customer Dashboard",
-        "Order Tracking",
+        t("plan2_f1"),
+        t("plan2_f2"),
+        t("plan2_f3"),
+        t("plan2_f4"),
+        t("plan2_f5"),
+        t("plan2_f6"),
       ],
       featured: true,
     },
     {
-      title: "Grand Business Website + App",
+      title: t("plan3_title"),
       price: "35,000 - 400,000",
-      description: "Complete business solution with web and mobile app",
+      description: t("plan3_desc"),
       features: [
-        "Custom Design",
-        "Web Application",
-        "Mobile App (iOS/Android)",
-        "Advanced Features",
-        "API Integration",
-        "Analytics Dashboard",
-        "Dedicated Support",
-        "Hosting & Maintenance",
+        t("plan3_f1"),
+        t("plan3_f2"),
+        t("plan3_f3"),
+        t("plan3_f4"),
+        t("plan3_f5"),
+        t("plan3_f6"),
+        t("plan3_f7"),
+        t("plan3_f8"),
       ],
     },
   ];
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
-      <Navbar />
-      
       {/* Background elements */}
       <div className="fixed inset-0 bg-black/40 z-[-10]" />
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 to-transparent z-[-11]" />
@@ -65,10 +65,10 @@ export default function Pricing() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">
-              Transparent <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Pricing</span>
+              {t("pricing_h1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">{t("pricing_h1_accent")}</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Choose the perfect plan for your business needs. All prices in DA (Algerian Dinar).
+              {t("pricing_sub")}
             </p>
           </motion.div>
         </div>
@@ -93,7 +93,7 @@ export default function Pricing() {
               >
                 {plan.featured && (
                   <div className="inline-block px-3 py-1 mb-4 bg-primary/20 border border-primary/50 rounded-full">
-                    <span className="text-xs font-bold text-primary uppercase tracking-widest">Most Popular</span>
+                    <span className="text-xs font-bold text-primary uppercase tracking-widest">{t("pricing_popular")}</span>
                   </div>
                 )}
                 <h3 className="text-3xl font-display font-bold mb-2 text-white">{plan.title}</h3>
@@ -112,7 +112,7 @@ export default function Pricing() {
                   }`}
                   onClick={() => window.open('https://wa.me/213663699433', '_blank')}
                 >
-                  Get Started
+                  {t("pricing_getstarted")}
                 </Button>
 
                 <ul className="space-y-4">
@@ -134,27 +134,27 @@ export default function Pricing() {
         <div className="container mx-auto max-w-3xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-display font-bold mb-4 text-white">
-              Frequently Asked <span className="text-primary">Questions</span>
+              {t("pricing_faq_h2")} <span className="text-primary">{t("pricing_faq_accent")}</span>
             </h2>
           </div>
 
           <div className="space-y-6">
             {[
               {
-                q: "هل يمكن تخصيص الأسعار؟",
-                a: "نعم، الأسعار المذكورة هي الأسعار الأساسية. يمكننا تخصيص الحزم حسب احتياجاتك الخاصة.",
+                q: t("faq_q1"),
+                a: t("faq_a1"),
               },
               {
-                q: "كم وقت يستغرق المشروع؟",
-                a: "عادة ما يستغرق: Portfolio 1-2 أسبوع، Store 2-3 أسابيع، Grand Business 1-2 أشهر.",
+                q: t("faq_q2"),
+                a: t("faq_a2"),
               },
               {
-                q: "هل توفرون الدعم بعد الإطلاق؟",
-                a: "نعم، نوفر دعم تقني كامل وصيانة دورية حسب نوع الحزمة.",
+                q: t("faq_q3"),
+                a: t("faq_a3"),
               },
               {
-                q: "ما طرق الدفع المتاحة؟",
-                a: "نقبل التحويل البنكي والدفع الإلكتروني وطرق دفع أخرى متعددة.",
+                q: t("faq_q4"),
+                a: t("faq_a4"),
               },
             ].map((item, idx) => (
               <motion.div
@@ -179,17 +179,17 @@ export default function Pricing() {
         
         <div className="container mx-auto max-w-2xl relative text-center">
           <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
-            Ready to get started?
+            {t("pricing_cta_h2")}
           </h2>
           <p className="text-lg text-gray-300 mb-8">
-            Contact us today for a free consultation about your project.
+            {t("pricing_cta_sub")}
           </p>
           <Button 
             size="lg" 
             className="bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest px-8"
-            onClick={() => window.open('https://wa.me/213663699433?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%AA%D8%B7%D9%88%D9%8A%D8%B1%20%D8%A7%D9%84%D9%85%D9%88%D8%A7%D9%82%D8%B9', '_blank')}
+            onClick={() => window.open('https://wa.me/213663699433?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%AA%D8%B7%D9%88%D9%8I%D8%B1%20%D8%A7%D9%84%D9%85%D9%88%D8%A7%D9%82%D8%B9', '_blank')}
           >
-            Contact Us on WhatsApp
+            {t("pricing_cta_btn")}
           </Button>
         </div>
       </section>

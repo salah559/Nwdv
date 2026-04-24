@@ -1,35 +1,34 @@
-import { Navbar } from "@/components/ui/navbar";
 import { motion } from "framer-motion";
 import { Users, Target, Rocket, Shield } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 
 export default function About() {
+  const { t } = useLang();
   const features = [
     {
       icon: <Users className="w-8 h-8 text-primary" />,
-      title: "Expert Team",
-      description: "Dedicated developers and designers with years of experience in modern web technologies."
+      title: t("about_f1_title"),
+      description: t("about_f1_desc")
     },
     {
       icon: <Target className="w-8 h-8 text-primary" />,
-      title: "Our Mission",
-      description: "To empower businesses through innovative digital solutions and exceptional web experiences."
+      title: t("about_f2_title"),
+      description: t("about_f2_desc")
     },
     {
       icon: <Rocket className="w-8 h-8 text-primary" />,
-      title: "Fast Delivery",
-      description: "We value your time, delivering high-quality websites in the shortest time possible."
+      title: t("about_f3_title"),
+      description: t("about_f3_desc")
     },
     {
       icon: <Shield className="w-8 h-8 text-primary" />,
-      title: "Quality First",
-      description: "No compromises on performance, security, or design quality in any project."
+      title: t("about_f4_title"),
+      description: t("about_f4_desc")
     }
   ];
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
-      <Navbar />
-      
       {/* Background elements */}
       <div className="fixed inset-0 bg-black/40 z-[-10]" />
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 to-transparent z-[-11]" />
@@ -43,10 +42,10 @@ export default function About() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">
-              About <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Novaweb</span>
+              {t("about_h1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Novaweb</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We are a forward-thinking digital agency specializing in creating high-performance web experiences that drive business growth.
+              {t("about_sub")}
             </p>
           </motion.div>
         </div>
@@ -56,7 +55,7 @@ export default function About() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-display font-bold mb-4 text-white">Our Experts</h2>
+            <h2 className="text-4xl font-display font-bold mb-4 text-white">{t("about_team")}</h2>
             <div className="w-20 h-1 bg-primary mx-auto mb-12" />
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -65,7 +64,7 @@ export default function About() {
               transition={{ duration: 0.7 }}
               className="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto glass-panel p-8 rounded-3xl border border-white/10"
             >
-              We are a leading digital agency, creating high-performance web experiences designed specifically to drive your business growth and increase revenue, with a focus on delivering tangible results and sustainable success for your company.
+              {t("about_sub")}
             </motion.p>
           </div>
 
@@ -89,4 +88,4 @@ export default function About() {
       </section>
     </div>
   );
-}
+}

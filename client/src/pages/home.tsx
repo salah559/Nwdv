@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring } from "framer-motion";
 import { ArrowRight, ExternalLink, Loader2 } from "lucide-react";
@@ -7,8 +6,10 @@ import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Project } from "@shared/schema";
+import { useLang } from "@/lib/i18n";
 
 export default function Home() {
+  const { t } = useLang();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -60,8 +61,6 @@ export default function Home() {
       {/* Optional: Dark Overlay to ensure text readability */}
       <div className="fixed inset-0 bg-black/40 z-[-19]" />
       
-      <Navbar />
-      
       {/* Hero Section */}
       <section 
         className="relative h-screen w-full flex items-center justify-center overflow-hidden"
@@ -78,27 +77,27 @@ export default function Home() {
           >
             <div className="inline-block px-3 py-1 mb-4 border border-primary/30 rounded-full bg-primary/10">
               <span className="text-xs font-ui font-bold tracking-[0.2em] text-primary uppercase">
-                Digital Excellence
+                {t("hero_badge")}
               </span>
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.2] mb-6">
               <div className="inline-block px-2 rounded max-w-full">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60 drop-shadow-2xl break-words">
-                  Your success deserves
+                  {t("hero_h1a")}
                 </span>
               </div>
               <br className="hidden sm:block" />
               <div className="inline-block px-2 rounded mt-2 max-w-full">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-cyan-300 to-blue-500 drop-shadow-[0_0_15px_rgba(6,255,240,0.5)] break-words">
-                  to be measured digitally
+                  {t("hero_h1b")}
                 </span>
               </div>
             </h1>
             
             <div className="inline-block px-2 rounded mb-12 max-w-full">
               <p className="text-base sm:text-xl md:text-2xl text-gray-300 font-light leading-relaxed max-w-2xl drop-shadow-md break-words">
-                We build high-performance design systems and digital experiences that drive growth through technical excellence.
+                {t("hero_sub")}
               </p>
             </div>
             
@@ -110,7 +109,7 @@ export default function Home() {
                   setLocation("/contact");
                 }}
               >
-                Get Your Website <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                {t("hero_cta_get")} <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
                 size="lg" 
@@ -121,7 +120,7 @@ export default function Home() {
                   if (element) element.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                View Projects
+                {t("hero_cta_view")}
               </Button>
             </div>
           </motion.div>
@@ -134,7 +133,7 @@ export default function Home() {
           transition={{ delay: 1, duration: 1 }}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted-foreground"
         >
-          <span className="text-[10px] uppercase tracking-[0.3em] font-ui">Scroll</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] font-ui">{t("hero_scroll")}</span>
           <div className="w-[1px] h-12 bg-gradient-to-b from-primary to-transparent animate-bounce" />
         </motion.div>
       </section>
@@ -145,12 +144,12 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
             <div>
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
-                What we <span className="text-primary">do</span>
+                {t("services_title")} <span className="text-primary">{t("services_title_accent")}</span>
               </h2>
               <div className="w-20 h-1 bg-primary" />
             </div>
             <p className="max-w-md text-muted-foreground">
-              Design and development services tailored to your business goals.
+              {t("services_sub")}
             </p>
           </div>
 
@@ -158,20 +157,20 @@ export default function Home() {
             <ServiceCard 
               index={0}
               emoji="💻"
-              title="Web Design"
-              description="Pixel-perfect UI, component libraries, and accessible interfaces."
+              title={t("service1_title")}
+              description={t("service1_desc")}
             />
             <ServiceCard 
               index={1}
               emoji="⚙️"
-              title="Web Development"
-              description="Scalable, maintainable code, optimized for performance."
+              title={t("service2_title")}
+              description={t("service2_desc")}
             />
             <ServiceCard 
               index={2}
               emoji="🚀"
-              title="SEO & Performance"
-              description="Speed, structure, and basics to improve discoverability."
+              title={t("service3_title")}
+              description={t("service3_desc")}
             />
           </div>
         </div>
@@ -183,12 +182,12 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
             <div>
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
-                Selected <span className="text-primary">projects</span>
+                {t("projects_title")} <span className="text-primary">{t("projects_title_accent")}</span>
               </h2>
               <div className="w-20 h-1 bg-primary" />
             </div>
             <p className="max-w-md text-muted-foreground">
-              Demo websites — our clients get more professional sites with custom domain and professional hosting.
+              {t("projects_sub")}
             </p>
           </div>
 
@@ -206,6 +205,7 @@ export default function Home() {
                   description={project.description}
                   image={project.image}
                   link={project.link}
+                  t={t}
                 />
               ))
             ) : (
@@ -225,10 +225,10 @@ export default function Home() {
         <div className="container mx-auto px-4 relative">
           <div className="glass-panel p-12 md:p-24 rounded-2xl border border-white/10 text-center max-w-4xl mx-auto">
             <h2 className="text-4xl md:text-6xl font-display font-bold mb-8">
-              Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">start your project?</span>
+              {t("cta_h2a")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">{t("cta_h2b")}</span>
             </h2>
             <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Get your website in the shortest time with the highest professionalism and lowest prices.
+              {t("cta_sub")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -236,7 +236,7 @@ export default function Home() {
                 className="bg-white text-black hover:bg-gray-200 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg relative overflow-hidden"
                 onClick={() => setLocation("/contact")}
               >
-                Let's Talk
+                {t("cta_talk")}
               </Button>
               <Button 
                 size="lg" 
@@ -244,7 +244,7 @@ export default function Home() {
                 className="border-white/20 text-white hover:bg-white/10 font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg"
                 onClick={() => window.open('https://wa.me/213663699433?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%AA%D8%B7%D9%88%D9%8A%D8%B1%20%D8%A7%D9%84%D9%85%D9%88%D8%A7%D9%82%D8%B9', '_blank')}
               >
-                Chat on WhatsApp
+                {t("cta_whatsapp")}
               </Button>
             </div>
           </div>
@@ -281,7 +281,7 @@ function ServiceCard({ emoji, title, description, index }: { emoji: string, titl
   );
 }
 
-function ProjectCard({ title, description, image, link, index }: { title: string, description: string, image: string, link: string, index: number }) {
+function ProjectCard({ title, description, image, link, index, t }: { title: string, description: string, image: string, link: string, index: number, t: any }) {
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -317,10 +317,13 @@ function ProjectCard({ title, description, image, link, index }: { title: string
           </div>
           <p className="text-sm text-gray-500 mb-6 leading-relaxed line-clamp-2">{description}</p>
           <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 border border-primary/30 rounded-xl text-sm font-ui font-bold text-primary uppercase tracking-widest group-hover:bg-primary group-hover:text-black group-hover:shadow-[0_0_20px_rgba(6,255,240,0.4)] transition-all duration-300">
-            Visit Project →
+            {t("project_explore")}
           </div>
         </div>
       </div>
     </motion.div>
+  );
+}
+.div>
   );
 }

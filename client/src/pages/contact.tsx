@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/ui/navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
@@ -6,6 +5,7 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, Timestamp, getDoc, doc } from "firebase/firestore";
 import { toast } from "sonner";
+import { useLang } from "@/lib/i18n";
 
 const DEFAULT_SITE_INFO = {
   location: "Algiers, Algeria",
@@ -16,6 +16,7 @@ const DEFAULT_SITE_INFO = {
 };
 
 export default function Contact() {
+  const { t } = useLang();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [siteInfo, setSiteInfo] = useState(DEFAULT_SITE_INFO);
@@ -49,8 +50,6 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
-      
       {/* Hero */}
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-background to-background/50">
         <div className="container mx-auto max-w-4xl">
@@ -60,10 +59,10 @@ export default function Contact() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">
-              Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Us</span>
+              {t("contact_h1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">{t("contact_h1_accent")}</span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Tell us about your project — we usually reply within 24 hours.
+              {t("contact_sub")}
             </p>
           </motion.div>
         </div>
@@ -81,39 +80,39 @@ export default function Contact() {
             >
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-ui font-bold mb-2 uppercase tracking-wide">Your Name</label>
+                  <label className="block text-sm font-ui font-bold mb-2 uppercase tracking-wide">{t("contact_name")}</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none transition-colors"
-                    placeholder="John Doe"
+                    placeholder={t("contact_name")}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-ui font-bold mb-2 uppercase tracking-wide">Your Email</label>
+                  <label className="block text-sm font-ui font-bold mb-2 uppercase tracking-wide">{t("contact_email")}</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none transition-colors"
-                    placeholder="john@example.com"
+                    placeholder={t("contact_email")}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-ui font-bold mb-2 uppercase tracking-wide">Message</label>
+                  <label className="block text-sm font-ui font-bold mb-2 uppercase tracking-wide">{t("contact_message")}</label>
                   <textarea
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-primary focus:outline-none transition-colors resize-none h-32"
-                    placeholder="Tell us about your project..."
+                    placeholder={t("contact_message")}
                     required
                   />
                 </div>
                 <Button type="submit" size="lg" disabled={isLoading} className="w-full bg-primary text-black hover:bg-cyan-400 font-ui font-bold uppercase tracking-widest disabled:opacity-50">
-                  {isLoading ? "Sending..." : "Send Message"}
+                  {isLoading ? t("contact_sending") : t("contact_send")}
                 </Button>
               </form>
             </motion.div>
@@ -126,12 +125,12 @@ export default function Contact() {
               className="space-y-8"
             >
               <div className="glass-panel p-8 rounded-2xl border border-white/10">
-                <h3 className="text-3xl font-display font-bold mb-8">Our Contacts</h3>
+                <h3 className="text-3xl font-display font-bold mb-8">{t("contact_info_title")}</h3>
                 <div className="space-y-6">
                   <div className="flex gap-4">
                     <MapPin className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
-                      <h4 className="font-bold text-lg mb-1">Location</h4>
+                      <h4 className="font-bold text-lg mb-1">{t("contact_location")}</h4>
                       <p className="text-gray-400">{siteInfo.location}</p>
                     </div>
                   </div>
@@ -163,7 +162,7 @@ export default function Contact() {
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-ui font-bold uppercase tracking-widest h-16 rounded-xl btn-pulse"
                 onClick={() => window.open(`https://wa.me/${siteInfo.phoneRaw}?text=${encodeURIComponent(siteInfo.whatsappMessage)}`, '_blank')}
               >
-                Chat on WhatsApp
+                {t("contact_whatsapp")}
               </Button>
             </motion.div>
           </div>
@@ -171,4 +170,4 @@ export default function Contact() {
       </section>
     </div>
   );
-}
+}
