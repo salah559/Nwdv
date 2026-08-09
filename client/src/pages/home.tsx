@@ -167,7 +167,7 @@ export default function Home() {
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
           >
             <ServiceCard 
