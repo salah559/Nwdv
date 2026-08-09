@@ -54,6 +54,36 @@ export default function About() {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="pb-12 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 p-8 glass-panel rounded-3xl border border-white/10 text-center"
+          >
+            <motion.div variants={staggerItem} className="p-4">
+              <div className="text-4xl md:text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-cyan-300 mb-2">50+</div>
+              <div className="text-xs md:text-sm text-gray-400 font-ui font-semibold uppercase tracking-wider">Completed Projects</div>
+            </motion.div>
+            <motion.div variants={staggerItem} className="p-4">
+              <div className="text-4xl md:text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 mb-2">99%</div>
+              <div className="text-xs md:text-sm text-gray-400 font-ui font-semibold uppercase tracking-wider">Client Satisfaction</div>
+            </motion.div>
+            <motion.div variants={staggerItem} className="p-4">
+              <div className="text-4xl md:text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-2">5+</div>
+              <div className="text-xs md:text-sm text-gray-400 font-ui font-semibold uppercase tracking-wider">Years Experience</div>
+            </motion.div>
+            <motion.div variants={staggerItem} className="p-4">
+              <div className="text-4xl md:text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-primary mb-2">24/7</div>
+              <div className="text-xs md:text-sm text-gray-400 font-ui font-semibold uppercase tracking-wider">Fast Support</div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Team Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-5xl">

@@ -7,7 +7,7 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Project } from "@shared/schema";
 import { useLocation } from "wouter";
-import { fadeInUp } from "@/lib/animations";
+import { SEO } from "@/components/SEO";
 
 interface ProjectDetailProps {
   params: { id: string };
@@ -25,6 +25,7 @@ export default function ProjectDetail({ params }: ProjectDetailProps) {
       return { id: snap.id, ...snap.data() } as Project;
     },
     enabled: !!id,
+    staleTime: 1000 * 60 * 10,
   });
 
   if (isLoading) {
@@ -48,6 +49,11 @@ export default function ProjectDetail({ params }: ProjectDetailProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEO 
+        title={project.title} 
+        description={project.description} 
+        image={project.image} 
+      />
       <Navbar />
 
       {/* Background */}

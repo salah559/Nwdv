@@ -39,7 +39,8 @@ export default function Home() {
           return bTime - aTime;
         })
         .slice(0, 3);
-    }
+    },
+    staleTime: 1000 * 60 * 10,
   });
 
   return (
@@ -56,6 +57,7 @@ export default function Home() {
         loop
         muted
         playsInline
+        preload="metadata"
         poster="/bg-hero-3d.png"
         className="fixed inset-0 w-full h-full object-cover z-[-20] opacity-60 md:opacity-100"
       >

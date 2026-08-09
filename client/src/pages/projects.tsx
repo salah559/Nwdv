@@ -1,6 +1,7 @@
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { ExternalLink, Loader2, ArrowUpRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ExternalLink, Loader2, ArrowUpRight, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query } from "firebase/firestore";
@@ -12,6 +13,7 @@ import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 
 export default function Projects() {
   const { t } = useLang();
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projects"],
@@ -24,17 +26,27 @@ export default function Projects() {
         const bTime = (b.createdAt as any)?.toMillis?.() ?? 0;
         return bTime - aTime;
       });
-    }
+    },
+    staleTime: 1000 * 60 * 10,
   });
 
-  // No early return for loading to show skeletons in the main layout
-  const displayProjects = projects || [];
+  const categories = useMemo(() => {
+    if (!projects) return [];
+    const types = Array.from(new Set(projects.map(p => p.type).filter(Boolean)));
+    return types;
+  }, [projects]);
+
+  const displayProjects = useMemo(() => {
+    if (!projects) return [];
+    if (selectedCategory === "all") return projects;
+    return projects.filter(p => p.type?.toLowerCase() === selectedCategory.toLowerCase());
+  }, [projects, selectedCategory]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO title={t("nav_projects")} />
       {/* Hero */}
-      <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-background to-background/50">
+      <section className="pt-32 pb-12 px-4 bg-gradient-to-b from-background to-background/50">
         <div className="container mx-auto max-w-5xl">
           <motion.div
             variants={fadeInUp}
@@ -51,10 +63,46 @@ export default function Projects() {
         </div>
       </section>
 
-      {/* Projects Grid */}
-      <section className="py-20 px-4">
+      {/* Projects Section */}
+      <section className="pb-20 px-4">
         <div className="container mx-auto max-w-5xl">
+          {/* Category Filter Tabs */}
+          {!isLoading && categories.length > 0 && (
+            <motion.div 
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              className="flex flex-wrap items-center gap-2 mb-12"
+            >
+              <button
+                onClick={() => setSelectedCategory("all")}
+                className={`px-5 py-2.5 rounded-xl text-sm font-ui font-bold transition-all duration-300 ${
+                  selectedCategory === "all"
+                    ? "bg-primary text-black shadow-[0_0_20px_rgba(6,255,240,0.4)]"
+                    : "bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/20"
+                }`}
+              >
+                {t("all") || "All Projects"}
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-ui font-bold capitalize transition-all duration-300 ${
+                    selectedCategory.toLowerCase() === cat.toLowerCase()
+                      ? "bg-primary text-black shadow-[0_0_20px_rgba(6,255,240,0.4)]"
+                      : "bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/20"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Projects Grid */}
           <motion.div 
+            key={selectedCategory}
             variants={staggerContainer}
             initial="hidden"
             animate={!isLoading ? "visible" : "hidden"}
