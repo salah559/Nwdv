@@ -145,7 +145,13 @@ export default function Home() {
       {/* What We Do Section */}
       <section id="services" className="relative py-20 md:py-32 z-10 bg-background/40 backdrop-blur-md border-y border-white/5">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <motion.div 
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6"
+          >
             <div>
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
                 {t("services_title")} <span className="text-primary">{t("services_title_accent")}</span>
@@ -155,7 +161,7 @@ export default function Home() {
             <p className="max-w-md text-muted-foreground">
               {t("services_sub")}
             </p>
-          </div>
+          </motion.div>
 
           <motion.div 
             variants={staggerContainer}
@@ -189,7 +195,13 @@ export default function Home() {
       {/* Selected Projects Section */}
       <section id="projects" className="relative py-20 md:py-32 z-10 bg-background/30 backdrop-blur-sm border-b border-white/5 transition-all duration-700 hover:backdrop-blur-md">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <motion.div 
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6"
+          >
             <div>
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
                 {t("projects_title")} <span className="text-primary">{t("projects_title_accent")}</span>
@@ -199,7 +211,7 @@ export default function Home() {
             <p className="max-w-md text-muted-foreground">
               {t("projects_sub")}
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
             {isLoadingProjects ? (
@@ -236,7 +248,13 @@ export default function Home() {
         <div className="absolute inset-0 bg-primary/5" />
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent blur-3xl" />
         
-        <div className="container mx-auto px-4 relative">
+        <motion.div 
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="container mx-auto px-4 relative"
+        >
           <div className="glass-panel p-12 md:p-24 rounded-2xl border border-white/10 text-center max-w-4xl mx-auto">
             <h2 className="text-4xl md:text-6xl font-display font-bold mb-8">
               {t("cta_h2a")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">{t("cta_h2b")}</span>
@@ -262,7 +280,7 @@ export default function Home() {
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
     </div>
