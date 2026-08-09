@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Users, Target, Rocket, Shield } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { SEO } from "@/components/SEO";
+import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 
 export default function About() {
   const { t } = useLang();
@@ -39,9 +40,9 @@ export default function About() {
       <section className="pt-32 pb-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
           >
             <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">
               {t("about_h1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Novaweb</span>
@@ -60,24 +61,27 @@ export default function About() {
             <h2 className="text-4xl font-display font-bold mb-4 text-white">{t("about_team")}</h2>
             <div className="w-20 h-1 bg-primary mx-auto mb-12" />
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
               className="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto glass-panel p-8 rounded-3xl border border-white/10"
             >
               {t("about_sub")}
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
             {features.map((feature, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
+                variants={staggerItem}
                 className="p-8 glass rounded-2xl border border-white/5 hover:border-primary/50 transition-all"
               >
                 <div className="mb-6">{feature.icon}</div>
@@ -85,7 +89,7 @@ export default function About() {
                 <p className="text-gray-400 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>

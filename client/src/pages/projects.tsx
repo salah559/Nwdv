@@ -8,6 +8,7 @@ import { Project } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
+import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 
 export default function Projects() {
   const { t } = useLang();
@@ -36,9 +37,9 @@ export default function Projects() {
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-background to-background/50">
         <div className="container mx-auto max-w-5xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
           >
             <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">
               {t("projects_page_h1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">{t("projects_page_h1_accent")}</span>
@@ -53,7 +54,12 @@ export default function Projects() {
       {/* Projects Grid */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-5xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
             {isLoading ? (
               Array(6).fill(0).map((_, i) => (
                 <div key={i} className="space-y-4">
@@ -65,10 +71,7 @@ export default function Projects() {
             ) : displayProjects.map((project, idx) => (
               <motion.div
                 key={project.id ?? idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: idx * 0.08 }}
+                variants={staggerItem}
                 whileHover={{ y: -6 }}
                 onClick={() => window.open(project.link, '_blank')}
                 className="group glass rounded-2xl border border-white/5 overflow-hidden hover:border-primary/40 transition-all duration-500 cursor-pointer hover:shadow-[0_20px_60px_rgba(6,255,240,0.1)]"
@@ -118,7 +121,7 @@ export default function Projects() {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 

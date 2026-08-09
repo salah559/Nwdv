@@ -9,6 +9,7 @@ import { Project } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
+import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 
 export default function Home() {
   const { t } = useLang();
@@ -73,9 +74,9 @@ export default function Home() {
       >
         <div className="container relative z-10 px-4 pt-16 flex flex-col items-start justify-center h-full pointer-events-none">
           <motion.div 
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
             className="max-w-3xl pointer-events-auto"
           >
             <div className="inline-block px-3 py-1 mb-4 border border-primary/30 rounded-full bg-primary/10">
@@ -156,7 +157,13 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
             <ServiceCard 
               index={0}
               emoji="💻"
@@ -175,7 +182,7 @@ export default function Home() {
               title={t("service3_title")}
               description={t("service3_desc")}
             />
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -265,10 +272,7 @@ export default function Home() {
 function ServiceCard({ emoji, title, description, index }: { emoji: string, title: string, description: string, index: number }) {
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, delay: index * 0.1 }}
+      variants={staggerItem}
       className={`group p-10 glass rounded-3xl border border-white/5 card-hover cursor-default overflow-hidden relative ${index % 2 === 1 ? 'md:mt-12' : ''}`}
     >
       <div className="absolute top-6 right-8 text-4xl font-display font-bold text-white/5 group-hover:text-primary/10 transition-colors">
@@ -291,10 +295,10 @@ function ServiceCard({ emoji, title, description, index }: { emoji: string, titl
 function ProjectCard({ title, description, image, link, index, t }: { title: string, description: string, image: string, link: string, index: number, t: any }) {
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      variants={staggerItem}
+      initial="hidden"
+      whileInView="visible"
       viewport={{ once: true }}
-      transition={{ duration: 0.8, delay: index * 0.1 }}
       whileHover={{ y: -6 }}
       className={`group glass rounded-3xl border border-white/5 hover:border-primary/40 cursor-pointer relative overflow-hidden transition-all duration-500 hover:shadow-[0_20px_60px_rgba(6,255,240,0.12)] ${index === 1 ? 'md:-translate-y-8' : ''}`}
       onClick={() => window.open(link, '_blank')}

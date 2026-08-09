@@ -7,6 +7,7 @@ import { collection, addDoc, Timestamp, getDoc, doc } from "firebase/firestore";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n";
 import { SEO } from "@/components/SEO";
+import { fadeInUp } from "@/lib/animations";
 
 const DEFAULT_SITE_INFO = {
   location: "Algiers, Algeria",
@@ -56,9 +57,9 @@ export default function Contact() {
       <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-background to-background/50">
         <div className="container mx-auto max-w-4xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
           >
             <h1 className="text-5xl md:text-7xl font-display font-bold mb-6">
               {t("contact_h1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">{t("contact_h1_accent")}</span>
@@ -76,9 +77,10 @@ export default function Contact() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Form */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
             >
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
@@ -121,9 +123,10 @@ export default function Contact() {
 
             {/* Contact Info */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
               className="space-y-8"
             >
               <div className="glass-panel p-8 rounded-2xl border border-white/10">

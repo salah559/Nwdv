@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Project } from "@shared/schema";
 import { useLocation } from "wouter";
+import { fadeInUp } from "@/lib/animations";
 
 interface ProjectDetailProps {
   params: { id: string };
@@ -75,9 +76,9 @@ export default function ProjectDetail({ params }: ProjectDetailProps) {
       <section className="relative z-10 -mt-24 pb-32 px-4">
         <div className="container mx-auto max-w-4xl">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
             className="glass-panel rounded-3xl border border-white/10 p-10 md:p-16"
           >
             {/* Type badge */}
