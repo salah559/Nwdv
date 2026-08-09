@@ -213,7 +213,13 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start"
+          >
             {isLoadingProjects ? (
               Array(3).fill(0).map((_, i) => (
                 <div key={i} className="space-y-4">
@@ -239,7 +245,7 @@ export default function Home() {
                 No featured projects right now.
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -314,9 +320,6 @@ function ProjectCard({ title, description, image, link, index, t }: { title: str
   return (
     <motion.div 
       variants={staggerItem}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
       whileHover={{ y: -6 }}
       className={`group glass rounded-3xl border border-white/5 hover:border-primary/40 cursor-pointer relative overflow-hidden transition-all duration-500 hover:shadow-[0_20px_60px_rgba(6,255,240,0.12)] ${index === 1 ? 'md:-translate-y-8' : ''}`}
       onClick={() => window.open(link, '_blank')}
