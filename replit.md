@@ -2,7 +2,7 @@
 
 ## Overview
 
-Nova Dimensions is a modern web development agency portfolio website featuring immersive 3D experiences. The application showcases demo projects with an emphasis on futuristic, cyberpunk-themed design. Built as a full-stack TypeScript application with React frontend and Express backend, it demonstrates capabilities in 3D web graphics, modern UI design, and responsive layouts.
+Nova Dimensions is a modern web development agency portfolio website featuring immersive 3D experiences. The application showcases selected project websites with an emphasis on futuristic, cyberpunk-themed design. Built as a full-stack TypeScript application with React frontend and Express backend, it demonstrates capabilities in 3D web graphics, modern UI design, and responsive layouts.
 
 ## User Preferences
 
