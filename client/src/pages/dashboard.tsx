@@ -412,7 +412,7 @@ export default function Dashboard() {
                 className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
               >
                 <Palette className="w-4 h-4" />
-                <span>القوالب (34)</span>
+                <span>القوالب (40)</span>
               </TabsTrigger>
 
               <TabsTrigger

@@ -459,65 +459,161 @@ export const TEMPLATES: TemplateDefinition[] = [
   {
     id: "anime-atmosphere",
     name: "Anime Atmosphere",
-    description: "خلفية كينماتيكية أنيمي غامقة مع جسيمات ساكورا المتساقطة، حلقة أفاتار متوهجة، وعناصر يابانية أنيقة. صورة الغلاف تصبح خلفية القالب.",
+    description: "خلفية كينماتيكية سينمائية مستوحاة من Pinterest: سماء ليلية أرجوانية مع قمر متوهج، جبال ضبابية، قطرات مطر سينمائية وبتلات ساكورا متساقطة.",
     isPremium: true,
     priceDZD: 2500,
     category: "diamond",
-    thumbnail: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=600&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
     features: [
-      "خلفية صورة الغلاف كاملة الشاشة",
-      "جسيمات ساكورا متساقطة بـ CSS",
-      "حلقة أفاتار دوارة بألوان متدرجة",
-      "نصوص يابانية وجماليات أنيمي",
-      "تأثيرات توهج بنفسجي وبنكي"
+      "خلفية أنيمي سينمائية ثابتة مستوحاة من Pinterest",
+      "قمر متوهج وغيوم أرجوانية متحركة",
+      "زخات مطر سينمائية وبتلات ساكورا متساقطة",
+      "أفاتار محاط بحلقة نيون دوارة متوهجة",
+      "نصوص وتفاصيل يابانية أنيقة"
+    ]
+  },
+  {
+    id: "cover-hero",
+    name: "Cover Hero (خلفيتك الخاصة)",
+    description: "صورة الغلاف (Cover Photo) التي ترفعها تصبح خلفية القالب بالكامل بجودة فائقة مع تأثير تدرج مظلم وبطاقات زجاجية عائمة.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "صورة الغلاف تصبح الخلفية الحقيقية بالكامل",
+      "تدرج ذكي ليضمن قراءة الروابط بوضوح فائق",
+      "بطاقات زجاجية بلورية Frosted Glass",
+      "أفاتار عائم بتأثير بروز ثلاثي الأبعاد",
+      "تأثيرات Hover ناعمة مع وميض شفاف"
     ]
   },
   {
     id: "aurora-glass",
     name: "Aurora Glass",
-    description: "أورورا دوارة مستوحاة من React Bits مع زجاج حقيقي، أشكال بلوب مشوهة، وتأثير وميض على البطاقات. صورة الغلاف تصبح خلفية القالب.",
+    description: "أورورا دوارة مستوحاة من React Bits مع زجاج حقيقي، أشكال بلوب مشوهة، وتأثير وميض على البطاقات. صورة الغلاف تندمج كخلفية.",
     isPremium: true,
     priceDZD: 2500,
     category: "diamond",
     thumbnail: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=600&q=80",
     features: [
-      "خلفية صورة الغلاف كاملة الشاشة",
-      "أورورا بوريالس دوارة متحركة",
-      "زجاج حقيقي مع backdrop-blur",
-      "أفاتار بشكل بلوب مشوه متحرك",
-      "تأثير وميض على البطاقات عند التحويم"
+      "أورورا بوريالس دوارة حية (React Bits)",
+      "أفاتار يتحول بشكل مائع متواصل (Blob Morph)",
+      "زجاج حقيقي عالي الشفافية مع backdrop-blur",
+      "تأثير Shimmer وميض على البطاقات",
+      "دعم دمج صورة الغلاف في الخلفية"
     ]
   },
   {
     id: "liquid-metal",
     name: "Liquid Metal",
-    description: "جماليات الكروم السائل والبلاتين مع جسيمات عائمة، نص بتدرج معدني، وتألق فضي راقٍ. صورة الغلاف تصبح خلفية القالب.",
+    description: "جماليات الكروم السائل والبلاتين مع جسيمات عائمة، نص بتدرج معدني، وتألق فضي راقٍ مستوحى من أحدث تأثيرات React Bits.",
     isPremium: true,
     priceDZD: 2500,
     category: "diamond",
     thumbnail: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=600&q=80",
     features: [
-      "خلفية صورة الغلاف كاملة الشاشة",
-      "جسيمات كروم عائمة بـ CSS",
-      "نص بتدرج معدني فضي/بلاتيني",
-      "بريق معدني على البطاقات",
-      "تصميم مونوكروم فاخر"
+      "جسيمات كروم عائمة بفيزياء ناعمة",
+      "نص بتدرج معدني بلاتيني متوهج",
+      "بريق معدني وتوهج فاخر على البطاقات",
+      "إطار أفاتار متحرك بتأثير الفضة المصقولة",
+      "طابع مونوكروم فاخر للشخصيات البارزة"
     ]
   },
   {
     id: "cosmic-parallax",
     name: "Cosmic Parallax",
-    description: "فضاء كوني عميق مع سديم متنفس، نجوم متلألئة، حلقة دوارة حول الأفاتار، وموصلات كونستيلايشن بين الروابط. صورة الغلاف كحقل نجوم.",
+    description: "فضاء كوني عميق مع سديم متنفس، نجوم متلألئة، حلقة دوارة حول الأفاتار، وموصلات كوكبية بين الروابط.",
     isPremium: true,
     priceDZD: 2500,
     category: "diamond",
     thumbnail: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=600&q=80",
     features: [
-      "خلفية صورة الغلاف كحقل نجوم",
-      "نجوم متلألئة بـ CSS",
-      "سديم ملون متحرك",
-      "حلقة كونية دوارة حول الأفاتار",
-      "موصلات خطوط كونستيلايشن بين الروابط"
+      "سديم فضائي ينبض حيوية (Cosmic Pulse)",
+      "حقل نجوم متلألئة في الخلفية",
+      "حلقة نيزكية تدور حول الأفاتار",
+      "خطوط وصل كوكبية Constellation بين الروابط",
+      "تأثير ثلاثي الأبعاد عند التمرير"
+    ]
+  },
+  {
+    id: "spotlight-glass",
+    name: "Spotlight Glass",
+    description: "مستوحى من تأثير Spotlight الشهير في React Bits: شعاع ضوء سحري يتحرك ويتفاعل مع البطاقات والزجاج المظلم.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "تأثير Spotlight تفاعلي من React Bits",
+      "شعاع إضاءة إشعاعي ديناميكي",
+      "زجاج إنديجو وبنفسجي فائق الأناقة",
+      "أفاتار محاط بهالة ضوئية تفاعلية",
+      "بطاقات تتوهج عند مرور المؤشر فوقها"
+    ]
+  },
+  {
+    id: "gravity-orbs",
+    name: "Gravity Orbs",
+    description: "تأثير كرات الجاذبية العائمة من React Bits: فقاعات ملونة تطفو بفيزياء الجاذبية في الفضاء المظلم مع شبكة رقمية شفافة.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "كرات عائمة ملونة بفيزياء الجاذبية المائعة",
+      "ألوان متناسقة: فوشيا، بنفسجي، أزرق سماوي، وذهبي",
+      "إطار أفاتار بألوان الطيف المتدرجة",
+      "بطاقات شفافة متناسقة مع ألوان الكرات",
+      "شبكة رقمية خفيفة تضفي عمقاً ثلاثي الأبعاد"
+    ]
+  },
+  {
+    id: "neon-grid",
+    name: "Neon Grid Synth",
+    description: "تصميم سايبرنتك مستوحى من React Bits: شبكة نيون مشعة متحركة، خطوط مسح Scanlines، وألوان الزمرد والسيان المشعة.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "شبكة نيون خضراء/سيان نفاثة تنبض بالحياة",
+      "تأثير خطوط مسح CRT Scanlines كلاسيكي",
+      "أفاتار بإطار مربع نيون متوهج",
+      "نص متوهج بظلال الزمرد والضوء النبضي",
+      "روابط بحدود مشعة وتأثيرات Hover كهربائية"
+    ]
+  },
+  {
+    id: "rose-gold-luxury",
+    name: "Rose Gold Luxury",
+    description: "قالب الذهب الوردي الفاخر: مستوحى من تأثيرات Foil Shimmer في React Bits مع لمعان الرقائق الذهبية وبريق الجسيمات المتلألئة.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1537832816519-689ad163238b?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "تأثير لمعان الرقائق المعدنية Foil Shimmer",
+      "لوحة ألوان الذهب الوردي والشمبانيا واللؤلؤ",
+      "جسيمات ذهبية ناعمة تتلألأ في الخلفية",
+      "خطوط Serif ملكية راقية لعشاق الفخامة",
+      "بطاقات بزجاج نبيذي وردي يعكس الهيبة"
+    ]
+  },
+  {
+    id: "depth-blur",
+    name: "Depth Blur & Bokeh",
+    description: "مستوحى من تأثيرات Depth of Field و Bokeh في React Bits: هالات ضوئية سينمائية عملاقة غير مركزة تمنح إحساساً سينمائياً ناعماً للغاية.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "هالات بوكيه ناعمة تتحرك في الفضاء المظلم",
+      "تأثير عمق المجال السينمائي (Depth of Field)",
+      "بطاقات زجاجية بلورية فائقة النعومة",
+      "إطار أفاتار بهالة إشعاعية واسعة",
+      "تصميم راقٍ ومريح للعين بتركيز على المحتوى"
     ]
   }
 ];
