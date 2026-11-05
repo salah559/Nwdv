@@ -171,11 +171,11 @@ export function PlatformIcon({
   className = "w-5 h-5",
   colored = false 
 }: { 
-  platform: string; 
+  platform?: string; 
   className?: string;
   colored?: boolean;
 }) {
-  const p = platform.toLowerCase();
+  const p = (platform || "website").toLowerCase();
 
   switch (p) {
     case "instagram":

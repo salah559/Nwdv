@@ -6,6 +6,7 @@ import {
   MapPin, 
   Mail, 
   Phone, 
+  MessageCircle,
   ExternalLink,
   Globe, 
   Building2,

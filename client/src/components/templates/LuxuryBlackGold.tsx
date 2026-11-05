@@ -7,6 +7,7 @@ import {
   MapPin, 
   Mail, 
   Phone, 
+  MessageCircle,
   ExternalLink,
   Gem,
   Star,

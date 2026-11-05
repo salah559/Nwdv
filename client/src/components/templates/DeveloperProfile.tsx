@@ -7,6 +7,7 @@ import {
   Globe, 
   Mail, 
   Phone, 
+  MessageCircle,
   ExternalLink,
   Cpu,
   GitBranch,
