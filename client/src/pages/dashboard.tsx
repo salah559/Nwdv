@@ -351,7 +351,7 @@ export default function Dashboard() {
               <span>معاينة حية</span>
             </Button>
 
-            <a href={`/p/${userProfile.username}`} target="_blank" rel="noreferrer">
+            <a href={subdomainUrl} target="_blank" rel="noreferrer">
               <Button
                 size="sm"
                 className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5"
@@ -445,7 +445,7 @@ export default function Dashboard() {
                     <QrCode className="w-3.5 h-3.5 mr-1" />
                     QR Code
                   </Button>
-                  <a href={`/p/${userProfile.username}`} target="_blank" rel="noreferrer" className="flex-1">
+                  <a href={subdomainUrl} target="_blank" rel="noreferrer" className="flex-1">
                     <Button size="sm" className="text-xs w-full bg-cyan-400 text-black font-bold">
                       زيارة
                     </Button>
@@ -1097,19 +1097,19 @@ export default function Dashboard() {
           <div className="flex flex-col items-center gap-4 py-4">
             <div className="p-3 bg-white rounded-2xl shadow-xl shadow-purple-500/10">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://novawebdv.com/p/${userProfile.username}&color=0d1117&bgcolor=ffffff&margin=10`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://${userProfile.username}.novawebdv.com&color=0d1117&bgcolor=ffffff&margin=10`}
                 alt="QR Code"
                 width={250}
                 height={250}
                 className="rounded-lg"
               />
             </div>
-            <p className="text-xs font-mono text-gray-400 dir-ltr" dir="ltr">
-              novawebdv.com/p/{userProfile.username}
+            <p className="text-xs font-mono text-cyan-400 dir-ltr font-semibold" dir="ltr">
+              {userProfile.username}.novawebdv.com
             </p>
             <div className="flex gap-3 w-full">
               <a
-                href={`https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=https://novawebdv.com/p/${userProfile.username}&color=0d1117&bgcolor=ffffff&margin=15`}
+                href={`https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=https://${userProfile.username}.novawebdv.com&color=0d1117&bgcolor=ffffff&margin=15`}
                 download={`qr-${userProfile.username}.png`}
                 target="_blank"
                 rel="noreferrer"
