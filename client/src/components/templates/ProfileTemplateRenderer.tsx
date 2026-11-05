@@ -12,8 +12,14 @@ import { HologramCard } from "./HologramCard";
 import { RetroArcade } from "./RetroArcade";
 import { AudioEqualizer } from "./AudioEqualizer";
 import { CinematicDirector } from "./CinematicDirector";
+import { EXTENDED_TEMPLATES_CONFIG, ExtendedTemplateView } from "./ExtendedTemplate";
 
 export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
+  // Check if it's one of the 18 extended templates
+  if (EXTENDED_TEMPLATES_CONFIG[profile.templateId]) {
+    return <ExtendedTemplateView profile={profile} config={EXTENDED_TEMPLATES_CONFIG[profile.templateId]} />;
+  }
+
   switch (profile.templateId) {
     case "developer-profile":
       return <DeveloperProfile profile={profile} />;

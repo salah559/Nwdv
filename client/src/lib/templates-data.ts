@@ -1,7 +1,7 @@
 import { TemplateDefinition } from "@shared/saas-schema";
 
 export const TEMPLATES: TemplateDefinition[] = [
-  // Free Templates
+  // ===================== ORIGINAL 12 TEMPLATES =====================
   {
     id: "modern-minimalist",
     name: "Modern Minimalist",
@@ -47,8 +47,6 @@ export const TEMPLATES: TemplateDefinition[] = [
       "Professional badge"
     ]
   },
-
-  // Premium Templates
   {
     id: "hologram-card",
     name: "Holographic 3D Card",
@@ -182,6 +180,278 @@ export const TEMPLATES: TemplateDefinition[] = [
       "Translucent cards with border glow",
       "Pill-shaped modern links",
       "Lightweight SVG ambient flares"
+    ]
+  },
+
+  // ===================== 18 NEW EXTENDED TEMPLATES (TOTAL: 30) =====================
+  {
+    id: "cyberpunk-runner",
+    name: "Cyberpunk 2077 Runner",
+    description: "High-octane yellow & neon cyan cyberpunk theme with hex avatar and edgy Netrunner vibe.",
+    isPremium: true,
+    priceDZD: 1500,
+    category: "developer",
+    thumbnail: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "High-contrast Cyberpunk yellow palette",
+      "Hexagonal holographic avatar frame",
+      "Animated cyan laser border glow",
+      "Netrunner status beacon"
+    ]
+  },
+  {
+    id: "midnight-sakura",
+    name: "Midnight Sakura Tokyo",
+    description: "Dreamy neon pink and violet Tokyo nightscape with gentle sakura petals glow.",
+    isPremium: true,
+    priceDZD: 1200,
+    category: "creative",
+    thumbnail: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Tokyo neon pink & purple atmosphere",
+      "Floating sakura ambient particles",
+      "Soft glassmorphism link cards",
+      "Japan-inspired aesthetic typography"
+    ]
+  },
+  {
+    id: "matrix-terminal",
+    name: "Matrix Source Code",
+    description: "Iconic phosphor green matrix rain vibe, terminal font, and hacker credentials.",
+    isPremium: true,
+    priceDZD: 1200,
+    category: "developer",
+    thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Phosphor CRT green terminal styling",
+      "Command prompt badges and monospace layout",
+      "Encrypted source code border glow",
+      "Root sysadmin status beacon"
+    ]
+  },
+  {
+    id: "emerald-royalty",
+    name: "Emerald Royalty VIP",
+    description: "Prestigious deep emerald green and 24K gold accents for sovereign wealth and high net-worth brands.",
+    isPremium: true,
+    priceDZD: 1600,
+    category: "luxury",
+    thumbnail: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Deep imperial emerald & gold leaf palette",
+      "Serif classical regal typography",
+      "Prestige VIP membership tag",
+      "Ultra-high net worth executive cards"
+    ]
+  },
+  {
+    id: "sunset-boulevard",
+    name: "Sunset Boulevard Glow",
+    description: "Warm California golden hour gradients with radiant amber, coral, and violet tones.",
+    isPremium: true,
+    priceDZD: 1100,
+    category: "creative",
+    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Golden hour gradient waves",
+      "Warm amber glow micro-interactions",
+      "Pacific Highway creative vibe",
+      "Squircle avatar frame"
+    ]
+  },
+  {
+    id: "deep-space-orbit",
+    name: "Deep Space Orbit",
+    description: "Cosmic nebula background with Apollo orbit vectors, deep navy blues, and cyan stars.",
+    isPremium: true,
+    priceDZD: 1300,
+    category: "developer",
+    thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Deep space nebula ambient lighting",
+      "Orbital velocity satellite tags",
+      "Cyan starlight border highlights",
+      "Aerospace engineer inspired layout"
+    ]
+  },
+  {
+    id: "nordic-frost",
+    name: "Nordic Minimalist Frost",
+    description: "Calm Scandinavian winter aesthetic with frosted ice borders, muted grays and arctic blues.",
+    isPremium: false,
+    priceDZD: 0,
+    category: "minimal",
+    thumbnail: "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Ultra-clean Scandinavian layout",
+      "Subtle frosted arctic border tints",
+      "Free to use for all members",
+      "Zero clutter focus on links"
+    ]
+  },
+  {
+    id: "silicon-pitch",
+    name: "Silicon Valley Tech Founder",
+    description: "Tailored for startup founders, YC alumni, and venture-backed creators with indigo accents.",
+    isPremium: true,
+    priceDZD: 1300,
+    category: "business",
+    thumbnail: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Indigo & cyan venture capital aesthetic",
+      "Series A tech founder credentials",
+      "Investor pitch deck presentation feel",
+      "Crisp enterprise card hover states"
+    ]
+  },
+  {
+    id: "marble-architecture",
+    name: "Milano Marble & Stone",
+    description: "Italian architectural luxury with warm travertine stone textures and editorial serif type.",
+    isPremium: true,
+    priceDZD: 1400,
+    category: "luxury",
+    thumbnail: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Editorial architecture & interior vibe",
+      "Milano warm stone & travertine tones",
+      "Refined classical serif headings",
+      "Minimalist bespoke border detailing"
+    ]
+  },
+  {
+    id: "synthwave-1984",
+    name: "Synthwave 1984 Miami",
+    description: "Retro outrun aesthetic with fuchsia neon, cyan laser grids, and 80s arcade nostalgia.",
+    isPremium: true,
+    priceDZD: 1300,
+    category: "creative",
+    thumbnail: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "80s Miami Outrun synthwave vibe",
+      "Hot pink & electric cyan laser grid",
+      "Retro arcade title typography",
+      "Dynamic neon pulsing avatar ring"
+    ]
+  },
+  {
+    id: "monolith-matte",
+    name: "Monolith Pitch Black",
+    description: "Stealth obsidian matte black canvas with pure white type. The ultimate understated power profile.",
+    isPremium: false,
+    priceDZD: 0,
+    category: "minimal",
+    thumbnail: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Deep matte obsidian black (#030303)",
+      "High contrast pure white typography",
+      "Free for all users",
+      "Fastest load time profile card"
+    ]
+  },
+  {
+    id: "swiss-typo",
+    name: "Swiss International Style",
+    description: "Bold International Typographic Style with stark red accents and geometric Swiss precision.",
+    isPremium: true,
+    priceDZD: 1200,
+    category: "business",
+    thumbnail: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Zurich graphic design archive inspired",
+      "Stark Swiss red (#ef4444) signature accents",
+      "Bauhaus grid alignment",
+      "Strong punchy sans-serif typography"
+    ]
+  },
+  {
+    id: "electric-violet",
+    name: "Electric Violet & Purple",
+    description: "Deep nocturnal violet glow with luminous lavender and purple nebula highlights.",
+    isPremium: true,
+    priceDZD: 1100,
+    category: "creative",
+    thumbnail: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Rich ultraviolet night club palette",
+      "Lavender & violet border radiance",
+      "Smooth liquid translucent cards",
+      "Perfect for streamers and music creators"
+    ]
+  },
+  {
+    id: "crypto-ledger",
+    name: "Web3 Crypto & Solana",
+    description: "Decentralized Web3 aesthetic with purple & teal gradients, smart contract hash badges.",
+    isPremium: true,
+    priceDZD: 1400,
+    category: "developer",
+    thumbnail: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Solana purple & teal blockchain colors",
+      "Hexagonal validator avatar badge",
+      "Decentralized identity beacon",
+      "Crypto wallet & Web3 ready"
+    ]
+  },
+  {
+    id: "sahara-mirage",
+    name: "Sahara Golden Dunes",
+    description: "Warm desert gold, copper, and bronze sands reflecting the warmth of North African majesty.",
+    isPremium: true,
+    priceDZD: 1300,
+    category: "luxury",
+    thumbnail: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Desert dunes warm copper & bronze palette",
+      "Oasis shimmer gold card borders",
+      "North African cultural warmth",
+      "Serif regal title styling"
+    ]
+  },
+  {
+    id: "manga-ink",
+    name: "Tokyo Manga & Anime Ink",
+    description: "Sharp black ink screentone style with vibrant crimson rose highlights inspired by Japanese manga.",
+    isPremium: true,
+    priceDZD: 1200,
+    category: "creative",
+    thumbnail: "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Japanese manga screentone vibe",
+      "Crimson rose dynamic action borders",
+      "Anime creator & illustrator layout",
+      "High energy hover micro-interactions"
+    ]
+  },
+  {
+    id: "linux-kernel",
+    name: "Linux Kernel Hacker",
+    description: "Terminal orange and amber phosphors built for open-source contributors and sysadmins.",
+    isPremium: true,
+    priceDZD: 1200,
+    category: "developer",
+    thumbnail: "https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Amber CRT phosphor monitor aesthetic",
+      "Root compiler & Bash script styling",
+      "Open source contributor badge",
+      "Monospace syntax highlights"
+    ]
+  },
+  {
+    id: "platinum-executive",
+    name: "Platinum Banking & Law",
+    description: "Distinguished corporate layout for legal advisors, managing partners, and wealth managers.",
+    isPremium: true,
+    priceDZD: 1500,
+    category: "business",
+    thumbnail: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Swiss private banking platinum palette",
+      "Authoritative executive presence",
+      "Crisp corporate credentials",
+      "Direct phone & email quick actions"
     ]
   }
 ];

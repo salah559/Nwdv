@@ -31,7 +31,10 @@ import {
   Receipt,
   FileText,
   QrCode,
-  Download
+  Download,
+  Search,
+  Filter,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +73,11 @@ export default function Dashboard() {
 
   // QR Code Modal State
   const [showQR, setShowQR] = useState(false);
+
+  // Templates Search & Filter State
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [templateCategory, setTemplateCategory] = useState<string>("all");
+  const [templatePriceFilter, setTemplatePriceFilter] = useState<"all" | "free" | "premium">("all");
 
   // Buy Template Modal State
   const [buyTemplateModal, setBuyTemplateModal] = useState<TemplateDefinition | null>(null);
@@ -407,7 +415,7 @@ export default function Dashboard() {
               className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-5 py-2.5 text-xs font-bold font-ui gap-2"
             >
               <Palette className="w-4 h-4" />
-              <span>القوالب (12)</span>
+              <span>القوالب (30)</span>
             </TabsTrigger>
 
             <TabsTrigger
@@ -732,108 +740,239 @@ export default function Dashboard() {
           <TabsContent value="templates" className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
               <div>
-                <h3 className="text-xl font-bold text-white">معرض القوالب الاحترافية</h3>
-                <p className="text-xs text-gray-400">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span>معرض القوالب الاحترافية</span>
+                  <Badge className="bg-cyan-500/20 text-cyan-400 border-none font-mono text-xs">
+                    30 قالب
+                  </Badge>
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
                   جميع القوالب تستخدم نفس بياناتك المحفوظة دون فقدان أي معلومات عند التبديل بينها.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {TEMPLATES.map((tmpl) => {
-                const isSelected = profileForm.templateId === tmpl.id;
-                const isUnlocked = unlockedTemplates.includes(tmpl.id);
+            {/* Smart Search & Filter Bar */}
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-4">
+              <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                {/* Search Input */}
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-gray-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Input
+                    type="text"
+                    value={templateSearch}
+                    onChange={(e) => setTemplateSearch(e.target.value)}
+                    placeholder="ابحث بالاسم أو النمط (مثل: cyberpunk, minimal, luxury, ذهبي, مطور...)"
+                    className="bg-black/40 border-white/10 pr-10 pl-9 text-xs h-10 rounded-xl focus:border-cyan-400"
+                  />
+                  {templateSearch && (
+                    <button
+                      onClick={() => setTemplateSearch("")}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
 
-                return (
-                  <div
-                    key={tmpl.id}
-                    className={`rounded-3xl overflow-hidden bg-white/[0.03] border transition-all duration-300 flex flex-col justify-between ${isSelected ? "border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_0_25px_rgba(6,255,240,0.2)]" : "border-white/10 hover:border-white/30"}`}
+                {/* Free / Premium Filter Toggle */}
+                <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 shrink-0">
+                  <button
+                    onClick={() => setTemplatePriceFilter("all")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${templatePriceFilter === "all" ? "bg-white/20 text-white" : "text-gray-400 hover:text-white"}`}
                   >
-                    <div>
-                      <div className="relative h-44 overflow-hidden group">
-                        <img
-                          src={tmpl.thumbnail}
-                          alt={tmpl.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 right-3 flex gap-1">
-                          {tmpl.isPremium ? (
-                            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold border-none shadow-lg text-[10px] flex items-center gap-1">
-                              <Crown className="w-3 h-3" />
-                              <span>Premium {tmpl.priceDZD} دج</span>
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-cyan-500 text-black font-bold border-none text-[10px]">
-                              مجاني Free
-                            </Badge>
-                          )}
-                        </div>
+                    الكل
+                  </button>
+                  <button
+                    onClick={() => setTemplatePriceFilter("free")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${templatePriceFilter === "free" ? "bg-cyan-500/30 text-cyan-300" : "text-gray-400 hover:text-white"}`}
+                  >
+                    مجاني
+                  </button>
+                  <button
+                    onClick={() => setTemplatePriceFilter("premium")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 ${templatePriceFilter === "premium" ? "bg-amber-500/30 text-amber-300" : "text-gray-400 hover:text-white"}`}
+                  >
+                    <Crown className="w-3 h-3" />
+                    <span>Premium</span>
+                  </button>
+                </div>
+              </div>
 
-                        {isSelected && (
-                          <div className="absolute bottom-3 left-3 bg-cyan-400 text-black px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-lg">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>القالب الحالي</span>
-                          </div>
-                        )}
-                      </div>
+              {/* Category Pills */}
+              <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-white/5">
+                <span className="text-[11px] text-gray-400 ml-2 font-ui flex items-center gap-1">
+                  <Filter className="w-3 h-3" />
+                  <span>التصنيف:</span>
+                </span>
+                {[
+                  { id: "all", label: "جميع التصنيفات" },
+                  { id: "developer", label: "💻 مطورين وبرمجة" },
+                  { id: "creative", label: "🎨 إبداعي وفن" },
+                  { id: "luxury", label: "👑 فاخر و VIP" },
+                  { id: "business", label: "💼 أعمال وشركات" },
+                  { id: "minimal", label: "✨ بسيط ونظيف" },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setTemplateCategory(cat.id)}
+                    className={`px-3 py-1 rounded-full text-xs transition-all ${templateCategory === cat.id ? "bg-cyan-400 text-black font-bold shadow-md shadow-cyan-500/20" : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5"}`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                      <div className="p-5">
-                        <h4 className="font-bold text-base text-white mb-1">{tmpl.name}</h4>
-                        <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-4">
-                          {tmpl.description}
-                        </p>
+            {/* Filtered Templates Grid */}
+            {(() => {
+              const filtered = TEMPLATES.filter((tmpl) => {
+                const matchesSearch =
+                  !templateSearch.trim() ||
+                  tmpl.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
+                  tmpl.description.toLowerCase().includes(templateSearch.toLowerCase()) ||
+                  tmpl.category.toLowerCase().includes(templateSearch.toLowerCase()) ||
+                  tmpl.features.some((f) => f.toLowerCase().includes(templateSearch.toLowerCase()));
 
-                        <div className="space-y-1.5 mb-2">
-                          {tmpl.features.map((f, i) => (
-                            <div key={i} className="flex items-center gap-1.5 text-[11px] text-gray-300">
-                              <Check className="w-3 h-3 text-cyan-400 shrink-0" />
-                              <span className="truncate">{f}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                const matchesCategory =
+                  templateCategory === "all" || tmpl.category === templateCategory;
 
-                    <div className="p-5 pt-0 flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setPreviewTemplateId(tmpl.id);
-                          setPreviewOpen(true);
-                        }}
-                        className="text-xs border-white/10 flex-1 hover:border-white/30"
-                      >
-                        معاينة
-                      </Button>
+                const matchesPrice =
+                  templatePriceFilter === "all" ||
+                  (templatePriceFilter === "free" && !tmpl.isPremium) ||
+                  (templatePriceFilter === "premium" && tmpl.isPremium);
 
-                      {isSelected ? (
-                        <Button size="sm" disabled className="text-xs flex-1 bg-white/10 text-gray-400">
-                          مطبق
-                        </Button>
-                      ) : isUnlocked ? (
-                        <Button
-                          size="sm"
-                          onClick={() => handleSelectTemplate(tmpl.id)}
-                          className="text-xs flex-1 bg-cyan-400 hover:bg-cyan-300 text-black font-bold"
-                        >
-                          تطبيق القالب
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => setBuyTemplateModal(tmpl)}
-                          className="text-xs flex-1 bg-gradient-to-r from-amber-500 to-yellow-400 hover:opacity-90 text-black font-bold flex items-center gap-1"
-                        >
-                          <Lock className="w-3 h-3" />
-                          <span>شراء ({tmpl.priceDZD} دج)</span>
-                        </Button>
-                      )}
-                    </div>
+                return matchesSearch && matchesCategory && matchesPrice;
+              });
+
+              if (filtered.length === 0) {
+                return (
+                  <div className="text-center py-16 px-4 bg-white/[0.02] border border-white/10 rounded-3xl">
+                    <Search className="w-10 h-10 text-gray-500 mx-auto mb-3 opacity-40" />
+                    <h4 className="text-base font-bold text-white mb-1">لا توجد قوالب مطابقة للبحث</h4>
+                    <p className="text-xs text-gray-400 mb-4">
+                      جرب تغيير كلمة البحث أو إعادة تعيين الفلاتر
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setTemplateSearch("");
+                        setTemplateCategory("all");
+                        setTemplatePriceFilter("all");
+                      }}
+                      className="text-xs border-white/10"
+                    >
+                      إعادة تعيين الفلاتر
+                    </Button>
                   </div>
                 );
-              })}
-            </div>
+              }
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {filtered.map((tmpl) => {
+                    const isSelected = profileForm.templateId === tmpl.id;
+                    const isUnlocked = unlockedTemplates.includes(tmpl.id);
+
+                    return (
+                      <div
+                        key={tmpl.id}
+                        className={`rounded-3xl overflow-hidden bg-white/[0.03] border transition-all duration-300 flex flex-col justify-between ${isSelected ? "border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_0_25px_rgba(6,255,240,0.2)]" : "border-white/10 hover:border-white/30"}`}
+                      >
+                        <div>
+                          <div className="relative h-44 overflow-hidden group">
+                            <img
+                              src={tmpl.thumbnail}
+                              alt={tmpl.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                            <div className="absolute top-3 right-3 flex gap-1">
+                              {tmpl.isPremium ? (
+                                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold border-none shadow-lg text-[10px] flex items-center gap-1">
+                                  <Crown className="w-3 h-3" />
+                                  <span>Premium {tmpl.priceDZD} دج</span>
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-cyan-500 text-black font-bold border-none text-[10px]">
+                                  مجاني Free
+                                </Badge>
+                              )}
+                            </div>
+
+                            {isSelected && (
+                              <div className="absolute bottom-3 left-3 bg-cyan-400 text-black px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-lg">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>القالب الحالي</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="p-5">
+                            <div className="flex items-center justify-between mb-1">
+                              <h4 className="font-bold text-base text-white truncate">{tmpl.name}</h4>
+                              <span className="text-[10px] font-mono uppercase text-gray-500 bg-white/5 px-2 py-0.5 rounded">
+                                {tmpl.category}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-4">
+                              {tmpl.description}
+                            </p>
+
+                            <div className="space-y-1.5 mb-2">
+                              {tmpl.features.map((f, i) => (
+                                <div key={i} className="flex items-center gap-1.5 text-[11px] text-gray-300">
+                                  <Check className="w-3 h-3 text-cyan-400 shrink-0" />
+                                  <span className="truncate">{f}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-5 pt-0 flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setPreviewTemplateId(tmpl.id);
+                              setPreviewOpen(true);
+                            }}
+                            className="text-xs border-white/10 flex-1 hover:border-white/30"
+                          >
+                            معاينة
+                          </Button>
+
+                          {isSelected ? (
+                            <Button size="sm" disabled className="text-xs flex-1 bg-white/10 text-gray-400">
+                              مطبق
+                            </Button>
+                          ) : isUnlocked ? (
+                            <Button
+                              size="sm"
+                              onClick={() => handleSelectTemplate(tmpl.id)}
+                              className="text-xs flex-1 bg-cyan-400 hover:bg-cyan-300 text-black font-bold"
+                            >
+                              تطبيق القالب
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => setBuyTemplateModal(tmpl)}
+                              className="text-xs flex-1 bg-gradient-to-r from-amber-500 to-yellow-400 hover:opacity-90 text-black font-bold flex items-center gap-1"
+                            >
+                              <Lock className="w-3 h-3" />
+                              <span>شراء ({tmpl.priceDZD} دج)</span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </TabsContent>
 
           {/* TAB 4: BILLING & SUBSCRIPTIONS */}
