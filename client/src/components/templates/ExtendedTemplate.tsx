@@ -7,7 +7,7 @@ import { PlatformIcon } from "@/components/ui/PlatformIcon";
 export interface ExtendedTemplateConfig {
   id: string;
   name: string;
-  category: "creative" | "developer" | "business" | "luxury" | "minimal";
+  category: "creative" | "developer" | "business" | "luxury" | "minimal" | "diamond";
   theme: {
     bg: string;
     bgStyle?: "grid" | "dots" | "gradient" | "radial" | "noise" | "lines" | "matrix" | "stars";

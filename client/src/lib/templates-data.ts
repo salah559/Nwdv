@@ -453,6 +453,72 @@ export const TEMPLATES: TemplateDefinition[] = [
       "Crisp corporate credentials",
       "Direct phone & email quick actions"
     ]
+  },
+
+  // ===================== 💎 DIAMOND TIER TEMPLATES =====================
+  {
+    id: "anime-atmosphere",
+    name: "Anime Atmosphere",
+    description: "خلفية كينماتيكية أنيمي غامقة مع جسيمات ساكورا المتساقطة، حلقة أفاتار متوهجة، وعناصر يابانية أنيقة. صورة الغلاف تصبح خلفية القالب.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "خلفية صورة الغلاف كاملة الشاشة",
+      "جسيمات ساكورا متساقطة بـ CSS",
+      "حلقة أفاتار دوارة بألوان متدرجة",
+      "نصوص يابانية وجماليات أنيمي",
+      "تأثيرات توهج بنفسجي وبنكي"
+    ]
+  },
+  {
+    id: "aurora-glass",
+    name: "Aurora Glass",
+    description: "أورورا دوارة مستوحاة من React Bits مع زجاج حقيقي، أشكال بلوب مشوهة، وتأثير وميض على البطاقات. صورة الغلاف تصبح خلفية القالب.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "خلفية صورة الغلاف كاملة الشاشة",
+      "أورورا بوريالس دوارة متحركة",
+      "زجاج حقيقي مع backdrop-blur",
+      "أفاتار بشكل بلوب مشوه متحرك",
+      "تأثير وميض على البطاقات عند التحويم"
+    ]
+  },
+  {
+    id: "liquid-metal",
+    name: "Liquid Metal",
+    description: "جماليات الكروم السائل والبلاتين مع جسيمات عائمة، نص بتدرج معدني، وتألق فضي راقٍ. صورة الغلاف تصبح خلفية القالب.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "خلفية صورة الغلاف كاملة الشاشة",
+      "جسيمات كروم عائمة بـ CSS",
+      "نص بتدرج معدني فضي/بلاتيني",
+      "بريق معدني على البطاقات",
+      "تصميم مونوكروم فاخر"
+    ]
+  },
+  {
+    id: "cosmic-parallax",
+    name: "Cosmic Parallax",
+    description: "فضاء كوني عميق مع سديم متنفس، نجوم متلألئة، حلقة دوارة حول الأفاتار، وموصلات كونستيلايشن بين الروابط. صورة الغلاف كحقل نجوم.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "خلفية صورة الغلاف كحقل نجوم",
+      "نجوم متلألئة بـ CSS",
+      "سديم ملون متحرك",
+      "حلقة كونية دوارة حول الأفاتار",
+      "موصلات خطوط كونستيلايشن بين الروابط"
+    ]
   }
 ];
 

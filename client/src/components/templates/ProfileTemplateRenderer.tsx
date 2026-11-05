@@ -13,8 +13,21 @@ import { RetroArcade } from "./RetroArcade";
 import { AudioEqualizer } from "./AudioEqualizer";
 import { CinematicDirector } from "./CinematicDirector";
 import { EXTENDED_TEMPLATES_CONFIG, ExtendedTemplateView } from "./ExtendedTemplate";
+import { AnimeAtmosphere, AuroraGlass, LiquidMetal, CosmicParallax } from "./DiamondTemplates";
 
 export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
+  // Diamond tier templates — bespoke renderers
+  switch (profile.templateId) {
+    case "anime-atmosphere":
+      return <AnimeAtmosphere profile={profile} />;
+    case "aurora-glass":
+      return <AuroraGlass profile={profile} />;
+    case "liquid-metal":
+      return <LiquidMetal profile={profile} />;
+    case "cosmic-parallax":
+      return <CosmicParallax profile={profile} />;
+  }
+
   // Check if it's one of the 18 extended templates
   if (EXTENDED_TEMPLATES_CONFIG[profile.templateId]) {
     return <ExtendedTemplateView profile={profile} config={EXTENDED_TEMPLATES_CONFIG[profile.templateId]} />;
