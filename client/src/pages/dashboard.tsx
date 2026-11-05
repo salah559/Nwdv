@@ -412,7 +412,7 @@ export default function Dashboard() {
                 className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
               >
                 <Palette className="w-4 h-4" />
-                <span>القوالب (30)</span>
+                <span>القوالب (35)</span>
               </TabsTrigger>
 
               <TabsTrigger
@@ -819,6 +819,7 @@ export default function Dashboard() {
                   </span>
                   {[
                     { id: "all", label: "جميع التصنيفات" },
+                    { id: "diamond", label: "💎 الماسية النادرة" },
                     { id: "developer", label: "💻 مطورين وبرمجة" },
                     { id: "creative", label: "🎨 إبداعي وفن" },
                     { id: "luxury", label: "👑 فاخر و VIP" },
@@ -828,7 +829,15 @@ export default function Dashboard() {
                     <button
                       key={cat.id}
                       onClick={() => setTemplateCategory(cat.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs transition-all shrink-0 ${templateCategory === cat.id ? "bg-cyan-400 text-black font-bold shadow-md shadow-cyan-500/20" : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5"}`}
+                      className={`px-3 py-1.5 rounded-full text-xs transition-all shrink-0 ${
+                        templateCategory === cat.id
+                          ? cat.id === "diamond"
+                            ? "bg-gradient-to-r from-amber-400 via-rose-500 to-cyan-400 text-black font-extrabold shadow-lg shadow-rose-500/20"
+                            : "bg-cyan-400 text-black font-bold shadow-md shadow-cyan-500/20"
+                          : cat.id === "diamond"
+                          ? "bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-cyan-500/10 text-amber-200 border border-amber-500/30 hover:border-amber-400/60"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5"
+                      }`}
                     >
                       {cat.label}
                     </button>
@@ -891,7 +900,15 @@ export default function Dashboard() {
                     return (
                       <div
                         key={tmpl.id}
-                        className={`rounded-3xl overflow-hidden bg-white/[0.03] border transition-all duration-300 flex flex-col justify-between ${isSelected ? "border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_0_25px_rgba(6,255,240,0.2)]" : "border-white/10 hover:border-white/30"}`}
+                        className={`rounded-3xl overflow-hidden transition-all duration-300 flex flex-col justify-between ${
+                          tmpl.category === "diamond"
+                            ? isSelected
+                              ? "border-2 border-amber-400 ring-2 ring-amber-400/30 shadow-[0_0_35px_rgba(251,191,36,0.3)] bg-gradient-to-br from-amber-950/40 via-zinc-900 to-rose-950/30"
+                              : "border border-amber-500/30 hover:border-amber-400/70 hover:shadow-[0_0_25px_rgba(251,191,36,0.2)] bg-gradient-to-br from-amber-950/20 via-zinc-900 to-black"
+                            : isSelected
+                            ? "border-cyan-400 ring-2 ring-cyan-400/20 shadow-[0_0_25px_rgba(6,255,240,0.2)] bg-white/[0.03] border"
+                            : "border-white/10 hover:border-white/30 bg-white/[0.03] border"
+                        }`}
                       >
                         <div>
                           <div className="relative h-44 overflow-hidden group">
@@ -902,7 +919,12 @@ export default function Dashboard() {
                               loading="lazy"
                             />
                             <div className="absolute top-3 right-3 flex gap-1">
-                              {tmpl.isPremium ? (
+                              {tmpl.category === "diamond" ? (
+                                <Badge className="bg-gradient-to-r from-amber-400 via-rose-500 to-cyan-400 text-black font-extrabold border-none shadow-xl text-[10px] flex items-center gap-1">
+                                  <span>💎</span>
+                                  <span>Diamond {tmpl.priceDZD} دج</span>
+                                </Badge>
+                              ) : tmpl.isPremium ? (
                                 <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold border-none shadow-lg text-[10px] flex items-center gap-1">
                                   <Crown className="w-3 h-3" />
                                   <span>Premium {tmpl.priceDZD} دج</span>
@@ -925,8 +947,14 @@ export default function Dashboard() {
                           <div className="p-5">
                             <div className="flex items-center justify-between mb-1">
                               <h4 className="font-bold text-base text-white truncate">{tmpl.name}</h4>
-                              <span className="text-[10px] font-mono uppercase text-gray-500 bg-white/5 px-2 py-0.5 rounded">
-                                {tmpl.category}
+                              <span
+                                className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded ${
+                                  tmpl.category === "diamond"
+                                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold"
+                                    : "text-gray-500 bg-white/5"
+                                }`}
+                              >
+                                {tmpl.category === "diamond" ? "💎 Diamond" : tmpl.category}
                               </span>
                             </div>
                             <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-4">

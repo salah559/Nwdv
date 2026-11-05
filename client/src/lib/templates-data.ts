@@ -453,6 +453,88 @@ export const TEMPLATES: TemplateDefinition[] = [
       "Crisp corporate credentials",
       "Direct phone & email quick actions"
     ]
+  },
+
+  // ===================== 💎 DIAMOND TIER TEMPLATES =====================
+  {
+    id: "baryon-anime-live",
+    name: "Baryon Anime Live (Pinterest)",
+    description: "قالب الأنمي الملحمي من Pinterest: فيديو سينمائي حي متحرك (Naruto Baryon Mode) مع جزيئات لهب وطاقة نارية متوهجة وتأثيرات فائقة الحيوية.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://i.pinimg.com/736x/6d/0b/91/6d0b91e0dec528e44d5557a8b38ab443.jpg",
+    features: [
+      "فيديو حي سينمائي متكرر في الخلفية (Live Video Background)",
+      "جزيئات لهب نارية صاعدة بفيزياء عشوائية",
+      "أفاتار بنبض ناري نفاث وحلقة طاقة دوارة",
+      "بطاقات داكنة بأطراف نارية متوهجة عند التحويم",
+      "مستوحى ومبني بالكامل على رابط Pinterest"
+    ]
+  },
+  {
+    id: "custom-wallpaper-hero",
+    name: "Custom Wallpaper Hero (خلفيتك الخاصة)",
+    description: "خلفية الزبون تصبح هي خلفية القالب بالكامل: صورة الغلاف التي ترفعها تملأ الشاشة مع تظليل ناعم وبطاقات زجاجية ثلاثية الأبعاد.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "صورة الغلاف (Cover Photo) تملأ الخلفية بالكامل",
+      "تدرج مظلم ذكي يضمن قراءة الروابط بكل دقة",
+      "إطار أفاتار زجاجي ثلاثي الأبعاد فخم",
+      "بطاقات زجاجية بلورية Frosted Glass عالية النقاء",
+      "تفاعلات Hover ناعمة مع وميض شفاف"
+    ]
+  },
+  {
+    id: "reactbits-spotlight",
+    name: "ReactBits Spotlight Bento",
+    description: "تأثير Spotlight الشهير من مكتبة React Bits: شعاع ضوء سحري يتحرك ويتفاعل مع مؤشر الفأرة ليضيء البطاقات والزجاج المظلم.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "شعاع إضاءة تفاعلي يتبع حركة الفأرة (Spotlight Effect)",
+      "شبكة هندسية رقمية فائقة الدقة في الخلفية",
+      "بطاقات بنمط Bento Box الحديث مع توهج داخلي",
+      "أفاتار محاط بهالة ضوئية بنفسجية متدرجة",
+      "مبني بأحدث ممارسات تصميم React Bits"
+    ]
+  },
+  {
+    id: "reactbits-aurora-mesh",
+    name: "ReactBits Aurora Mesh",
+    description: "شفق قطبي مائع ثلاثي الأبعاد من React Bits: تدرجات لونية شفقية حية تدور بنعومة هادئة مع بطاقات زجاجية بلورية متألقة.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "شفق قطبي حي دوار ثلاثي الأبعاد (Mesh Gradient)",
+      "ألوان شفقية متناسقة (أزرق سماوي، بنفسجي، زمردي)",
+      "بطاقات زجاجية ذات انعكاسات ضوئية شفافة",
+      "إطار أفاتار ناعم محاط بوهج نيون سماوي",
+      "مظهر مستقبلي مريح للعين فائق النقاء"
+    ]
+  },
+  {
+    id: "cyberpunk-hologram-hud",
+    name: "Cyberpunk Hologram HUD",
+    description: "واجهة سايبربانك هولوغرافية ثلاثية الأبعاد: مستوحاة من عوالم السايبرنتك وReact Bits مع خطوط ليزرية ومؤشرات نظام رقمية.",
+    isPremium: true,
+    priceDZD: 2500,
+    category: "diamond",
+    thumbnail: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "خطوط ليزرية ومسح هولوغرافي تفاعلي في الخلفية",
+      "إطار أفاتار بنمط HUD مستقبل مع حلقة دوران تقنية",
+      "بطاقات بأرقام نظام ومؤشرات سيان كهربائية متوهجة",
+      "خطوط تقنية رقمية بطابع الوكالات المستقبلية",
+      "تأثيرات Hover كهربائية عالية الاستجابة"
+    ]
   }
 ];
 
