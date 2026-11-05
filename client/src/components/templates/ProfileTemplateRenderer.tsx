@@ -1,0 +1,32 @@
+import React from "react";
+import { UserProfile } from "@shared/saas-schema";
+import { ModernMinimalist } from "./ModernMinimalist";
+import { DeveloperProfile } from "./DeveloperProfile";
+import { ProfessionalProfile } from "./ProfessionalProfile";
+import { LuxuryBlackGold } from "./LuxuryBlackGold";
+import { CreativeDesigner } from "./CreativeDesigner";
+import { NeonDeveloper } from "./NeonDeveloper";
+import { ElegantProfessional } from "./ElegantProfessional";
+import { ModernGradient } from "./ModernGradient";
+
+export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
+  switch (profile.templateId) {
+    case "developer-profile":
+      return <DeveloperProfile profile={profile} />;
+    case "professional-profile":
+      return <ProfessionalProfile profile={profile} />;
+    case "luxury-black-gold":
+      return <LuxuryBlackGold profile={profile} />;
+    case "creative-designer":
+      return <CreativeDesigner profile={profile} />;
+    case "neon-developer":
+      return <NeonDeveloper profile={profile} />;
+    case "elegant-professional":
+      return <ElegantProfessional profile={profile} />;
+    case "modern-gradient":
+      return <ModernGradient profile={profile} />;
+    case "modern-minimalist":
+    default:
+      return <ModernMinimalist profile={profile} />;
+  }
+}

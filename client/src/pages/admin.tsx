@@ -58,11 +58,13 @@ import {
   Image as ImageIcon,
   Globe,
   Star,
+  Crown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Project, ContactMessage, AdminSettings } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
+import { SaasAdminTab } from "@/components/admin/SaasAdminTab";
 
 export default function Admin() {
   const { t } = useLang();
@@ -216,6 +218,9 @@ function AdminTabs({ queryClient, onUpdatePassword }: { queryClient: any; onUpda
         <TabsTrigger value="settings" className="px-5 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
           <Settings className="w-4 h-4 mr-2" /> {t("admin_settings")}
         </TabsTrigger>
+        <TabsTrigger value="saas" className="px-5 rounded-lg data-[state=active]:bg-cyan-400 data-[state=active]:text-black text-cyan-300">
+          <Crown className="w-4 h-4 mr-2" /> Novaweb Profile SaaS
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="dashboard">
@@ -232,6 +237,10 @@ function AdminTabs({ queryClient, onUpdatePassword }: { queryClient: any; onUpda
 
       <TabsContent value="settings">
         <SettingsTab onUpdatePassword={onUpdatePassword} />
+      </TabsContent>
+
+      <TabsContent value="saas">
+        <SaasAdminTab />
       </TabsContent>
     </Tabs>
   );

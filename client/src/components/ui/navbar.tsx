@@ -56,6 +56,7 @@ export function Navbar() {
 
   const navLinks = [
     { key: "nav_home" as const, href: "/" },
+    { key: "nav_profiles" as const, href: "/profiles" },
     { key: "nav_about" as const, href: "/about" },
     { key: "nav_projects" as const, href: "/projects" },
   ];
