@@ -82,7 +82,7 @@ export interface TemplateDefinition {
   description: string;
   isPremium: boolean;
   priceDZD: number;
-  category: "minimal" | "developer" | "creative" | "luxury" | "business" | "diamond";
+  category: "minimal" | "developer" | "creative" | "luxury" | "business";
   thumbnail: string;
   features: string[];
 }
