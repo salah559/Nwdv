@@ -50,6 +50,7 @@ import { SEO } from "@/components/SEO";
 import { TEMPLATES, getTemplateById } from "@/lib/templates-data";
 import { ProfileTemplateRenderer } from "@/components/templates/ProfileTemplateRenderer";
 import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
+import { DashboardHeader } from "@/components/ui/DashboardHeader";
 import { UserProfile, SocialLink, PaymentRecord, TemplateDefinition } from "@shared/saas-schema";
 import { SUPPORTED_PLATFORMS, PlatformIcon } from "@/components/ui/PlatformIcon";
 import { collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
@@ -259,11 +260,15 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-white selection:bg-cyan-500/30 pt-20 pb-24 md:pb-12 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#07090e] text-white selection:bg-cyan-500/30 flex flex-col">
       <SEO title={`لوحة التحكم — ${userProfile.fullName}`} />
 
-      {/* Top Banner Alert for Trial / Expiration */}
-      <div className="max-w-6xl mx-auto mb-6">
+      {/* Official Dashboard Sticky Header */}
+      <DashboardHeader />
+
+      <main className="flex-1 pt-6 pb-28 md:pb-16 px-3 sm:px-6">
+        {/* Top Banner Alert for Trial / Expiration */}
+        <div className="max-w-6xl mx-auto mb-6">
         {isExpired ? (
           <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-red-300">
             <div className="flex items-center gap-3">
@@ -311,37 +316,38 @@ export default function Dashboard() {
       {/* Dashboard Main Container */}
       <div className="max-w-6xl mx-auto">
         {/* User Quick Info Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-cyan-400/50 p-0.5 bg-black">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl mb-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-cyan-400/50 p-0.5 bg-black shrink-0">
               <img
                 src={userProfile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80"}
                 alt={userProfile.fullName}
                 className="w-full h-full object-cover rounded-[14px]"
               />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold font-display text-white">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg sm:text-2xl font-bold font-display text-white truncate">
                   {userProfile.fullName}
                 </h1>
                 <Badge variant="outline" className="border-cyan-500/40 text-cyan-400 font-mono text-[10px]">
                   @{userProfile.username}
                 </Badge>
               </div>
-              <p className="text-xs text-gray-400 font-mono mt-0.5 flex items-center gap-1.5" dir="ltr">
-                <Globe className="w-3.5 h-3.5 text-cyan-400" />
-                <span>{userProfile.username}.novawebdv.com</span>
+              <p className="text-xs text-gray-400 font-mono mt-0.5 flex items-center gap-1.5 truncate" dir="ltr">
+                <Globe className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span className="truncate">{userProfile.username}.novawebdv.com</span>
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Action Buttons Grid on Mobile, Flex on Desktop */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pt-2 border-t border-white/5 md:pt-0 md:border-none">
             <Button
               variant="outline"
               size="sm"
               onClick={copyProfileLink}
-              className="border-white/10 hover:border-cyan-400 text-xs gap-1.5"
+              className="border-white/10 hover:border-cyan-400 text-xs gap-1.5 h-9 justify-center"
             >
               {copiedLink ? <Check className="w-3.5 h-3.5 text-cyan-400" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copiedLink ? "تم النسخ" : "نسخ الرابط"}</span>
@@ -353,16 +359,16 @@ export default function Dashboard() {
                 setPreviewTemplateId(profileForm.templateId);
                 setPreviewOpen(true);
               }}
-              className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5 border border-white/10"
+              className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5 border border-white/10 h-9 justify-center"
             >
               <Eye className="w-3.5 h-3.5" />
               <span>معاينة حية</span>
             </Button>
 
-            <a href={subdomainUrl} target="_blank" rel="noreferrer">
+            <a href={subdomainUrl} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
               <Button
                 size="sm"
-                className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5"
+                className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 h-9 justify-center"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>زيارة موقعك</span>
@@ -373,59 +379,51 @@ export default function Dashboard() {
               variant="outline"
               size="sm"
               onClick={() => setShowQR(true)}
-              className="border-white/10 hover:border-purple-400 text-xs gap-1.5"
+              className="border-purple-500/30 text-purple-300 hover:border-purple-400 text-xs gap-1.5 h-9 justify-center"
             >
-              <QrCode className="w-3.5 h-3.5" />
+              <QrCode className="w-3.5 h-3.5 text-purple-400" />
               <span>QR Code</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => signOut()}
-              className="text-gray-400 hover:text-red-400 text-xs hover:bg-red-500/10"
-              title="تسجيل الخروج"
-            >
-              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
         {/* Tabs System */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white/[0.04] border border-white/10 p-1 rounded-2xl w-full justify-start h-auto flex-wrap">
-            <TabsTrigger
-              value="overview"
-              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-5 py-2.5 text-xs font-bold font-ui gap-2"
-            >
-              <Layout className="w-4 h-4" />
-              <span>نظرة عامة</span>
-            </TabsTrigger>
+          <div className="overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+            <TabsList className="bg-white/[0.04] border border-white/10 p-1 rounded-2xl w-full sm:w-auto justify-start h-auto flex flex-nowrap min-w-max gap-1">
+              <TabsTrigger
+                value="overview"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
+              >
+                <Layout className="w-4 h-4" />
+                <span>نظرة عامة</span>
+              </TabsTrigger>
 
-            <TabsTrigger
-              value="builder"
-              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-5 py-2.5 text-xs font-bold font-ui gap-2"
-            >
-              <User className="w-4 h-4" />
-              <span>منشئ الموقع</span>
-            </TabsTrigger>
+              <TabsTrigger
+                value="builder"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
+              >
+                <User className="w-4 h-4" />
+                <span>منشئ الموقع</span>
+              </TabsTrigger>
 
-            <TabsTrigger
-              value="templates"
-              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-5 py-2.5 text-xs font-bold font-ui gap-2"
-            >
-              <Palette className="w-4 h-4" />
-              <span>القوالب (30)</span>
-            </TabsTrigger>
+              <TabsTrigger
+                value="templates"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
+              >
+                <Palette className="w-4 h-4" />
+                <span>القوالب (30)</span>
+              </TabsTrigger>
 
-            <TabsTrigger
-              value="billing"
-              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-5 py-2.5 text-xs font-bold font-ui gap-2"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>الاشتراك والدفع</span>
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger
+                value="billing"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>الاشتراك والدفع</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* TAB 1: OVERVIEW */}
           <TabsContent value="overview" className="space-y-6">
@@ -693,16 +691,29 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Save Button */}
-                <div className="sticky bottom-6 z-20 flex justify-end">
+                {/* Save Button Floating Bar */}
+                <div className="sticky bottom-4 z-20 p-2 sm:p-0 rounded-2xl bg-[#07090e]/80 sm:bg-transparent backdrop-blur-lg sm:backdrop-blur-none border border-white/10 sm:border-none flex items-center justify-between sm:justify-end gap-3 shadow-2xl sm:shadow-none">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setPreviewTemplateId(profileForm.templateId);
+                      setPreviewOpen(true);
+                    }}
+                    className="sm:hidden border-white/20 text-xs gap-1.5 h-11 px-4 flex-1"
+                  >
+                    <Eye className="w-4 h-4 text-cyan-400" />
+                    <span>معاينة</span>
+                  </Button>
+
                   <Button
                     size="lg"
                     disabled={isSaving}
                     onClick={handleSaveProfile}
-                    className="bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider px-8 h-12 rounded-xl shadow-[0_0_25px_rgba(6,255,240,0.4)] gap-2"
+                    className="bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider px-6 sm:px-8 h-11 sm:h-12 rounded-xl shadow-[0_0_25px_rgba(6,255,240,0.4)] gap-2 flex-[2] sm:flex-initial"
                   >
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    <span>حفظ جميع التعديلات</span>
+                    <span>حفظ التعديلات</span>
                   </Button>
                 </div>
               </div>
@@ -799,28 +810,30 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Category Pills */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-white/5">
-                <span className="text-[11px] text-gray-400 ml-2 font-ui flex items-center gap-1">
-                  <Filter className="w-3 h-3" />
-                  <span>التصنيف:</span>
-                </span>
-                {[
-                  { id: "all", label: "جميع التصنيفات" },
-                  { id: "developer", label: "💻 مطورين وبرمجة" },
-                  { id: "creative", label: "🎨 إبداعي وفن" },
-                  { id: "luxury", label: "👑 فاخر و VIP" },
-                  { id: "business", label: "💼 أعمال وشركات" },
-                  { id: "minimal", label: "✨ بسيط ونظيف" },
-                ].map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setTemplateCategory(cat.id)}
-                    className={`px-3 py-1 rounded-full text-xs transition-all ${templateCategory === cat.id ? "bg-cyan-400 text-black font-bold shadow-md shadow-cyan-500/20" : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5"}`}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
+              {/* Category Pills with horizontal scroll on small screens */}
+              <div className="pt-2 border-t border-white/5">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+                  <span className="text-[11px] text-gray-400 ml-1 font-ui flex items-center gap-1 shrink-0">
+                    <Filter className="w-3 h-3" />
+                    <span>التصنيف:</span>
+                  </span>
+                  {[
+                    { id: "all", label: "جميع التصنيفات" },
+                    { id: "developer", label: "💻 مطورين وبرمجة" },
+                    { id: "creative", label: "🎨 إبداعي وفن" },
+                    { id: "luxury", label: "👑 فاخر و VIP" },
+                    { id: "business", label: "💼 أعمال وشركات" },
+                    { id: "minimal", label: "✨ بسيط ونظيف" },
+                  ].map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setTemplateCategory(cat.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs transition-all shrink-0 ${templateCategory === cat.id ? "bg-cyan-400 text-black font-bold shadow-md shadow-cyan-500/20" : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5"}`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1271,6 +1284,7 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
+      </main>
     </div>
   );
 }
