@@ -180,9 +180,6 @@ export function DeveloperProfile({ profile }: { profile: UserProfile }) {
                           <div className="text-xs font-bold text-gray-200 group-hover:text-emerald-300">
                             {link.title}
                           </div>
-                          <div className="text-[10px] text-gray-500 truncate max-w-[200px]">
-                            {link.url}
-                          </div>
                         </div>
                       </div>
                       <ExternalLink className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400 transition-colors" />

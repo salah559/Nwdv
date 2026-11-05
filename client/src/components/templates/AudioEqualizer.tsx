@@ -215,9 +215,7 @@ export function AudioEqualizer({ profile }: { profile: UserProfile }) {
                     <span className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors block">
                       {link.title}
                     </span>
-                    <span className="text-[11px] font-mono text-gray-400 block truncate max-w-[180px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
+                    
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

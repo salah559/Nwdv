@@ -150,9 +150,7 @@ export function ProfessionalProfile({ profile }: { profile: UserProfile }) {
                     <span className="text-sm font-semibold text-gray-100 group-hover:text-blue-300 block">
                       {link.title}
                     </span>
-                    <span className="text-[11px] text-gray-500 block truncate max-w-[220px]" dir="ltr">
-                      {link.url}
-                    </span>
+                    
                   </div>
                 </div>
                 <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />

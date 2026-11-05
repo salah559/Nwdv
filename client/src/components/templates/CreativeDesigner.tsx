@@ -152,9 +152,7 @@ export function CreativeDesigner({ profile }: { profile: UserProfile }) {
                     <span className="text-sm font-bold text-white group-hover:text-pink-300 block">
                       {link.title}
                     </span>
-                    <span className="text-[11px] text-gray-400 block truncate max-w-[200px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
+                    
                   </div>
                 </div>
                 <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-pink-400 transition-colors" />

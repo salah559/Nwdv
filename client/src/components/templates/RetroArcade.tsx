@@ -207,9 +207,7 @@ export function RetroArcade({ profile }: { profile: UserProfile }) {
                     <span className="text-xs font-bold text-white group-hover:text-[#00ffcc] block transition-colors">
                       {link.title}
                     </span>
-                    <span className="text-[10px] text-gray-400 block truncate max-w-[190px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
+                    
                   </div>
                 </div>
                 <div className="text-[#ff007f] group-hover:text-white font-bold text-xs flex items-center gap-1">

@@ -150,9 +150,6 @@ export function NeonDeveloper({ profile }: { profile: UserProfile }) {
                     <div className="text-xs font-bold text-gray-100 group-hover:text-cyan-300 tracking-wide uppercase">
                       {link.title}
                     </div>
-                    <div className="text-[10px] text-gray-500 truncate max-w-[200px]">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </div>
                   </div>
                 </div>
                 <ExternalLink className="w-4 h-4 text-cyan-400 group-hover:translate-x-1 transition-transform" />

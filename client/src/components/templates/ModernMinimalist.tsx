@@ -141,9 +141,7 @@ export function ModernMinimalist({ profile }: { profile: UserProfile }) {
                   <span className="text-sm font-semibold text-gray-200 group-hover:text-white block">
                     {link.title}
                   </span>
-                  <span className="text-[11px] text-gray-500 block truncate max-w-[200px]" dir="ltr">
-                    {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                  </span>
+                  
                 </div>
               </div>
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 group-hover:text-white group-hover:translate-x-0.5 transition-all">

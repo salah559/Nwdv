@@ -149,9 +149,7 @@ export function LuxuryBlackGold({ profile }: { profile: UserProfile }) {
                     <span className="text-sm font-bold text-amber-50 group-hover:text-amber-300 block">
                       {link.title}
                     </span>
-                    <span className="text-[11px] text-amber-200/40 block truncate max-w-[200px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
+                    
                   </div>
                 </div>
                 <div className="w-8 h-8 rounded-full border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:border-amber-400 group-hover:text-amber-300 transition-colors">

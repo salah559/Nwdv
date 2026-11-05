@@ -128,9 +128,7 @@ export function ModernGradient({ profile }: { profile: UserProfile }) {
                     <span className="text-sm font-semibold text-gray-100 group-hover:text-white block">
                       {link.title}
                     </span>
-                    <span className="text-[11px] text-gray-400 block truncate max-w-[200px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
+                    
                   </div>
                 </div>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 group-hover:text-cyan-300 group-hover:translate-x-0.5 transition-all">

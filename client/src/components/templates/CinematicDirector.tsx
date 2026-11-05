@@ -176,9 +176,7 @@ export function CinematicDirector({ profile }: { profile: UserProfile }) {
                     <span className="text-sm font-semibold text-white group-hover:text-amber-300 transition-colors block">
                       {link.title}
                     </span>
-                    <span className="text-[11px] font-mono text-gray-400 block truncate max-w-[190px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
+                    
                   </div>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all">

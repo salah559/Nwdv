@@ -206,9 +206,7 @@ export function HologramCard({ profile }: { profile: UserProfile }) {
                       <span className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors block">
                         {link.title}
                       </span>
-                      <span className="text-[11px] font-mono text-gray-400 block truncate max-w-[190px]" dir="ltr">
-                        {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                      </span>
+                      
                     </div>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-cyan-300 group-hover:bg-cyan-500/20 transition-all">

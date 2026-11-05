@@ -138,9 +138,7 @@ export function ElegantProfessional({ profile }: { profile: UserProfile }) {
                     <span className="text-sm font-semibold text-gray-200 group-hover:text-white block">
                       {link.title}
                     </span>
-                    <span className="text-[11px] text-gray-400 block truncate max-w-[200px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
+                    
                   </div>
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-teal-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
