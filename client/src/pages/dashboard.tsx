@@ -29,7 +29,9 @@ import {
   ArrowRight,
   Share2,
   Receipt,
-  FileText
+  FileText,
+  QrCode,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +67,9 @@ export default function Dashboard() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
+
+  // QR Code Modal State
+  const [showQR, setShowQR] = useState(false);
 
   // Buy Template Modal State
   const [buyTemplateModal, setBuyTemplateModal] = useState<TemplateDefinition | null>(null);
@@ -357,6 +362,16 @@ export default function Dashboard() {
             </a>
 
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowQR(true)}
+              className="border-white/10 hover:border-purple-400 text-xs gap-1.5"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>QR Code</span>
+            </Button>
+
+            <Button
               variant="ghost"
               size="sm"
               onClick={() => signOut()}
@@ -392,7 +407,7 @@ export default function Dashboard() {
               className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-5 py-2.5 text-xs font-bold font-ui gap-2"
             >
               <Palette className="w-4 h-4" />
-              <span>القوالب (8)</span>
+              <span>القوالب (12)</span>
             </TabsTrigger>
 
             <TabsTrigger
@@ -425,6 +440,10 @@ export default function Dashboard() {
                 <div className="mt-6 pt-4 border-t border-white/5 flex gap-2">
                   <Button size="sm" variant="outline" onClick={copyProfileLink} className="text-xs flex-1">
                     نسخ الرابط
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setShowQR(true)} className="text-xs flex-1 border-purple-500/30 text-purple-400 hover:border-purple-400">
+                    <QrCode className="w-3.5 h-3.5 mr-1" />
+                    QR Code
                   </Button>
                   <a href={`/p/${userProfile.username}`} target="_blank" rel="noreferrer" className="flex-1">
                     <Button size="sm" className="text-xs w-full bg-cyan-400 text-black font-bold">
@@ -1060,6 +1079,57 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Modal */}
+      <Dialog open={showQR} onOpenChange={setShowQR}>
+        <DialogContent className="bg-[#0d1117] border border-white/10 text-white max-w-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-bold flex items-center justify-center gap-2">
+              <QrCode className="w-5 h-5 text-purple-400" />
+              QR Code لموقعك
+            </DialogTitle>
+            <DialogDescription className="text-center text-xs text-gray-400">
+              امسح الكود لزيارة موقعك الشخصي مباشرةً
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="p-3 bg-white rounded-2xl shadow-xl shadow-purple-500/10">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://novawebdv.com/p/${userProfile.username}&color=0d1117&bgcolor=ffffff&margin=10`}
+                alt="QR Code"
+                width={250}
+                height={250}
+                className="rounded-lg"
+              />
+            </div>
+            <p className="text-xs font-mono text-gray-400 dir-ltr" dir="ltr">
+              novawebdv.com/p/{userProfile.username}
+            </p>
+            <div className="flex gap-3 w-full">
+              <a
+                href={`https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=https://novawebdv.com/p/${userProfile.username}&color=0d1117&bgcolor=ffffff&margin=15`}
+                download={`qr-${userProfile.username}.png`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1"
+              >
+                <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs gap-2 rounded-xl">
+                  <Download className="w-4 h-4" />
+                  تحميل QR Code
+                </Button>
+              </a>
+              <Button
+                variant="outline"
+                onClick={copyProfileLink}
+                className="flex-1 border-white/10 text-xs gap-2 rounded-xl"
+              >
+                {copiedLink ? <Check className="w-4 h-4 text-cyan-400" /> : <Copy className="w-4 h-4" />}
+                {copiedLink ? "تم النسخ!" : "نسخ الرابط"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
