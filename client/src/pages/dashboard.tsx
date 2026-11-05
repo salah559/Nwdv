@@ -44,6 +44,7 @@ import { useLang } from "@/lib/i18n";
 import { SEO } from "@/components/SEO";
 import { TEMPLATES, getTemplateById } from "@/lib/templates-data";
 import { ProfileTemplateRenderer } from "@/components/templates/ProfileTemplateRenderer";
+import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 import { UserProfile, SocialLink, PaymentRecord, TemplateDefinition } from "@shared/saas-schema";
 import { collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -504,31 +505,26 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">رابط الصورة الشخصية (Avatar URL)</Label>
-                      <Input
-                        value={profileForm.avatarUrl || ""}
-                        onChange={(e) => setProfileForm({ ...profileForm, avatarUrl: e.target.value })}
-                        placeholder="https://..."
-                        className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
-                        dir="ltr"
-                      />
-                    </div>
+                  {/* IMGBB DIRECT IMAGE UPLOADS FOR AVATAR & COVER */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+                    <ImageUploadInput
+                      label="الصورة الشخصية (Avatar)"
+                      value={profileForm.avatarUrl || ""}
+                      onChange={(url) => setProfileForm({ ...profileForm, avatarUrl: url })}
+                      placeholder="https://i.ibb.co/..."
+                      aspectRatio="square"
+                    />
 
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">رابط صورة الغلاف (Cover URL)</Label>
-                      <Input
-                        value={profileForm.coverUrl || ""}
-                        onChange={(e) => setProfileForm({ ...profileForm, coverUrl: e.target.value })}
-                        placeholder="https://..."
-                        className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
-                        dir="ltr"
-                      />
-                    </div>
+                    <ImageUploadInput
+                      label="صورة الغلاف (Cover Photo)"
+                      value={profileForm.coverUrl || ""}
+                      onChange={(url) => setProfileForm({ ...profileForm, coverUrl: url })}
+                      placeholder="https://i.ibb.co/..."
+                      aspectRatio="cover"
+                    />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 pt-2">
                     <Label className="text-xs text-gray-300">النبذة التعريفية (Bio)</Label>
                     <Textarea
                       rows={3}
@@ -851,7 +847,7 @@ export default function Dashboard() {
                     <span>تجديد الاشتراك (500 دج شهرياً) عبر الدفع المحلي</span>
                   </h3>
                   <p className="text-xs text-gray-400 leading-relaxed">
-                    قم بالتحويل عبر تطبيق BaridiMob أو مركز البريد CCP، ثم أدخل رقم العملية أدناه لتأكيد التجديد.
+                    قم بالتحويل عبر تطبيق BaridiMob أو مركز البريد CCP، ثم أدخل رقم العملية أو ارفع صورة الوصل أدناه لتأكيد التجديد.
                   </p>
                 </div>
 
@@ -880,31 +876,26 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Submit Receipt Form */}
+                {/* Submit Receipt Form with Direct ImgBB Upload */}
                 <div className="space-y-4 pt-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">رقم الحوالة أو مرجع العملية (Transaction Reference)</Label>
-                      <Input
-                        value={receiptTx}
-                        onChange={(e) => setReceiptTx(e.target.value)}
-                        placeholder="مثال: TXN-89472384"
-                        className="bg-black/50 border-white/10 text-xs h-10 rounded-xl font-mono"
-                        dir="ltr"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">رابط صورة الوصل (اختياري)</Label>
-                      <Input
-                        value={receiptUrl}
-                        onChange={(e) => setReceiptUrl(e.target.value)}
-                        placeholder="https://..."
-                        className="bg-black/50 border-white/10 text-xs h-10 rounded-xl"
-                        dir="ltr"
-                      />
-                    </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-300">رقم الحوالة أو مرجع العملية (Transaction Reference)</Label>
+                    <Input
+                      value={receiptTx}
+                      onChange={(e) => setReceiptTx(e.target.value)}
+                      placeholder="مثال: TXN-89472384"
+                      className="bg-black/50 border-white/10 text-xs h-10 rounded-xl font-mono"
+                      dir="ltr"
+                    />
                   </div>
+
+                  <ImageUploadInput
+                    label="صورة الوصل أو الإيصال (اختياري)"
+                    value={receiptUrl}
+                    onChange={(url) => setReceiptUrl(url)}
+                    placeholder="ارفع وصل BaridiMob أو CCP..."
+                    aspectRatio="cover"
+                  />
 
                   <Button
                     disabled={isSubmittingPayment}
@@ -1036,10 +1027,18 @@ export default function Dashboard() {
                   />
                 </div>
 
+                <ImageUploadInput
+                  label="صورة وصل BaridiMob (اختياري)"
+                  value={receiptUrl}
+                  onChange={(url) => setReceiptUrl(url)}
+                  placeholder="ارفع وصل العملية..."
+                  aspectRatio="cover"
+                />
+
                 <Button
                   disabled={isSubmittingPayment}
                   onClick={() => handleSubmitPayment("template", buyTemplateModal.id, buyTemplateModal.priceDZD)}
-                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold uppercase tracking-wider text-xs h-11 rounded-xl shadow-lg"
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold uppercase tracking-wider text-xs h-11 rounded-xl shadow-lg mt-2"
                 >
                   {isSubmittingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال تأكيد الشراء"}
                 </Button>

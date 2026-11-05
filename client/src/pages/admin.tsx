@@ -65,6 +65,7 @@ import { toast } from "sonner";
 import { Project, ContactMessage, AdminSettings } from "@shared/schema";
 import { useLang } from "@/lib/i18n";
 import { SaasAdminTab } from "@/components/admin/SaasAdminTab";
+import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 
 export default function Admin() {
   const { t } = useLang();
@@ -466,31 +467,16 @@ function ProjectDialog({ open, onOpenChange, initialData, queryClient }: {
               <Input value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} placeholder="e.g. E-commerce • 2025" required />
             </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Image URL</label>
-            <Input 
-              value={formData.image} 
-              onChange={e => { setFormData({...formData, image: e.target.value}); setImgPreview(e.target.value); }}
-              placeholder="https://images.unsplash.com/..." 
-              required 
-            />
-            {/* Image preview */}
-            {imgPreview && (
-              <div className="relative h-32 rounded-lg overflow-hidden bg-white/5 border border-white/10">
-                <img 
-                  src={imgPreview} 
-                  alt="Preview" 
-                  className="w-full h-full object-cover"
-                  onError={() => setImgPreview("")}
-                />
-              </div>
-            )}
-            {!imgPreview && (
-              <div className="h-32 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground gap-2">
-                <ImageIcon className="w-5 h-5" /> <span className="text-sm">Image preview</span>
-              </div>
-            )}
-          </div>
+          <ImageUploadInput
+            label="صورة المشروع (Project Image)"
+            value={formData.image}
+            onChange={(url) => {
+              setFormData({ ...formData, image: url });
+              setImgPreview(url);
+            }}
+            placeholder="https://i.ibb.co/..."
+            aspectRatio="cover"
+          />
           <div className="space-y-2">
             <label className="text-sm font-medium">Project Link</label>
             <Input value={formData.link} onChange={e => setFormData({...formData, link: e.target.value})} placeholder="https://..." required />
