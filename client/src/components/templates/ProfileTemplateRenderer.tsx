@@ -8,6 +8,10 @@ import { CreativeDesigner } from "./CreativeDesigner";
 import { NeonDeveloper } from "./NeonDeveloper";
 import { ElegantProfessional } from "./ElegantProfessional";
 import { ModernGradient } from "./ModernGradient";
+import { HologramCard } from "./HologramCard";
+import { RetroArcade } from "./RetroArcade";
+import { AudioEqualizer } from "./AudioEqualizer";
+import { CinematicDirector } from "./CinematicDirector";
 
 export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
   switch (profile.templateId) {
@@ -25,6 +29,14 @@ export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
       return <ElegantProfessional profile={profile} />;
     case "modern-gradient":
       return <ModernGradient profile={profile} />;
+    case "hologram-card":
+      return <HologramCard profile={profile} />;
+    case "retro-arcade":
+      return <RetroArcade profile={profile} />;
+    case "audio-equalizer":
+      return <AudioEqualizer profile={profile} />;
+    case "cinematic-director":
+      return <CinematicDirector profile={profile} />;
     case "modern-minimalist":
     default:
       return <ModernMinimalist profile={profile} />;

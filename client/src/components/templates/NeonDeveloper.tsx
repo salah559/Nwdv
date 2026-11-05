@@ -8,25 +8,13 @@ import {
   Mail, 
   Phone, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
-  Globe, 
-  MessageCircle,
   Radio,
   Binary,
   Cpu,
   Wifi,
   Sparkles
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function NeonDeveloper({ profile }: { profile: UserProfile }) {
   const activeLinks = profile.socialLinks?.filter((l) => l.enabled) || [];
@@ -142,9 +130,7 @@ export function NeonDeveloper({ profile }: { profile: UserProfile }) {
 
         {/* Futuristic Cyber Links */}
         <div className="space-y-3">
-          {activeLinks.map((link) => {
-            const Icon = PLATFORM_ICONS[link.platform] || Globe;
-            return (
+          {activeLinks.map((link) => (
               <motion.a
                 key={link.id}
                 href={link.url}
@@ -156,8 +142,8 @@ export function NeonDeveloper({ profile }: { profile: UserProfile }) {
                 dir="ltr"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-cyan-400 group-hover:text-black transition-all">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center p-2 group-hover:scale-110 transition-all">
+                    <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-gray-100 group-hover:text-cyan-300 tracking-wide uppercase">
@@ -170,8 +156,7 @@ export function NeonDeveloper({ profile }: { profile: UserProfile }) {
                 </div>
                 <ExternalLink className="w-4 h-4 text-cyan-400 group-hover:translate-x-1 transition-transform" />
               </motion.a>
-            );
-          })}
+            ))}
         </div>
       </motion.div>
 

@@ -8,24 +8,12 @@ import {
   Mail, 
   Phone, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
-  Globe, 
-  MessageCircle,
   Heart,
   Flame,
   Zap,
   Smile
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function CreativeDesigner({ profile }: { profile: UserProfile }) {
   const activeLinks = profile.socialLinks?.filter((l) => l.enabled) || [];
@@ -145,9 +133,7 @@ export function CreativeDesigner({ profile }: { profile: UserProfile }) {
 
         {/* Dynamic Social Cards */}
         <div className="space-y-3">
-          {activeLinks.map((link) => {
-            const Icon = PLATFORM_ICONS[link.platform] || Globe;
-            return (
+          {activeLinks.map((link) => (
               <motion.a
                 key={link.id}
                 href={link.url}
@@ -158,8 +144,8 @@ export function CreativeDesigner({ profile }: { profile: UserProfile }) {
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-white/[0.08] to-white/[0.02] border-2 border-white/10 hover:border-pink-400 hover:shadow-[4px_4px_0px_rgba(236,72,153,0.4)] transition-all duration-300 group shadow-md"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500/30 to-purple-500/30 text-pink-300 flex items-center justify-center group-hover:scale-110 group-hover:bg-pink-500 group-hover:text-black transition-all">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500/20 to-purple-500/20 flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
+                    <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                   </div>
                   <div>
                     <span className="text-sm font-bold text-white group-hover:text-pink-300 block">
@@ -172,8 +158,7 @@ export function CreativeDesigner({ profile }: { profile: UserProfile }) {
                 </div>
                 <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-pink-400 transition-colors" />
               </motion.a>
-            );
-          })}
+            ))}
         </div>
       </motion.div>
 

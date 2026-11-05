@@ -8,23 +8,11 @@ import {
   Mail, 
   Phone, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
-  Globe, 
-  MessageCircle,
   Gem,
   Star,
   Shield
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function LuxuryBlackGold({ profile }: { profile: UserProfile }) {
   const activeLinks = profile.socialLinks?.filter((l) => l.enabled) || [];
@@ -142,9 +130,7 @@ export function LuxuryBlackGold({ profile }: { profile: UserProfile }) {
 
         {/* Links Cards with Golden Border and Hover Sweep */}
         <div className="space-y-3.5">
-          {activeLinks.map((link) => {
-            const Icon = PLATFORM_ICONS[link.platform] || Globe;
-            return (
+          {activeLinks.map((link) => (
               <motion.a
                 key={link.id}
                 href={link.url}
@@ -155,8 +141,8 @@ export function LuxuryBlackGold({ profile }: { profile: UserProfile }) {
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-black via-[#0d0d0d] to-black border border-amber-500/30 hover:border-amber-400 hover:shadow-[0_0_30px_rgba(245,158,11,0.3)] transition-all duration-300 group shadow-lg"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/40 flex items-center justify-center text-amber-400 group-hover:scale-110 group-hover:bg-amber-400 group-hover:text-black transition-all duration-300">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500/20 via-yellow-500/10 to-transparent border border-amber-500/40 flex items-center justify-center p-2 group-hover:scale-110 transition-transform duration-300">
+                    <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                   </div>
                   <div>
                     <span className="text-sm font-bold text-amber-50 group-hover:text-amber-300 block">
@@ -171,8 +157,7 @@ export function LuxuryBlackGold({ profile }: { profile: UserProfile }) {
                   <ExternalLink className="w-3.5 h-3.5" />
                 </div>
               </motion.a>
-            );
-          })}
+            ))}
         </div>
       </motion.div>
 

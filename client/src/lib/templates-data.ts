@@ -50,6 +50,66 @@ export const TEMPLATES: TemplateDefinition[] = [
 
   // Premium Templates
   {
+    id: "hologram-card",
+    name: "Holographic 3D Card",
+    description: "Futuristic iridescent collectible card with prismatic rainbow sheen, SSR rarity badge and 3D tilt.",
+    isPremium: true,
+    priceDZD: 1500,
+    category: "creative",
+    thumbnail: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Iridescent rainbow foil border shimmer",
+      "Dynamic multi-axis 3D tilt physics",
+      "Concentric holographic avatar rings",
+      "SSR Edition & Level 99 collectible badge"
+    ]
+  },
+  {
+    id: "retro-arcade",
+    name: "8-Bit Retro Arcade",
+    description: "Authentic 80s arcade cabinet experience with CRT scanlines, 8-bit health bars, and pixelated quest links.",
+    isPremium: true,
+    priceDZD: 1200,
+    category: "developer",
+    thumbnail: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Authentic CRT scanline screen overlay",
+      "Interactive HP & MP gaming health meters",
+      "Insert Coin credits & 1P Ready marquee",
+      "Chiptune quest log & retro arcade styling"
+    ]
+  },
+  {
+    id: "audio-equalizer",
+    name: "Vinyl Studio & Beats",
+    description: "Music producer & DJ studio layout with spinning vinyl record avatar, live EQ spectrum bars, and tracklist links.",
+    isPremium: true,
+    priceDZD: 1400,
+    category: "creative",
+    thumbnail: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Spinning 33 RPM vinyl record with avatar center",
+      "Multi-frequency animated audio equalizer bars",
+      "Studio On-Air beacon & 44.1 kHz Hi-Fi tag",
+      "Numbered audio tracklist social cards"
+    ]
+  },
+  {
+    id: "cinematic-director",
+    name: "Cinematic Film Premiere",
+    description: "Anamorphic Hollywood film poster layout with Cannes festival laurels, dramatic spotlights and movie credits.",
+    isPremium: true,
+    priceDZD: 1500,
+    category: "luxury",
+    thumbnail: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "Cinemascope 2.39:1 widescreen aesthetic",
+      "Official Selection 2025 festival laurels",
+      "Dramatic warm golden spotlights",
+      "Hollywood cast & director credits typography"
+    ]
+  },
+  {
     id: "luxury-black-gold",
     name: "Luxury Black & Gold",
     description: "Regal, high-end obsidian black canvas with radiant gold foil gradients and subtle glows.",

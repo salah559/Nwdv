@@ -46,6 +46,7 @@ import { TEMPLATES, getTemplateById } from "@/lib/templates-data";
 import { ProfileTemplateRenderer } from "@/components/templates/ProfileTemplateRenderer";
 import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 import { UserProfile, SocialLink, PaymentRecord, TemplateDefinition } from "@shared/saas-schema";
+import { SUPPORTED_PLATFORMS, PlatformIcon } from "@/components/ui/PlatformIcon";
 import { collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
@@ -168,7 +169,18 @@ export default function Dashboard() {
 
   const updateSocialLink = (index: number, field: keyof SocialLink, value: any) => {
     const updated = [...profileForm.socialLinks];
-    updated[index] = { ...updated[index], [field]: value };
+    if (field === "platform" && SUPPORTED_PLATFORMS[value]) {
+      const meta = SUPPORTED_PLATFORMS[value];
+      const currentTitle = updated[index]?.title;
+      const isDefaultOrEmpty = !currentTitle || currentTitle === "New Link" || Object.values(SUPPORTED_PLATFORMS).some(p => p.defaultTitle === currentTitle || p.name === currentTitle);
+      updated[index] = {
+        ...updated[index],
+        platform: value,
+        title: isDefaultOrEmpty ? meta.defaultTitle : currentTitle,
+      };
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
     setProfileForm({ ...profileForm, socialLinks: updated });
   };
 
@@ -598,22 +610,21 @@ export default function Dashboard() {
                         key={link.id || idx}
                         className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col sm:flex-row items-center gap-3"
                       >
-                        <div className="w-full sm:w-36">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          <div className="w-9 h-9 rounded-xl bg-[#0d1117] border border-white/10 flex items-center justify-center p-2 shrink-0">
+                            <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
+                          </div>
                           <select
                             value={link.platform}
                             onChange={(e) => updateSocialLink(idx, "platform", e.target.value)}
-                            className="w-full bg-[#0d1117] border border-white/10 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400"
+                            className="w-full sm:w-40 bg-[#0d1117] border border-white/10 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400"
                           >
-                            <option value="github">GitHub</option>
-                            <option value="linkedin">LinkedIn</option>
-                            <option value="instagram">Instagram</option>
-                            <option value="facebook">Facebook</option>
-                            <option value="tiktok">TikTok</option>
-                            <option value="youtube">YouTube</option>
-                            <option value="whatsapp">WhatsApp</option>
-                            <option value="twitter">X / Twitter</option>
-                            <option value="website">موقع إلكتروني</option>
-                            <option value="other">أخرى</option>
+                            {Object.values(SUPPORTED_PLATFORMS).map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name}
+                              </option>
+                            ))}
+                            <option value="other">أخرى / Custom</option>
                           </select>
                         </div>
 

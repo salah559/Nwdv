@@ -7,11 +7,7 @@ import {
   Mail, 
   Phone, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
   Globe, 
-  MessageCircle,
   Building2,
   CheckCircle2,
   ShieldCheck,
@@ -19,14 +15,7 @@ import {
   Award,
   Share2
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function ProfessionalProfile({ profile }: { profile: UserProfile }) {
   const activeLinks = profile.socialLinks?.filter((l) => l.enabled) || [];
@@ -142,9 +131,7 @@ export function ProfessionalProfile({ profile }: { profile: UserProfile }) {
             Professional Network & Portfolio
           </div>
 
-          {activeLinks.map((link) => {
-            const Icon = PLATFORM_ICONS[link.platform] || Globe;
-            return (
+          {activeLinks.map((link) => (
               <motion.a
                 key={link.id}
                 href={link.url}
@@ -155,8 +142,8 @@ export function ProfessionalProfile({ profile }: { profile: UserProfile }) {
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#0f172a]/80 border border-blue-900/30 hover:border-blue-400/60 hover:bg-[#14213d] transition-all duration-300 group shadow-md"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
+                    <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                   </div>
                   <div>
                     <span className="text-sm font-semibold text-gray-100 group-hover:text-blue-300 block">
@@ -169,8 +156,7 @@ export function ProfessionalProfile({ profile }: { profile: UserProfile }) {
                 </div>
                 <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
               </motion.a>
-            );
-          })}
+            ))}
         </div>
       </motion.div>
 

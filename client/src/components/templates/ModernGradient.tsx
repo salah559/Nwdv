@@ -7,22 +7,10 @@ import {
   Mail, 
   Phone, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
-  Globe, 
-  MessageCircle,
   Radio,
   ArrowRight
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function ModernGradient({ profile }: { profile: UserProfile }) {
   const activeLinks = profile.socialLinks?.filter((l) => l.enabled) || [];
@@ -121,9 +109,7 @@ export function ModernGradient({ profile }: { profile: UserProfile }) {
 
         {/* Aurora Link Pills */}
         <div className="space-y-3">
-          {activeLinks.map((link) => {
-            const Icon = PLATFORM_ICONS[link.platform] || Globe;
-            return (
+          {activeLinks.map((link) => (
               <motion.a
                 key={link.id}
                 href={link.url}
@@ -134,8 +120,8 @@ export function ModernGradient({ profile }: { profile: UserProfile }) {
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-white/[0.06] to-white/[0.02] border border-white/10 hover:border-cyan-400/50 hover:bg-white/[0.08] backdrop-blur-2xl transition-all duration-300 group shadow-lg"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-white/10 text-white flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-white/10 text-white flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
+                    <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                   </div>
                   <div>
                     <span className="text-sm font-semibold text-gray-100 group-hover:text-white block">
@@ -150,8 +136,7 @@ export function ModernGradient({ profile }: { profile: UserProfile }) {
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </motion.a>
-            );
-          })}
+            ))}
         </div>
       </motion.div>
 

@@ -8,11 +8,6 @@ import {
   Mail, 
   Phone, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
-  Twitter, 
-  MessageCircle,
   Cpu,
   GitBranch,
   FolderTree,
@@ -20,15 +15,7 @@ import {
   FileCode2,
   Check
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  twitter: Twitter,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function DeveloperProfile({ profile }: { profile: UserProfile }) {
   const [activeTab, setActiveTab] = useState<"code" | "links">("links");
@@ -173,9 +160,7 @@ export function DeveloperProfile({ profile }: { profile: UserProfile }) {
                   <span className="text-gray-500 text-[10px]">HTTP 200 OK</span>
                 </div>
 
-                {activeLinks.map((link, idx) => {
-                  const Icon = PLATFORM_ICONS[link.platform] || Globe;
-                  return (
+                {activeLinks.map((link, idx) => (
                     <motion.a
                       key={link.id}
                       href={link.url}
@@ -187,8 +172,8 @@ export function DeveloperProfile({ profile }: { profile: UserProfile }) {
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-gray-600 text-xs font-mono select-none">0{idx + 1}</span>
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                          <Icon className="w-4 h-4" />
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center p-1.5 group-hover:scale-110 transition-transform">
+                          <PlatformIcon platform={link.platform} className="w-4 h-4" colored={true} />
                         </div>
                         <div>
                           <div className="text-xs font-bold text-gray-200 group-hover:text-emerald-300">
@@ -201,8 +186,7 @@ export function DeveloperProfile({ profile }: { profile: UserProfile }) {
                       </div>
                       <ExternalLink className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400 transition-colors" />
                     </motion.a>
-                  );
-                })}
+                  ))}
               </div>
             ) : (
               /* Mode: JSON Config Code View */

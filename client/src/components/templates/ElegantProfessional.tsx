@@ -7,23 +7,11 @@ import {
   Mail, 
   Phone, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
-  Globe, 
-  MessageCircle,
   Award,
   Compass,
   ArrowUpRight
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  whatsapp: MessageCircle,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function ElegantProfessional({ profile }: { profile: UserProfile }) {
   const activeLinks = profile.socialLinks?.filter((l) => l.enabled) || [];
@@ -131,9 +119,7 @@ export function ElegantProfessional({ profile }: { profile: UserProfile }) {
 
         {/* Links Stack */}
         <div className="space-y-3">
-          {activeLinks.map((link) => {
-            const Icon = PLATFORM_ICONS[link.platform] || Globe;
-            return (
+          {activeLinks.map((link) => (
               <motion.a
                 key={link.id}
                 href={link.url}
@@ -144,8 +130,8 @@ export function ElegantProfessional({ profile }: { profile: UserProfile }) {
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-teal-400/50 hover:bg-white/[0.08] backdrop-blur-2xl transition-all duration-300 group shadow-md"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-teal-300 group-hover:scale-105 transition-transform">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center p-2 group-hover:scale-105 transition-transform">
+                    <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                   </div>
                   <div>
                     <span className="text-sm font-semibold text-gray-200 group-hover:text-white block">
@@ -158,8 +144,7 @@ export function ElegantProfessional({ profile }: { profile: UserProfile }) {
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-teal-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
               </motion.a>
-            );
-          })}
+            ))}
         </div>
       </motion.div>
 

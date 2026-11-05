@@ -2,34 +2,15 @@ import React, { useState } from "react";
 import { UserProfile } from "@shared/saas-schema";
 import { motion } from "framer-motion";
 import { 
-  Globe, 
   Mail, 
   Phone, 
   MapPin, 
   ExternalLink,
-  Github, 
-  Linkedin, 
-  Instagram, 
-  Facebook, 
-  Youtube, 
-  MessageCircle,
-  Twitter,
-  Sparkles,
-  Copy,
-  Check,
+  Copy, 
+  Check, 
   Share2
 } from "lucide-react";
-
-const PLATFORM_ICONS: Record<string, React.ElementType> = {
-  github: Github,
-  linkedin: Linkedin,
-  instagram: Instagram,
-  facebook: Facebook,
-  youtube: Youtube,
-  whatsapp: MessageCircle,
-  twitter: Twitter,
-  website: Globe,
-};
+import { PlatformIcon } from "@/components/ui/PlatformIcon";
 
 export function ModernMinimalist({ profile }: { profile: UserProfile }) {
   const [copied, setCopied] = useState(false);
@@ -108,7 +89,7 @@ export function ModernMinimalist({ profile }: { profile: UserProfile }) {
         </div>
 
         {/* Direct Action Chips */}
-        <div className="flex items-center justify-center gap-2.5 mb-8">
+        <div className="flex items-center justify-center gap-2.5 mb-8 flex-wrap">
           {profile.email && (
             <a
               href={`mailto:${profile.email}`}
@@ -125,7 +106,7 @@ export function ModernMinimalist({ profile }: { profile: UserProfile }) {
               rel="noreferrer"
               className="px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-950/20 text-xs font-medium text-emerald-400 transition-all flex items-center gap-2 shadow-sm"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
+              <PlatformIcon platform="whatsapp" className="w-3.5 h-3.5" colored={false} />
               <span>WhatsApp</span>
             </a>
           )}
@@ -142,37 +123,34 @@ export function ModernMinimalist({ profile }: { profile: UserProfile }) {
 
         {/* Social Links List */}
         <div className="space-y-3">
-          {activeLinks.map((link, idx) => {
-            const Icon = PLATFORM_ICONS[link.platform] || Globe;
-            return (
-              <motion.a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noreferrer"
-                whileHover={{ y: -3, scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-white/[0.05] via-white/[0.03] to-transparent border border-white/10 hover:border-white/30 hover:shadow-lg transition-all duration-300 group"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-white group-hover:text-black transition-all duration-300">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-gray-200 group-hover:text-white block">
-                      {link.title}
-                    </span>
-                    <span className="text-[11px] text-gray-500 block truncate max-w-[200px]" dir="ltr">
-                      {link.url.replace(/^https?:\/\/(www\.)?/, "")}
-                    </span>
-                  </div>
+          {activeLinks.map((link) => (
+            <motion.a
+              key={link.id}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              whileHover={{ y: -3, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-white/[0.05] via-white/[0.03] to-transparent border border-white/10 hover:border-white/30 hover:shadow-lg transition-all duration-300 group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center p-2 group-hover:scale-105 transition-all duration-300">
+                  <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                 </div>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 group-hover:text-white group-hover:translate-x-0.5 transition-all">
-                  <ExternalLink className="w-4 h-4" />
+                <div>
+                  <span className="text-sm font-semibold text-gray-200 group-hover:text-white block">
+                    {link.title}
+                  </span>
+                  <span className="text-[11px] text-gray-500 block truncate max-w-[200px]" dir="ltr">
+                    {link.url.replace(/^https?:\/\/(www\.)?/, "")}
+                  </span>
                 </div>
-              </motion.a>
-            );
-          })}
+              </div>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 group-hover:text-white group-hover:translate-x-0.5 transition-all">
+                <ExternalLink className="w-4 h-4" />
+              </div>
+            </motion.a>
+          ))}
         </div>
       </motion.div>
 
