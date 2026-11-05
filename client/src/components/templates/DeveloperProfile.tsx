@@ -177,7 +177,7 @@ export function DeveloperProfile({ profile }: { profile: UserProfile }) {
                           <PlatformIcon platform={link.platform} className="w-4 h-4" colored={true} />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-gray-200 group-hover:text-emerald-300">
+                          <div className="text-sm font-bold text-gray-200 group-hover:text-emerald-300">
                             {link.title}
                           </div>
                         </div>

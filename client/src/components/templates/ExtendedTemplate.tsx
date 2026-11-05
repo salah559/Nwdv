@@ -668,7 +668,6 @@ export function ExtendedTemplateView({
                   <span className="font-semibold text-sm block truncate group-hover:text-white transition-colors">
                     {link.title}
                   </span>
-                  
                 </div>
               </div>
 

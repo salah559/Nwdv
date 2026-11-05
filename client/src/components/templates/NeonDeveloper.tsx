@@ -147,7 +147,7 @@ export function NeonDeveloper({ profile }: { profile: UserProfile }) {
                     <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-gray-100 group-hover:text-cyan-300 tracking-wide uppercase">
+                    <div className="text-sm font-bold text-gray-100 group-hover:text-cyan-300 tracking-wide uppercase">
                       {link.title}
                     </div>
                   </div>
