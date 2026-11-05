@@ -1,12 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   User,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  sendPasswordResetEmail,
   onAuthStateChanged,
-  updateProfile,
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
@@ -44,11 +40,9 @@ interface AuthContextType {
   unlockedTemplates: string[];
   loading: boolean;
   isAdmin: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, pass: string, fullName: string, username: string) => Promise<void>;
-  signIn: (email: string, pass: string) => Promise<void>;
+  signInWithGoogle: () => Promise<{ isNewUser: boolean }>;
+  completeOnboarding: (fullName: string, username: string) => Promise<void>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
   refreshUserData: () => Promise<void>;
   updateUserProfileData: (data: Partial<UserProfile>) => Promise<void>;
 }
@@ -130,135 +124,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): Promise<{ isNewUser: boolean }> => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
     const res = await signInWithPopup(auth, provider);
     const user = res.user;
+    setCurrentUser(user);
 
     // Check if profile exists
     const profRef = doc(db, "profiles", user.uid);
     const profSnap = await getDoc(profRef);
 
-    if (!profSnap.exists()) {
-      // Generate clean unique username
-      const base = user.email ? user.email.split("@")[0] : (user.displayName || "user");
-      let chosenUsername = base.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 15);
-      if (chosenUsername.length < 3) chosenUsername = "user" + Math.floor(100 + Math.random() * 900);
-
-      if ((RESERVED_USERNAMES as readonly string[]).includes(chosenUsername)) {
-        chosenUsername = `${chosenUsername}${Math.floor(10 + Math.random() * 90)}`;
-      }
-
-      // Verify availability in usernames collection
-      let unameRef = doc(db, "usernames", chosenUsername);
-      let unameSnap = await getDoc(unameRef);
-      let attempts = 0;
-      while (unameSnap.exists() && attempts < 10) {
-        chosenUsername = `${chosenUsername.slice(0, 12)}${Math.floor(10 + Math.random() * 90)}`;
-        unameRef = doc(db, "usernames", chosenUsername);
-        unameSnap = await getDoc(unameRef);
-        attempts++;
-      }
-
-      // Reserve username
-      await setDoc(unameRef, {
-        userId: user.uid,
-        username: chosenUsername,
-        createdAt: Timestamp.now(),
-      });
-
-      // 7-day free trial dates
-      const now = new Date();
-      const trialEndsAtDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-      const subData: UserSubscription = {
-        userId: user.uid,
-        status: "trial",
-        planId: "trial",
-        trialStartsAt: Timestamp.fromDate(now),
-        trialEndsAt: Timestamp.fromDate(trialEndsAtDate),
-        currentPeriodEnd: Timestamp.fromDate(trialEndsAtDate),
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-      };
-      await setDoc(doc(db, "subscriptions", user.uid), subData);
-
-      // Create new profile with Google avatar & name
-      const newProfile: UserProfile = {
-        userId: user.uid,
-        username: chosenUsername,
-        fullName: user.displayName || chosenUsername,
-        jobTitle: "Digital Creator",
-        bio: "Welcome to my official digital hub! Connect with me across platforms.",
-        avatarUrl: user.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-        coverUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
-        location: "Algeria",
-        email: user.email || "",
-        phone: "",
-        whatsapp: "",
-        socialLinks: DEFAULT_SOCIAL_LINKS,
-        templateId: "modern-minimalist",
-        customTheme: {
-          primaryColor: "#06FFF0",
-          backgroundColor: "#0b0f17",
-          fontFamily: "Inter",
-          backgroundStyle: "mesh",
-        },
-        isPublished: true,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-      };
-      await setDoc(profRef, newProfile);
-
-      setUserProfile(newProfile);
-      setSubscription(subData);
-    } else {
+    if (profSnap.exists()) {
       await fetchUserData(user.uid);
+      return { isNewUser: false };
+    } else {
+      setUserProfile(null);
+      return { isNewUser: true };
     }
-
-    setCurrentUser(user);
   };
 
-  const signUp = async (email: string, pass: string, fullName: string, rawUsername: string) => {
+  const completeOnboarding = async (fullName: string, rawUsername: string) => {
+    if (!currentUser) throw new Error("يجب تسجيل الدخول بحساب Google أولاً");
     const cleanUsername = rawUsername.trim().toLowerCase();
 
     // 1. Validation
     if (!usernameRegex.test(cleanUsername)) {
-      throw new Error("Username must be 3-20 characters long and contain only letters, numbers, hyphens or underscores.");
+      throw new Error("اسم المستخدم يجب أن يكون من 3 إلى 20 حرفاً (أحرف إنجليزية، أرقام، -، أو _)");
     }
 
     if ((RESERVED_USERNAMES as readonly string[]).includes(cleanUsername)) {
-      throw new Error(`The username '${cleanUsername}' is reserved by Novaweb. Please pick another one.`);
+      throw new Error(`اسم المستخدم '${cleanUsername}' محجوز من قبل المنصة. يرجى اختيار اسم آخر.`);
     }
 
     // 2. Check availability
     const unameRef = doc(db, "usernames", cleanUsername);
     const unameSnap = await getDoc(unameRef);
     if (unameSnap.exists()) {
-      throw new Error(`The username '${cleanUsername}' is already taken.`);
+      throw new Error(`اسم المستخدم '${cleanUsername}' محجوز بالفعل، اختر اسماً آخر.`);
     }
 
-    // 3. Firebase Auth User
-    const res = await createUserWithEmailAndPassword(auth, email, pass);
-    const uid = res.user.uid;
-
-    await updateProfile(res.user, { displayName: fullName });
-
-    // 4. Reserve username
+    // 3. Reserve username
     await setDoc(unameRef, {
-      userId: uid,
+      userId: currentUser.uid,
       username: cleanUsername,
       createdAt: Timestamp.now(),
     });
 
-    // 5. Default 7-day trial dates
+    // 4. Default 7-day trial dates
     const now = new Date();
-    const trialEndsAtDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days exact
+    const trialEndsAtDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    // 6. Subscription record
+    // 5. Subscription record
     const subData: UserSubscription = {
-      userId: uid,
+      userId: currentUser.uid,
       status: "trial",
       planId: "trial",
       trialStartsAt: Timestamp.fromDate(now),
@@ -267,19 +186,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
-    await setDoc(doc(db, "subscriptions", uid), subData);
+    await setDoc(doc(db, "subscriptions", currentUser.uid), subData);
 
-    // 7. Profile record
+    // 6. Profile record
     const newProfile: UserProfile = {
-      userId: uid,
+      userId: currentUser.uid,
       username: cleanUsername,
-      fullName: fullName,
+      fullName: fullName.trim() || currentUser.displayName || cleanUsername,
       jobTitle: "Digital Creator",
       bio: "Welcome to my official digital hub! Connect with me across platforms.",
-      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+      avatarUrl: currentUser.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
       coverUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
-      location: "Algiers, Algeria",
-      email: email,
+      location: "Algeria",
+      email: currentUser.email || "",
       phone: "",
       whatsapp: "",
       socialLinks: DEFAULT_SOCIAL_LINKS,
@@ -294,17 +213,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
-    await setDoc(doc(db, "profiles", uid), newProfile);
+    await setDoc(doc(db, "profiles", currentUser.uid), newProfile);
 
-    // Refresh context
-    setCurrentUser(res.user);
+    // Update state
     setUserProfile(newProfile);
     setSubscription(subData);
-  };
-
-  const signIn = async (email: string, pass: string) => {
-    const res = await signInWithEmailAndPassword(auth, email, pass);
-    await fetchUserData(res.user.uid);
   };
 
   const signOut = async () => {
@@ -312,10 +225,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCurrentUser(null);
     setUserProfile(null);
     setSubscription(null);
-  };
-
-  const resetPassword = async (email: string) => {
-    await sendPasswordResetEmail(auth, email);
   };
 
   const refreshUserData = async () => {
@@ -348,10 +257,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         isAdmin,
         signInWithGoogle,
-        signUp,
-        signIn,
+        completeOnboarding,
         signOut,
-        resetPassword,
         refreshUserData,
         updateUserProfileData,
       }}

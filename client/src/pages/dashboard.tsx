@@ -75,10 +75,14 @@ export default function Dashboard() {
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
 
   useEffect(() => {
-    if (!loading && !currentUser) {
-      setLocation("/auth/login");
+    if (!loading) {
+      if (!currentUser) {
+        setLocation("/auth/login");
+      } else if (!userProfile) {
+        setLocation("/onboarding");
+      }
     }
-  }, [currentUser, loading, setLocation]);
+  }, [currentUser, userProfile, loading, setLocation]);
 
   useEffect(() => {
     if (userProfile) {

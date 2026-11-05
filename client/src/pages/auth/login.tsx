@@ -1,12 +1,9 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Mail, Lock, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { Sparkles, AlertCircle, Loader2, Check, Globe, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
-import { useLang } from "@/lib/i18n";
 import { SEO } from "@/components/SEO";
 
 function GoogleIcon() {
@@ -21,60 +18,42 @@ function GoogleIcon() {
 }
 
 export default function Login() {
-  const { signIn, signInWithGoogle } = useAuth();
-  const { t } = useLang();
+  const { currentUser, userProfile, signInWithGoogle, loading } = useAuth();
   const [, setLocation] = useLocation();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    if (!loading && currentUser) {
+      if (userProfile) {
+        setLocation("/dashboard");
+      } else {
+        setLocation("/onboarding");
+      }
+    }
+  }, [currentUser, userProfile, loading, setLocation]);
 
   const handleGoogleSignIn = async () => {
     setError(null);
     try {
       setIsGoogleLoading(true);
-      await signInWithGoogle();
-      setLocation("/dashboard");
+      const res = await signInWithGoogle();
+      if (res.isNewUser) {
+        setLocation("/onboarding");
+      } else {
+        setLocation("/dashboard");
+      }
     } catch (err: any) {
       console.error(err);
       if (err.code === "auth/popup-closed-by-user") {
         setError("تم إغلاق نافذة تسجيل الدخول عبر Google.");
       } else if (err.code === "auth/configuration-not-found") {
-        setError("تنبيه: يجب تفعيل موفر Google في Firebase Console أولاً.");
+        setError("تنبيه: يرجى تفعيل موفر Google في Firebase Console أولاً.");
       } else {
         setError(err.message || "فشل تسجيل الدخول عبر Google.");
       }
     } finally {
       setIsGoogleLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!email.trim() || !password) {
-      setError("يرجى ملء جميع الحقول");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      await signIn(email, password);
-      setLocation("/dashboard");
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        setError("بيانات الدخول غير صحيحة. يرجى التحقق من البريد أو كلمة المرور.");
-      } else if (err.code === "auth/configuration-not-found") {
-        setError("تنبيه: يجب تفعيل خدمة Authentication في لوحة Firebase Console لمشروعك.");
-      } else {
-        setError(err.message || "حدث خطأ أثناء تسجيل الدخول.");
-      }
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -90,12 +69,18 @@ export default function Login() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-2xl p-6 sm:p-10 shadow-2xl relative overflow-hidden"
       >
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="text-[11px] font-bold text-cyan-300 font-ui uppercase tracking-wider">
+              تجربة مجانية كاملة 7 أيام
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
-            مرحباً بعودتك
+            مرحباً بك في Novaweb
           </h1>
-          <p className="text-gray-400 text-sm">
-            سجّل دخولك للوصول إلى لوحة تحكم موقعك الشخصي
+          <p className="text-gray-400 text-sm leading-relaxed">
+            سجّل دخولك الآن بحساب Google لإنشاء موقعك الشخصي وإدارته في ثوانٍ معدودة.
           </p>
         </div>
 
@@ -110,89 +95,36 @@ export default function Login() {
           </motion.div>
         )}
 
-        {/* GOOGLE SIGN IN BUTTON */}
+        {/* PROMINENT GOOGLE BUTTON */}
         <Button
           type="button"
-          disabled={isGoogleLoading || isLoading}
+          disabled={isGoogleLoading}
           onClick={handleGoogleSignIn}
-          className="w-full bg-white hover:bg-gray-100 text-gray-900 font-ui font-bold h-12 rounded-xl mb-5 shadow-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.01]"
+          className="w-full bg-white hover:bg-gray-100 text-gray-900 font-ui font-extrabold h-14 rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] text-sm"
         >
           {isGoogleLoading ? (
             <Loader2 className="w-5 h-5 animate-spin text-gray-900" />
           ) : (
             <>
               <GoogleIcon />
-              <span className="text-sm">تسجيل الدخول باستخدام Google</span>
+              <span>المتابعة باستخدام Google</span>
             </>
           )}
         </Button>
 
-        {/* DIVIDER */}
-        <div className="relative flex items-center justify-center mb-6">
-          <div className="border-t border-white/10 w-full" />
-          <span className="bg-[#0b0e17] px-3 text-[11px] text-gray-500 font-ui uppercase tracking-wider absolute">
-            أو عبر البريد
-          </span>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs text-gray-300 font-ui">البريد الإلكتروني</Label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-gray-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <Input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="salah@example.com"
-                className="bg-black/40 border-white/10 pr-10 text-sm h-11 focus:border-cyan-400 rounded-xl"
-                dir="ltr"
-              />
-            </div>
+        <div className="mt-8 pt-6 border-t border-white/5 space-y-2.5 text-xs text-gray-400">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-cyan-400" />
+            <span>تسجيل آمن وسريع بدون الحاجة لحفظ كلمات مرور</span>
           </div>
-
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs text-gray-300 font-ui">كلمة المرور</Label>
-              <Link href="/auth/forgot-password" className="text-[11px] text-cyan-400 hover:underline">
-                نسيت كلمة المرور؟
-              </Link>
-            </div>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-gray-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <Input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="bg-black/40 border-white/10 pr-10 text-sm h-11 focus:border-cyan-400 rounded-xl"
-              />
-            </div>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-cyan-400" />
+            <span>ستختار اسمك ونطاقك الفرعي في الخطوة التالية</span>
           </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading || isGoogleLoading}
-            className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider h-12 rounded-xl mt-4 shadow-[0_0_20px_rgba(6,255,240,0.3)]"
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <span className="flex items-center gap-2">
-                <span>دخول</span>
-                <ArrowRight className="w-4 h-4" />
-              </span>
-            )}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center text-xs text-gray-400">
-          <span>ليس لديك حساب بعد؟ </span>
-          <Link href="/auth/register" className="text-cyan-400 hover:underline font-bold">
-            ابدأ تجربتك المجانية
-          </Link>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-cyan-400" />
+            <span>تجربة مجانية كاملة 7 أيام بدون بطاقة بنكية</span>
+          </div>
         </div>
       </motion.div>
     </div>

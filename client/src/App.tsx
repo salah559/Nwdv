@@ -15,8 +15,7 @@ import About from "@/pages/about";
 import Admin from "@/pages/admin";
 import ProfilesLanding from "@/pages/profiles-landing";
 import Login from "@/pages/auth/login";
-import Register from "@/pages/auth/register";
-import ForgotPassword from "@/pages/auth/forgot-password";
+import Onboarding from "@/pages/auth/onboarding";
 import Dashboard from "@/pages/dashboard";
 import PublicProfile from "@/pages/public-profile";
 import { LangProvider } from "@/lib/i18n";
@@ -59,8 +58,8 @@ function Router() {
       <Route path="/profiles" component={ProfilesLanding} />
       <Route path="/profile-saas" component={ProfilesLanding} />
       <Route path="/auth/login" component={Login} />
-      <Route path="/auth/register" component={Register} />
-      <Route path="/auth/forgot-password" component={ForgotPassword} />
+      <Route path="/auth/register" component={Login} />
+      <Route path="/onboarding" component={Onboarding} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/p/:username" component={PublicProfile} />
       <Route path="/u/:username" component={PublicProfile} />
@@ -76,12 +75,13 @@ function Router() {
 function MainLayout() {
   const [location] = useLocation();
 
-  // Paths that should not have agency navigation chrome (personal profiles, auth, dashboard)
+  // Paths that should not have agency navigation chrome (personal profiles, onboarding, dashboard)
   const isDedicatedPage = useMemo(() => {
     return (
       location.startsWith("/p/") ||
       location.startsWith("/u/") ||
-      location.startsWith("/dashboard")
+      location.startsWith("/dashboard") ||
+      location.startsWith("/onboarding")
     );
   }, [location]);
 
