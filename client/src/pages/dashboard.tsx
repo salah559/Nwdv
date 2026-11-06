@@ -35,7 +35,6 @@ import {
   Search,
   Filter,
   Coins,
-  Edit3,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,6 @@ import { useLang } from "@/lib/i18n";
 import { SEO } from "@/components/SEO";
 import { TEMPLATES, getTemplateById } from "@/lib/templates-data";
 import { ProfileTemplateRenderer } from "@/components/templates/ProfileTemplateRenderer";
-import { VisualProfileBuilder } from "@/components/builder/VisualProfileBuilder";
 import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 import { DashboardHeader } from "@/components/ui/DashboardHeader";
 import { UserProfile, SocialLink, PaymentRecord, TemplateDefinition } from "@shared/saas-schema";
@@ -67,7 +65,6 @@ export default function Dashboard() {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [profileForm, setProfileForm] = useState<UserProfile | null>(null);
-  const [builderMode, setBuilderMode] = useState<"visual" | "classic">("visual");
   const [isSaving, setIsSaving] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -492,9 +489,23 @@ export default function Dashboard() {
                     {getTemplateById(userProfile.templateId).description}
                   </p>
                 </div>
-                <div className="mt-6 pt-4 border-t border-white/5">
+                <div className="mt-6 pt-4 border-t border-white/5 flex flex-col gap-2">
                   <Button size="sm" variant="outline" onClick={() => setActiveTab("templates")} className="text-xs w-full">
                     تغيير القالب
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setActiveTab("templates");
+                      setTimeout(() => {
+                        const el = document.querySelector("[data-customizer]");
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }, 200);
+                    }}
+                    className="text-xs w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 gap-1.5"
+                  >
+                    <Palette className="w-3.5 h-3.5" />
+                    تخصيص الألوان والخط
                   </Button>
                 </div>
               </div>
@@ -533,57 +544,7 @@ export default function Dashboard() {
 
           {/* TAB 2: PROFILE BUILDER */}
           <TabsContent value="builder" className="space-y-6">
-            {/* Top Switcher between Visual Canvas Editor and Classic Form Fields */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/5">
-              <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
-                  <span>منشئ ومعدل الموقع الشخصي</span>
-                </h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  تعديل تفاعلي مباشر داخل المعاينة السريعة مع حرية كاملة في تخصيص الألوان، الخطوط، الخلفيات وشكل الأزرار.
-                </p>
-              </div>
-
-              <div className="bg-black/60 p-1 rounded-2xl border border-white/10 flex items-center gap-1 self-start sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => setBuilderMode("visual")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    builderMode === "visual"
-                      ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-black shadow-[0_0_15px_rgba(6,255,240,0.3)]"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>المحرر البصري الحي (موصى به)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBuilderMode("classic")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    builderMode === "classic"
-                      ? "bg-white/15 text-white border border-white/20"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>الحقول الكلاسيكية</span>
-                </button>
-              </div>
-            </div>
-
-            {builderMode === "visual" ? (
-              <VisualProfileBuilder
-                profile={profileForm}
-                onChange={setProfileForm}
-                onSave={handleSaveProfile}
-                isSaving={isSaving}
-                unlockedTemplates={unlockedTemplates}
-                onUnlockTemplateRequest={(tmpl) => setBuyTemplateModal(tmpl)}
-              />
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Form: Info & Social Links */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Basic Info Card */}
@@ -813,7 +774,6 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            )}
           </TabsContent>
 
           {/* TAB 3: TEMPLATES GALLERY */}
@@ -830,6 +790,221 @@ export default function Dashboard() {
                   جميع القوالب تستخدم نفس بياناتك المحفوظة دون فقدان أي معلومات عند التبديل بينها.
                 </p>
               </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════
+                🎨 QUICK CUSTOMIZATION PANEL
+            ═══════════════════════════════════════════════════════ */}
+            <div data-customizer className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-purple-900/20 via-cyan-900/10 to-black border border-purple-500/20 backdrop-blur-xl space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-purple-400" />
+                  <h4 className="text-sm font-bold text-white">تخصيص سريع للقالب</h4>
+                  <Badge className="bg-purple-500/20 text-purple-300 border-none text-[10px]">مباشر</Badge>
+                </div>
+                <Button
+                  size="sm"
+                  disabled={isSaving}
+                  onClick={handleSaveProfile}
+                  className="bg-purple-500 hover:bg-purple-400 text-white font-bold text-xs gap-1.5 h-8 px-4 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                >
+                  {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  <span>حفظ التخصيص</span>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+                {/* Primary Color Picker */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" />
+                    اللون الرئيسي
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { color: "#06fff0", label: "سيان" },
+                      { color: "#a855f7", label: "بنفسجي" },
+                      { color: "#f59e0b", label: "ذهبي" },
+                      { color: "#ec4899", label: "وردي" },
+                      { color: "#10b981", label: "أخضر" },
+                      { color: "#3b82f6", label: "أزرق" },
+                      { color: "#f97316", label: "برتقالي" },
+                      { color: "#ef4444", label: "أحمر" },
+                    ].map(({ color, label }) => (
+                      <button
+                        key={color}
+                        title={label}
+                        onClick={() =>
+                          setProfileForm({
+                            ...profileForm,
+                            customTheme: { ...(profileForm.customTheme || {}), primaryColor: color },
+                          })
+                        }
+                        className={`w-7 h-7 rounded-full border-2 transition-all hover:scale-110 ${
+                          (profileForm.customTheme?.primaryColor || "#06fff0") === color
+                            ? "border-white scale-110 shadow-lg"
+                            : "border-transparent opacity-70 hover:opacity-100"
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                    {/* Custom color input */}
+                    <div className="relative">
+                      <input
+                        type="color"
+                        value={profileForm.customTheme?.primaryColor || "#06fff0"}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            customTheme: { ...(profileForm.customTheme || {}), primaryColor: e.target.value },
+                          })
+                        }
+                        className="w-7 h-7 rounded-full cursor-pointer border-2 border-dashed border-white/30 hover:border-white/60 bg-transparent p-0 overflow-hidden"
+                        title="لون مخصص"
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className="h-1.5 rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, ${profileForm.customTheme?.primaryColor || "#06fff0"}44, ${profileForm.customTheme?.primaryColor || "#06fff0"})`,
+                    }}
+                  />
+                </div>
+
+                {/* Background Style */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
+                    نمط الخلفية
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: "solid", icon: "■", label: "صلبة" },
+                      { id: "gradient", icon: "◑", label: "متدرجة" },
+                      { id: "mesh", icon: "⬡", label: "شبكية" },
+                      { id: "particles", icon: "✦", label: "جسيمات" },
+                    ].map((style) => (
+                      <button
+                        key={style.id}
+                        onClick={() =>
+                          setProfileForm({
+                            ...profileForm,
+                            customTheme: {
+                              ...(profileForm.customTheme || {}),
+                              backgroundStyle: style.id as "solid" | "gradient" | "mesh" | "particles",
+                            },
+                          })
+                        }
+                        className={`p-2 rounded-xl border text-center transition-all text-xs ${
+                          (profileForm.customTheme?.backgroundStyle || "solid") === style.id
+                            ? "border-purple-400 bg-purple-500/20 text-white font-bold shadow-md"
+                            : "border-white/10 bg-black/30 text-gray-400 hover:border-white/30 hover:text-white"
+                        }`}
+                      >
+                        <div className="text-lg mb-0.5">{style.icon}</div>
+                        <div>{style.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Font Family */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+                    نوع الخط
+                  </label>
+                  <div className="space-y-1.5">
+                    {[
+                      { id: "inter", label: "Inter", preview: "Modern" },
+                      { id: "space-grotesk", label: "Space Grotesk", preview: "Creative" },
+                      { id: "poppins", label: "Poppins", preview: "Friendly" },
+                      { id: "mono", label: "JetBrains Mono", preview: "Developer" },
+                      { id: "playfair", label: "Playfair Display", preview: "Elegant" },
+                    ].map((font) => (
+                      <button
+                        key={font.id}
+                        onClick={() =>
+                          setProfileForm({
+                            ...profileForm,
+                            customTheme: { ...(profileForm.customTheme || {}), fontFamily: font.id },
+                          })
+                        }
+                        className={`w-full px-3 py-2 rounded-xl border text-left transition-all flex items-center justify-between ${
+                          (profileForm.customTheme?.fontFamily || "inter") === font.id
+                            ? "border-amber-400 bg-amber-500/10 text-white"
+                            : "border-white/10 bg-black/30 text-gray-400 hover:border-white/20 hover:text-white"
+                        }`}
+                      >
+                        <span className="text-xs font-semibold">{font.label}</span>
+                        <span className="text-[10px] text-gray-500">{font.preview}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Background Color Row */}
+              <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="text-xs font-bold text-gray-300 shrink-0 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />
+                  لون الخلفية الأساسي:
+                </label>
+                <div className="flex flex-wrap gap-2 items-center">
+                  {[
+                    { color: "#07090e", label: "أسود داكن" },
+                    { color: "#0a0a0a", label: "أسود نقي" },
+                    { color: "#0d1117", label: "رمادي GitHub" },
+                    { color: "#1a0533", label: "بنفسجي داكن" },
+                    { color: "#001a1a", label: "فيروزي داكن" },
+                    { color: "#0a0a1a", label: "أزرق داكن" },
+                    { color: "#1a0a00", label: "بني داكن" },
+                    { color: "#ffffff", label: "أبيض" },
+                  ].map(({ color, label }) => (
+                    <button
+                      key={color}
+                      title={label}
+                      onClick={() =>
+                        setProfileForm({
+                          ...profileForm,
+                          customTheme: { ...(profileForm.customTheme || {}), backgroundColor: color },
+                        })
+                      }
+                      className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 ${
+                        (profileForm.customTheme?.backgroundColor || "#07090e") === color
+                          ? "border-white scale-110 shadow-lg ring-2 ring-white/20"
+                          : "border-white/10 opacity-80 hover:opacity-100"
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={profileForm.customTheme?.backgroundColor || "#07090e"}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        customTheme: { ...(profileForm.customTheme || {}), backgroundColor: e.target.value },
+                      })
+                    }
+                    className="w-7 h-7 rounded-lg cursor-pointer border-2 border-dashed border-white/30 hover:border-white/60 bg-transparent p-0"
+                    title="لون مخصص"
+                  />
+                  <span className="text-[11px] text-gray-500 font-mono">
+                    {profileForm.customTheme?.backgroundColor || "#07090e"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Live preview color bar */}
+              <div
+                className="h-2 rounded-full overflow-hidden opacity-60"
+                style={{
+                  background: `linear-gradient(135deg, ${profileForm.customTheme?.backgroundColor || "#07090e"} 0%, ${profileForm.customTheme?.primaryColor || "#06fff0"}66 50%, ${profileForm.customTheme?.primaryColor || "#06fff0"} 100%)`,
+                }}
+              />
             </div>
 
             {/* Smart Search & Filter Bar */}
@@ -1055,7 +1230,7 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        <div className="p-5 pt-0 flex gap-2">
+                        <div className="p-5 pt-0 flex gap-2 flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
@@ -1063,20 +1238,37 @@ export default function Dashboard() {
                               setPreviewTemplateId(tmpl.id);
                               setPreviewOpen(true);
                             }}
-                            className="text-xs border-white/10 flex-1 hover:border-white/30"
+                            className="text-xs border-white/10 hover:border-white/30 h-9 px-3"
                           >
+                            <Eye className="w-3.5 h-3.5 mr-1" />
                             معاينة
                           </Button>
 
                           {isSelected ? (
-                            <Button size="sm" disabled className="text-xs flex-1 bg-white/10 text-gray-400">
-                              مطبق
-                            </Button>
+                            <div className="flex gap-1.5 flex-1">
+                              <Button size="sm" disabled className="text-xs flex-1 bg-white/10 text-gray-400 h-9">
+                                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                                مطبق
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  window.scrollTo({ top: 0, behavior: "smooth" });
+                                  setTimeout(() => {
+                                    const el = document.querySelector("[data-customizer]");
+                                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                                  }, 100);
+                                }}
+                                className="text-xs h-9 px-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30"
+                              >
+                                <Palette className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
                           ) : isUnlocked ? (
                             <Button
                               size="sm"
                               onClick={() => handleSelectTemplate(tmpl.id)}
-                              className="text-xs flex-1 bg-cyan-400 hover:bg-cyan-300 text-black font-bold"
+                              className="text-xs flex-1 bg-cyan-400 hover:bg-cyan-300 text-black font-bold h-9"
                             >
                               تطبيق القالب
                             </Button>
@@ -1084,7 +1276,7 @@ export default function Dashboard() {
                             <Button
                               size="sm"
                               onClick={() => setBuyTemplateModal(tmpl)}
-                              className="text-xs flex-1 bg-gradient-to-r from-amber-500 to-yellow-400 hover:opacity-90 text-black font-bold flex items-center gap-1"
+                              className="text-xs flex-1 bg-gradient-to-r from-amber-500 to-yellow-400 hover:opacity-90 text-black font-bold flex items-center gap-1 h-9"
                             >
                               <Lock className="w-3 h-3" />
                               <span>شراء ({tmpl.priceDZD} دج) {tmpl.originalPriceDZD ? "[-10%]" : ""}</span>

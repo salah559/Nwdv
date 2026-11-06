@@ -58,9 +58,7 @@ export interface UserProfile {
     primaryColor?: string;
     backgroundColor?: string;
     fontFamily?: string;
-    backgroundStyle?: "solid" | "gradient" | "mesh" | "particles" | "grid";
-    buttonStyle?: "pill" | "rounded" | "sharp" | "glass";
-    glowIntensity?: "low" | "medium" | "high";
+    backgroundStyle?: "solid" | "gradient" | "mesh" | "particles";
   };
   isPublished: boolean;
   createdAt?: any;
