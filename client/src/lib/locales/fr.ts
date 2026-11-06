@@ -1,5 +1,5 @@
 export const fr = {
-  nav_home: "Accueil", nav_about: "À propos", nav_projects: "Projets", nav_pricing: "Tarifs", nav_contact: "Contactez-nous",
+  nav_home: "Accueil", nav_profiles: "Profils", nav_about: "À propos", nav_projects: "Projets", nav_pricing: "Tarifs", nav_contact: "Contactez-nous",
   hero_badge: "Excellence Numérique", hero_h1a: "Votre succès mérite", hero_h1b: "d'être mesuré numériquement",
   hero_sub: "Nous construisons des systèmes de design haute performance et des expériences numériques qui stimulent la croissance.",
   hero_cta_get: "Obtenir votre site", hero_cta_view: "Voir les projets", hero_scroll: "Défiler",

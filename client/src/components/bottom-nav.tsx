@@ -6,28 +6,35 @@ import { useLang } from "@/lib/i18n";
 
 export function BottomNav() {
   const { t } = useLang();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   
   const NAV_ITEMS = [
     { id: "home", label: t("nav_home"), icon: Home, path: "/" },
     { id: "projects", label: t("nav_projects"), icon: Share2, path: "/projects" },
+    { id: "profiles", label: t("nav_profiles") || "Profiles", icon: Layers, path: "/profiles" },
     { id: "about", label: t("nav_about"), icon: Info, path: "/about" },
     { id: "contact", label: t("nav_contact"), icon: Mail, path: "/contact" },
-    { id: "profiles", label: "Profile", icon: Layers, path: "/profiles" },
   ];
 
-  const [activeId, setActiveId] = useState(
-    NAV_ITEMS.find((item) => item.path === location)?.id || "home"
-  );
+  const getMatchedId = (loc: string) => {
+    if (loc === "/") return "home";
+    if (loc.startsWith("/profiles")) return "profiles";
+    if (loc.startsWith("/projects")) return "projects";
+    if (loc.startsWith("/about")) return "about";
+    if (loc.startsWith("/contact")) return "contact";
+    return NAV_ITEMS.find((item) => item.path === loc)?.id || "home";
+  };
+
+  const [activeId, setActiveId] = useState(getMatchedId(location));
 
   useEffect(() => {
-    const newActiveId = NAV_ITEMS.find((item) => item.path === location)?.id || "home";
-    setActiveId(newActiveId);
+    setActiveId(getMatchedId(location));
   }, [location]);
 
   const handleNavigate = (path: string, id: string) => {
     setActiveId(id);
-    window.location.href = path;
+    setLocation(path);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (

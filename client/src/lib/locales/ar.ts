@@ -1,5 +1,5 @@
 export const ar = {
-  nav_home: "الرئيسية", nav_about: "من نحن", nav_projects: "المشاريع", nav_pricing: "الأسعار", nav_contact: "تواصل معنا",
+  nav_home: "الرئيسية", nav_profiles: "بروفايل", nav_about: "من نحن", nav_projects: "المشاريع", nav_pricing: "الأسعار", nav_contact: "تواصل معنا",
   hero_badge: "التميز الرقمي", hero_h1a: "نجاحك يستحق", hero_h1b: "أن يُقاس رقمياً",
   hero_sub: "نبني أنظمة تصميم عالية الأداء وتجارب رقمية تدفع النمو من خلال التميز التقني.",
   hero_cta_get: "احصل على موقعك", hero_cta_view: "استعرض المشاريع", hero_scroll: "تمرير",

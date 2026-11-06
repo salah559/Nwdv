@@ -1,5 +1,5 @@
 export const en = {
-  nav_home: "Home", nav_about: "About", nav_projects: "Projects", nav_pricing: "Pricing", nav_contact: "Contact Us",
+  nav_home: "Home", nav_profiles: "Profiles", nav_about: "About", nav_projects: "Projects", nav_pricing: "Pricing", nav_contact: "Contact Us",
   hero_badge: "Digital Excellence", hero_h1a: "Your success deserves", hero_h1b: "to be measured digitally",
   hero_sub: "We build high-performance design systems and digital experiences that drive growth through technical excellence.",
   hero_cta_get: "Get Your Website", hero_cta_view: "View Projects", hero_scroll: "Scroll",

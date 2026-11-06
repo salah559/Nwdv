@@ -26,7 +26,7 @@ import { RESERVED_USERNAMES } from "@shared/saas-schema";
 
 function getSubdomain(): string | null {
   if (typeof window === "undefined") return null;
-  const hostname = window.location.hostname;
+  const hostname = window.location.hostname.toLowerCase();
 
   // Localhost root or IP
   if (hostname === "localhost" || hostname === "127.0.0.1") return null;
@@ -34,17 +34,29 @@ function getSubdomain(): string | null {
   // Local subdomains (e.g. salah.localhost:5000)
   if (hostname.endsWith(".localhost")) {
     const sub = hostname.split(".")[0];
-    if (sub && !(RESERVED_USERNAMES as readonly string[]).includes(sub.toLowerCase())) {
-      return sub.toLowerCase();
+    if (sub && !(RESERVED_USERNAMES as readonly string[]).includes(sub)) {
+      return sub;
     }
   }
 
-  // Production domains (e.g. salah.novawebdv.com or salah.novawebdv.vercel.app)
+  // Multi-tier domains like *.vercel.app:
+  // e.g. "novawebdv.vercel.app" or "nwdv.vercel.app" is the root app, NOT a user profile. Only "user.novawebdv.vercel.app" has a subdomain.
+  if (hostname.endsWith(".vercel.app")) {
+    const parts = hostname.split(".");
+    if (parts.length < 4) return null;
+    const sub = parts[0];
+    if (sub && !(RESERVED_USERNAMES as readonly string[]).includes(sub)) {
+      return sub;
+    }
+    return null;
+  }
+
+  // Production domains (e.g. salah.novawebdv.com)
   const parts = hostname.split(".");
   if (parts.length >= 3) {
     const sub = parts[0];
-    if (sub && !(RESERVED_USERNAMES as readonly string[]).includes(sub.toLowerCase())) {
-      return sub.toLowerCase();
+    if (sub && !(RESERVED_USERNAMES as readonly string[]).includes(sub)) {
+      return sub;
     }
   }
 
