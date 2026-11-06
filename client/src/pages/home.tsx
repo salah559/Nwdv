@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring } from "framer-motion";
-import { ArrowRight, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowRight, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/firebase";
@@ -127,6 +127,15 @@ export default function Home() {
                 }}
               >
                 {t("hero_cta_view")}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:border-cyan-400 hover:scale-105"
+                onClick={() => setLocation("/profiles")}
+              >
+                <Sparkles className="mr-2 w-5 h-5" />
+                Novaweb Profile
               </Button>
             </div>
           </motion.div>
@@ -285,6 +294,14 @@ export default function Home() {
                 onClick={() => window.open('https://wa.me/213663699433?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%AA%D8%B7%D9%88%D9%8A%D8%B1%20%D8%A7%D9%84%D9%85%D9%88%D8%A7%D9%82%D8%B9', '_blank')}
               >
                 {t("cta_whatsapp")}
+              </Button>
+              <Button
+                size="lg"
+                className="border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10 bg-transparent font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg transition-all duration-300 hover:scale-105"
+                onClick={() => setLocation("/profiles")}
+              >
+                <Sparkles className="mr-2 w-4 h-4" />
+                Novaweb Profile
               </Button>
             </div>
           </div>

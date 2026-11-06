@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Home, Share2, Info, Mail, CreditCard } from "lucide-react";
+import { Home, Share2, Info, Mail, Layers } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 
 export function BottomNav() {
@@ -13,6 +13,7 @@ export function BottomNav() {
     { id: "projects", label: t("nav_projects"), icon: Share2, path: "/projects" },
     { id: "about", label: t("nav_about"), icon: Info, path: "/about" },
     { id: "contact", label: t("nav_contact"), icon: Mail, path: "/contact" },
+    { id: "profiles", label: "Profile", icon: Layers, path: "/profiles" },
   ];
 
   const [activeId, setActiveId] = useState(
