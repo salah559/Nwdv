@@ -34,6 +34,7 @@ import {
   Download,
   Search,
   Filter,
+  Coins,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -82,10 +83,12 @@ export default function Dashboard() {
 
   // Buy Template Modal State
   const [buyTemplateModal, setBuyTemplateModal] = useState<TemplateDefinition | null>(null);
-  const [receiptTx, setReceiptTx] = useState("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"baridimob" | "usdt">("baridimob");
+  const [copiedUsdt, setCopiedUsdt] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState("");
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const [selectedBillingPlan, setSelectedBillingPlan] = useState<"monthly" | "yearly">("monthly");
+  const USDT_WALLET_ADDRESS = "0x7be61b899f9c5f30d1f50b463e13e68dd218c10d";
 
   // User Payment History
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
@@ -221,11 +224,23 @@ export default function Dashboard() {
     }
   };
 
+  const handleCopyUsdt = () => {
+    navigator.clipboard.writeText(USDT_WALLET_ADDRESS);
+    setCopiedUsdt(true);
+    toast.success("تم نسخ عنوان محفظة USDT بنجاح!");
+    setTimeout(() => setCopiedUsdt(false), 2500);
+  };
+
   // Submit Manual Payment Proof (for subscription or template)
+  // الزبون يرفع الوصل فقط بدون كتابة رقم العملية
   const handleSubmitPayment = async (type: "subscription" | "template", targetId?: string, amountDZD: number = 500) => {
     if (!currentUser || !userProfile) return;
-    if (!receiptTx.trim()) {
-      toast.error("يرجى إدخال رقم العملية أو الحوالة");
+    if (!receiptUrl || !receiptUrl.trim()) {
+      toast.error(
+        selectedPaymentMethod === "usdt"
+          ? "يرجى رفع صورة إيصال أو لقطة شاشة تحويل USDT أولاً"
+          : "يرجى رفع صورة وصل بريديموب أولاً"
+      );
       return;
     }
 
@@ -238,16 +253,15 @@ export default function Dashboard() {
         type: type,
         targetId: targetId || "",
         amountDZD: amountDZD,
-        paymentMethod: "baridimob",
-        transactionReference: receiptTx,
+        paymentMethod: selectedPaymentMethod,
+        transactionReference: `${selectedPaymentMethod.toUpperCase()}-RECEIPT`,
         receiptUrl: receiptUrl,
         status: "pending",
         createdAt: Timestamp.now(),
       };
 
       await addDoc(collection(db, "payments"), newPayment);
-      toast.success("تم إرسال إشعار الدفع بنجاح! سيتم تفعيله من قبل الإدارة بعد المراجعة.");
-      setReceiptTx("");
+      toast.success("تم إرسال وصل الدفع بنجاح! سيتم مراجعته وتفعيل طلبك في أقرب وقت.");
       setReceiptUrl("");
       setBuyTemplateModal(null);
       // Reload payments
@@ -1076,7 +1090,7 @@ export default function Dashboard() {
                     <span>اختر خطة الاشتراك المناسبة لك</span>
                   </h3>
                   <p className="text-xs text-gray-400 leading-relaxed mb-4">
-                    اختر بين الاشتراك الشهري أو السنوي الموفر، ثم قم بالتحويل عبر BaridiMob أو CCP لتأكيد التفعيل.
+                    اختر بين الاشتراك الشهري أو السنوي، ثم حدد طريقة الدفع (بريديموب أو USDT) وارفع صورة الوصل لتأكيد التفعيل فوراً.
                   </p>
 
                   {/* Plan Choice Pills */}
@@ -1095,7 +1109,7 @@ export default function Dashboard() {
                         <Badge className="bg-cyan-400 text-black font-extrabold text-[10px]">شهري</Badge>
                       </div>
                       <div className="text-2xl font-black text-cyan-400 font-mono mt-1">500 دج <span className="text-xs font-normal text-gray-400 font-ui">/ شهر</span></div>
-                      <p className="text-[11px] text-gray-400 mt-1">مرونة تامة وتجديد شهري عند الرغبة</p>
+                      <p className="text-[11px] text-gray-400 mt-1">مرونة تامة (~ 2.2 USDT)</p>
                     </button>
 
                     <button
@@ -1116,54 +1130,126 @@ export default function Dashboard() {
                         <span className="font-bold text-sm text-amber-200">الاشتراك السنوي VIP</span>
                       </div>
                       <div className="text-2xl font-black text-amber-400 font-mono mt-1">4,000 دج <span className="text-xs font-normal text-gray-400 font-ui">/ سنة</span></div>
-                      <p className="text-[11px] text-amber-300/80 mt-1">سنة كاملة بسعر 8 أشهر فقط (وفرت شهرين!)</p>
+                      <p className="text-[11px] text-amber-300/80 mt-1">سنة كاملة بسعر 8 أشهر فقط (~ 18 USDT)</p>
                     </button>
                   </div>
                 </div>
 
-                {/* Account Details Box */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-1 text-xs">
-                    <div className="flex items-center justify-between text-cyan-400 font-bold">
-                      <span>BaridiMob (بريدي موب)</span>
-                      <CreditCard className="w-4 h-4" />
-                    </div>
-                    <div className="font-mono text-gray-200 text-sm font-bold pt-1" dir="ltr">
-                      00799999002345678912
-                    </div>
-                    <div className="text-[11px] text-gray-400">الاسم: NOVAWEB SARL</div>
+                {/* Payment Methods Selector (Two Options: BaridiMob & USDT) */}
+                <div className="space-y-3">
+                  <div className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                    <span>اختر طريقة الدفع:</span>
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod("baridimob")}
+                      className={`p-3.5 rounded-2xl border text-right transition-all flex items-center justify-between ${
+                        selectedPaymentMethod === "baridimob"
+                          ? "bg-cyan-500/15 border-cyan-400 text-white shadow-[0_0_15px_rgba(6,255,240,0.15)]"
+                          : "bg-black/40 border-white/10 text-gray-400 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                          <CreditCard className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-xs text-white">بريديموب BaridiMob</div>
+                          <div className="text-[11px] text-cyan-300/80">تحويل فوري في الجزائر</div>
+                        </div>
+                      </div>
+                      {selectedPaymentMethod === "baridimob" && <CheckCircle2 className="w-4 h-4 text-cyan-400" />}
+                    </button>
 
-                  <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-1 text-xs">
-                    <div className="flex items-center justify-between text-amber-400 font-bold">
-                      <span>حساب بريد الجزائر CCP</span>
-                      <Building2 className="w-4 h-4" />
-                    </div>
-                    <div className="font-mono text-gray-200 text-sm font-bold pt-1" dir="ltr">
-                      0012345678 Clé 45
-                    </div>
-                    <div className="text-[11px] text-gray-400">الاسم: NOVAWEB SERVICES</div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod("usdt")}
+                      className={`p-3.5 rounded-2xl border text-right transition-all flex items-center justify-between ${
+                        selectedPaymentMethod === "usdt"
+                          ? "bg-emerald-500/15 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                          : "bg-black/40 border-white/10 text-gray-400 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                          <Coins className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-xs text-white">دفع بـ USDT (عملة مشفرة)</div>
+                          <div className="text-[11px] text-emerald-300/80">دفع عالمي فوري وآمن</div>
+                        </div>
+                      </div>
+                      {selectedPaymentMethod === "usdt" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                    </button>
                   </div>
                 </div>
 
-                {/* Submit Receipt Form with Direct ImgBB Upload */}
-                <div className="space-y-4 pt-2">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-300">رقم الحوالة أو مرجع العملية (Transaction Reference)</Label>
-                    <Input
-                      value={receiptTx}
-                      onChange={(e) => setReceiptTx(e.target.value)}
-                      placeholder="مثال: TXN-89472384"
-                      className="bg-black/50 border-white/10 text-xs h-10 rounded-xl font-mono"
-                      dir="ltr"
-                    />
+                {/* Account Details Box based on selected method */}
+                {selectedPaymentMethod === "baridimob" ? (
+                  <div className="p-4 rounded-2xl bg-black/50 border border-cyan-500/30 space-y-2 text-xs">
+                    <div className="flex items-center justify-between text-cyan-400 font-bold">
+                      <span>حساب بريدي موب BaridiMob المعتمد:</span>
+                      <Badge className="bg-cyan-500/20 text-cyan-300 border-none text-[10px]">
+                        {selectedBillingPlan === "yearly" ? "4,000 دج" : "500 دج"}
+                      </Badge>
+                    </div>
+                    <div className="p-3 rounded-xl bg-black/80 border border-white/10 flex items-center justify-between" dir="ltr">
+                      <span className="font-mono text-cyan-300 text-sm font-bold tracking-wider">00799999002345678912</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText("00799999002345678912");
+                          toast.success("تم نسخ رقم حساب BaridiMob!");
+                        }}
+                        className="text-gray-400 hover:text-white p-1 rounded-md transition-colors"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-gray-400 pt-0.5">
+                      <span>الاسم: NOVAWEB SARL</span>
+                      <span className="text-cyan-400">تحويل مباشر عبر تطبيق بريديموب</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-black/50 border border-emerald-500/30 space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between text-emerald-400 font-bold">
+                      <span>عنوان محفظة USDT (Tether):</span>
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border-none text-[10px] font-bold">
+                        {selectedBillingPlan === "yearly" ? "المبلغ: ~ 18 USDT" : "المبلغ: ~ 2.2 USDT"}
+                      </Badge>
+                    </div>
+                    <div className="p-3 rounded-xl bg-black/80 border border-white/10 flex items-center justify-between gap-2" dir="ltr">
+                      <span className="font-mono text-emerald-300 text-xs sm:text-sm font-bold truncate">
+                        {USDT_WALLET_ADDRESS}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCopyUsdt}
+                        className="flex items-center gap-1 shrink-0 px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 transition-colors text-xs font-bold"
+                      >
+                        {copiedUsdt ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedUsdt ? "تم النسخ" : "نسخ"}</span>
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between text-[11px] text-gray-400 gap-1 pt-0.5">
+                      <span className="text-emerald-400/90 font-medium">الشبكات المدعومة: BEP-20 (BNB Smart Chain) / Polygon / Ethereum (ERC-20)</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Receipt Only (No Transaction Reference number input) */}
+                <div className="space-y-4 pt-1">
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-gray-300">
+                    💡 <span className="text-white font-bold">طريقة التأكيد:</span> بعد إرسال المبلغ عبر {selectedPaymentMethod === "baridimob" ? "بريديموب" : "USDT"}، ارفع صورة الوصل أو لقطة الشاشة أدناه مباشرة واضغط تأكيد دون الحاجة لكتابة أي رقم.
                   </div>
 
                   <ImageUploadInput
-                    label="صورة الوصل أو الإيصال (اختياري)"
+                    label={selectedPaymentMethod === "baridimob" ? "صورة وصل بريديموب (مطلوب)" : "صورة إيصال / لقطة شاشة تحويل USDT (مطلوب)"}
                     value={receiptUrl}
                     onChange={(url) => setReceiptUrl(url)}
-                    placeholder="ارفع وصل BaridiMob أو CCP..."
+                    placeholder="ارفع صورة الوصل هنا..."
                     aspectRatio="cover"
                   />
 
@@ -1175,8 +1261,8 @@ export default function Dashboard() {
                     {isSubmittingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                     <span>
                       {selectedBillingPlan === "yearly"
-                        ? "إرسال إشعار الاشتراك السنوي (4,000 دج)"
-                        : "إرسال إشعار الاشتراك الشهري (500 دج)"}
+                        ? (selectedPaymentMethod === "usdt" ? "إرسال وصل الاشتراك السنوي (~ 18 USDT)" : "إرسال وصل الاشتراك السنوي (4,000 دج)")
+                        : (selectedPaymentMethod === "usdt" ? "إرسال وصل الاشتراك الشهري (~ 2.2 USDT)" : "إرسال وصل الاشتراك الشهري (500 دج)")}
                     </span>
                   </Button>
                 </div>
@@ -1198,12 +1284,20 @@ export default function Dashboard() {
                     <div key={idx} className="p-3 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between text-xs">
                       <div>
                         <div className="font-bold text-white flex items-center gap-2">
-                          <span>{item.type === "subscription" ? "اشتراك شهري" : `شراء قالب (${item.targetId})`}</span>
+                          <span>{item.type === "subscription" ? "اشتراك المنصة" : `شراء قالب (${item.targetId})`}</span>
                           <span className="text-cyan-400">({item.amountDZD} دج)</span>
+                          <Badge variant="outline" className={`text-[10px] ${item.paymentMethod === "usdt" ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10" : "border-cyan-500/40 text-cyan-300 bg-cyan-500/10"}`}>
+                            {item.paymentMethod === "usdt" ? "USDT 🪙" : "بريديموب 💳"}
+                          </Badge>
                         </div>
-                        <div className="text-[11px] text-gray-400 font-mono" dir="ltr">
-                          مرجع: {item.transactionReference || "—"}
-                        </div>
+                        {item.receiptUrl && (
+                          <div className="mt-1">
+                            <a href={item.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-cyan-400 hover:underline inline-flex items-center gap-1">
+                              <span>معاينة صورة الوصل المرفوع</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        )}
                       </div>
                       <div>
                         <Badge className={`text-[10px] ${item.status === "approved" ? "bg-emerald-500/20 text-emerald-400" : item.status === "rejected" ? "bg-red-500/20 text-red-400" : "bg-amber-500/20 text-amber-400"}`}>
@@ -1288,31 +1382,88 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-black/60 border border-white/10 text-xs space-y-1">
-                <div className="font-bold text-gray-200">الدفع عبر بريدي موب BaridiMob:</div>
-                <div className="font-mono text-cyan-400 font-bold" dir="ltr">
-                  00799999002345678912
+              {/* Payment Methods Choice for Template Buy */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-300 font-bold">طريقة الدفع:</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod("baridimob")}
+                    className={`p-2.5 rounded-xl border text-center transition-all text-xs font-bold flex items-center justify-center gap-1.5 ${
+                      selectedPaymentMethod === "baridimob"
+                        ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,255,240,0.2)]"
+                        : "bg-black/40 border-white/10 text-gray-400 hover:border-white/20"
+                    }`}
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>بريديموب</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod("usdt")}
+                    className={`p-2.5 rounded-xl border text-center transition-all text-xs font-bold flex items-center justify-center gap-1.5 ${
+                      selectedPaymentMethod === "usdt"
+                        ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]"
+                        : "bg-black/40 border-white/10 text-gray-400 hover:border-white/20"
+                    }`}
+                  >
+                    <Coins className="w-3.5 h-3.5" />
+                    <span>USDT</span>
+                  </button>
                 </div>
-                <div className="text-[11px] text-gray-400">الاسم: NOVAWEB SARL</div>
               </div>
 
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-300">رقم أو مرجع العملية (BaridiMob)</Label>
-                  <Input
-                    value={receiptTx}
-                    onChange={(e) => setReceiptTx(e.target.value)}
-                    placeholder="TXN-XXXXXX"
-                    className="bg-black border-white/10 text-xs h-10 rounded-xl font-mono"
-                    dir="ltr"
-                  />
+              {selectedPaymentMethod === "baridimob" ? (
+                <div className="p-3.5 rounded-2xl bg-black/60 border border-cyan-500/30 text-xs space-y-1">
+                  <div className="flex items-center justify-between font-bold text-gray-200">
+                    <span>الدفع عبر بريدي موب BaridiMob:</span>
+                    <span className="text-cyan-400 font-mono">{buyTemplateModal.priceDZD} دج</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/80 border border-white/10 flex items-center justify-between" dir="ltr">
+                    <span className="font-mono text-cyan-400 font-bold">00799999002345678912</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText("00799999002345678912");
+                        toast.success("تم نسخ رقم حساب BaridiMob!");
+                      }}
+                      className="text-gray-400 hover:text-white p-1"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="text-[11px] text-gray-400">الاسم: NOVAWEB SARL</div>
                 </div>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-black/60 border border-emerald-500/30 text-xs space-y-2">
+                  <div className="flex items-center justify-between font-bold text-emerald-400">
+                    <span>عنوان محفظة USDT (Tether):</span>
+                    <span className="text-emerald-300 font-mono text-[11px]">
+                      ~ {Math.round((buyTemplateModal.priceDZD / 225) * 10) / 10} USDT
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-black/80 border border-white/10 flex items-center justify-between gap-2" dir="ltr">
+                    <span className="font-mono text-emerald-300 text-[11px] truncate">
+                      {USDT_WALLET_ADDRESS}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyUsdt}
+                      className="text-emerald-400 hover:text-white shrink-0 p-1"
+                    >
+                      {copiedUsdt ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <div className="text-[10px] text-gray-400">شبكة BEP-20 (BNB Chain) / Polygon / ERC-20</div>
+                </div>
+              )}
 
+              <div className="space-y-3">
                 <ImageUploadInput
-                  label="صورة وصل BaridiMob (اختياري)"
+                  label={selectedPaymentMethod === "baridimob" ? "صورة وصل بريديموب (مطلوب)" : "صورة وصل تحويل USDT (مطلوب)"}
                   value={receiptUrl}
                   onChange={(url) => setReceiptUrl(url)}
-                  placeholder="ارفع وصل العملية..."
+                  placeholder="ارفع وصل أو لقطة شاشة التحويل..."
                   aspectRatio="cover"
                 />
 
@@ -1321,7 +1472,7 @@ export default function Dashboard() {
                   onClick={() => handleSubmitPayment("template", buyTemplateModal.id, buyTemplateModal.priceDZD)}
                   className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold uppercase tracking-wider text-xs h-11 rounded-xl shadow-lg mt-2"
                 >
-                  {isSubmittingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال تأكيد الشراء"}
+                  {isSubmittingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : "إرسال وصل الدفع للتأكيد"}
                 </Button>
               </div>
             </div>

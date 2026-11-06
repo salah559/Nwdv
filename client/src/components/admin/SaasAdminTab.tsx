@@ -87,20 +87,21 @@ export function SaasAdminTab() {
       });
 
       if (payment.type === "subscription") {
-        // Extend subscription by 30 days
+        const isYearly = payment.targetId === "yearly" || payment.amountDZD >= 4000;
+        const daysToAdd = isYearly ? 365 : 30;
         const now = new Date();
         const currentEnd = subscriptions[payment.userId]?.currentPeriodEnd?.toDate?.() || now;
         const baseDate = currentEnd > now ? currentEnd : now;
-        const newEnd = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const newEnd = new Date(baseDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
 
         await setDoc(doc(db, "subscriptions", payment.userId), {
           status: "active",
-          planId: "basic",
+          planId: isYearly ? "yearly" : "basic",
           currentPeriodEnd: Timestamp.fromDate(newEnd),
           updatedAt: Timestamp.now(),
         }, { merge: true });
 
-        toast.success(`تم تأكيد الاشتراك للمستخدم @${payment.username} لمدة 30 يوماً!`);
+        toast.success(`تم تأكيد ${isYearly ? "الاشتراك السنوي (365 يوماً)" : "الاشتراك الشهري (30 يوماً)"} للمستخدم @${payment.username}!`);
       } else if (payment.type === "template" && payment.targetId) {
         // Unlock template
         await addDoc(collection(db, "purchases"), {
@@ -228,7 +229,7 @@ export function SaasAdminTab() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-extrabold text-amber-400">{pendingPayments.length}</div>
-            <p className="text-[11px] text-amber-400 mt-1">BaridiMob / CCP</p>
+            <p className="text-[11px] text-amber-400 mt-1">BaridiMob / USDT</p>
           </CardContent>
         </Card>
       </div>
@@ -238,7 +239,7 @@ export function SaasAdminTab() {
         <CardHeader>
           <CardTitle className="text-base text-amber-300 flex items-center gap-2">
             <Receipt className="w-5 h-5 text-amber-400" />
-            <span>طلبات الدفع اليدوي الواردة ({pendingPayments.length})</span>
+            <span>طلبات الدفع الواردة ({pendingPayments.length})</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -255,20 +256,29 @@ export function SaasAdminTab() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-white text-sm">@{pay.username}</span>
                       <Badge className="bg-amber-500/20 text-amber-400 border-none text-[10px]">
-                        {pay.type === "subscription" ? "اشتراك شهري (500 دج)" : `شراء قالب (${pay.targetId})`}
+                        {pay.type === "subscription" 
+                          ? (pay.targetId === "yearly" || pay.amountDZD >= 4000 ? "اشتراك سنوي (4,000 دج)" : "اشتراك شهري (500 دج)") 
+                          : `شراء قالب (${pay.targetId} - ${pay.amountDZD} دج)`}
+                      </Badge>
+                      <Badge variant="outline" className={`text-[10px] ${pay.paymentMethod === "usdt" ? "border-emerald-500/50 text-emerald-300 bg-emerald-500/10" : "border-cyan-500/50 text-cyan-300 bg-cyan-500/10"}`}>
+                        {pay.paymentMethod === "usdt" ? "USDT 🪙" : "بريديموب 💳"}
                       </Badge>
                     </div>
                     <div className="text-xs text-gray-300 mt-1">
                       البريد: <span className="font-mono text-cyan-400">{pay.userEmail}</span>
                     </div>
-                    <div className="text-xs text-gray-400 mt-0.5 font-mono">
-                      رقم العملية / الحوالة: <span className="text-white font-bold">{pay.transactionReference || "غير محدد"}</span>
-                    </div>
                     {pay.receiptUrl && (
-                      <a href={pay.receiptUrl} target="_blank" rel="noreferrer" className="text-xs text-cyan-400 hover:underline flex items-center gap-1 mt-1">
-                        <span>عرض صورة الوصل المرفقة</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                      <div className="mt-2">
+                        <a 
+                          href={pay.receiptUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-xs text-cyan-300 hover:bg-cyan-500/25 transition-colors font-bold"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>عرض صورة الوصل المرفقة (معاينة)</span>
+                        </a>
+                      </div>
                     )}
                   </div>
 

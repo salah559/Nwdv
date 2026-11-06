@@ -109,7 +109,7 @@ export interface PaymentRecord {
   type: "subscription" | "template";
   targetId?: string; // e.g. templateId if type === 'template'
   amountDZD: number;
-  paymentMethod: "baridimob" | "ccp" | "bank_transfer";
+  paymentMethod: "baridimob" | "usdt" | "ccp" | "bank_transfer";
   transactionReference?: string;
   receiptUrl?: string;
   status: "pending" | "approved" | "rejected";

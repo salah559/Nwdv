@@ -46,37 +46,16 @@ const SALAH_EXAMPLE: ExampleProfile = {
   badge: "🌟 مثال دائم (Founder)",
 };
 
-const DEFAULT_FALLBACK_EXAMPLES: ExampleProfile[] = [
-  {
-    name: "Ahmed Benali",
-    username: "ahmed",
-    role: "UI/UX Designer",
-    template: "creative-designer",
-    avatarUrl: null,
-    isPermanent: false,
-    badge: "Live Demo",
-  },
-  {
-    name: "Amina Kaci",
-    username: "amina",
-    role: "Business Consultant",
-    template: "luxury-black-gold",
-    avatarUrl: null,
-    isPermanent: false,
-    badge: "Live Demo",
-  },
-];
-
 export default function ProfilesLanding() {
   const { t, isRTL } = useLang();
   const [, setLocation] = useLocation();
 
   const [examples, setExamples] = useState<ExampleProfile[]>([
     SALAH_EXAMPLE,
-    ...DEFAULT_FALLBACK_EXAMPLES,
   ]);
 
   // Dynamically load real published accounts from Firestore
+  // لما تفتح حسابات حقيقية يتغير الدائم وتظهر الحسابات الحقيقية
   useEffect(() => {
     let isMounted = true;
     async function loadRealAccounts() {
@@ -91,27 +70,28 @@ export default function ProfilesLanding() {
 
         snap.forEach((docSnap) => {
           const data = docSnap.data();
-          if (data.username && data.username.toLowerCase().trim() !== "salah") {
+          if (data.username) {
+            const isFounder = data.username.toLowerCase().trim() === "salah";
             realUsers.push({
               name: data.fullName || data.username,
               username: data.username.toLowerCase().trim(),
-              role: data.jobTitle || "صانع محتوى / محترف",
+              role: data.jobTitle || (isFounder ? "Founder & Full-Stack Architect" : "صانع محتوى / محترف"),
               template: data.templateId || "modern-minimalist",
-              avatarUrl: data.avatarUrl || null,
-              isPermanent: false,
-              badge: "🟢 عضو حقيقي Live",
+              avatarUrl: data.avatarUrl || (isFounder ? SALAH_PERMANENT_PROFILE.avatarUrl : null),
+              isPermanent: isFounder,
+              badge: isFounder ? "🌟 المؤسس (Founder)" : "🟢 عضو حقيقي Live",
             });
           }
         });
 
         if (isMounted) {
-          // Always Salah as permanent example #1, followed by real accounts, then fallbacks if fewer than 3
-          const combined: ExampleProfile[] = [
-            SALAH_EXAMPLE,
-            ...realUsers,
-            ...(realUsers.length < 2 ? DEFAULT_FALLBACK_EXAMPLES.slice(realUsers.length) : []),
-          ];
-          setExamples(combined);
+          if (realUsers.length > 0) {
+            // عند فتح حسابات حقيقية، تصبح هي الأمثلة المعروضة
+            setExamples(realUsers);
+          } else {
+            // قبل فتح حسابات جديدة، يظهر مثال المؤسس الدائم كنموذج أولي
+            setExamples([SALAH_EXAMPLE]);
+          }
         }
       } catch (err) {
         console.warn("Could not load dynamic real accounts from Firestore:", err);
