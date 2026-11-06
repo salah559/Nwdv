@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { UserProfile } from "@shared/saas-schema";
 import { ModernMinimalist } from "./ModernMinimalist";
 import { DeveloperProfile } from "./DeveloperProfile";
@@ -20,17 +20,8 @@ import {
   ReactBitsAuroraMesh,
   CyberpunkHologramHUD,
 } from "./DiamondTemplates";
-import { CustomTemplateRenderer } from "./CustomTemplateRenderer";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { Loader2 } from "lucide-react";
 
 export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
-  // 🎨 Custom ChatGPT templates — IDs start with "chatgpt-"
-  if (profile.templateId?.startsWith("chatgpt-")) {
-    return <CustomTemplateLoader profile={profile} templateId={profile.templateId} />;
-  }
-
   // 💎 5 Diamond tier templates — bespoke innovative renderers
   switch (profile.templateId) {
     case "baryon-anime-live":
@@ -76,35 +67,4 @@ export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
     default:
       return <ModernMinimalist profile={profile} />;
   }
-}
-
-/** Loads a custom ChatGPT template from Firestore then renders it */
-function CustomTemplateLoader({ profile, templateId }: { profile: UserProfile; templateId: string }) {
-  const [htmlCode, setHtmlCode] = useState<string | null>(null);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const snap = await getDoc(doc(db, "customTemplates", templateId));
-        if (snap.exists()) {
-          setHtmlCode(snap.data().htmlCode || "");
-        } else {
-          setError(true);
-        }
-      } catch {
-        setError(true);
-      }
-    };
-    load();
-  }, [templateId]);
-
-  if (error) return <ModernMinimalist profile={profile} />;
-  if (!htmlCode) return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
-      <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-    </div>
-  );
-
-  return <CustomTemplateRenderer profile={profile} htmlCode={htmlCode} />;
 }
