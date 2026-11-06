@@ -5,8 +5,13 @@ import { db } from "@/lib/firebase";
 import { UserProfile, UserSubscription } from "@shared/saas-schema";
 import { ProfileTemplateRenderer } from "@/components/templates/ProfileTemplateRenderer";
 import { SEO } from "@/components/SEO";
-import { Loader2, AlertCircle, Clock, ShieldAlert, Sparkles } from "lucide-react";
+import { Loader2, AlertCircle, Clock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  SALAH_PERMANENT_PROFILE, 
+  SALAH_PERMANENT_SUBSCRIPTION, 
+  isPermanentUsername 
+} from "@/lib/permanent-profiles";
 
 export default function PublicProfile({ usernameParam }: { usernameParam?: string }) {
   const [, params] = useRoute("/p/:username");
@@ -27,18 +32,29 @@ export default function PublicProfile({ usernameParam }: { usernameParam?: strin
         return;
       }
 
+      const cleanUsername = targetUsername.toLowerCase().trim();
+      const isSalah = isPermanentUsername(cleanUsername);
+
       try {
         setLoading(true);
         setError(null);
 
-        // 1. Find profile by username
+        // 1. Find profile by username in Firestore
         const q = query(
           collection(db, "profiles"),
-          where("username", "==", targetUsername.toLowerCase().trim())
+          where("username", "==", cleanUsername)
         );
         const snap = await getDocs(q);
 
         if (snap.empty) {
+          // If the profile is "salah", load the permanent default profile!
+          if (isSalah) {
+            setProfile(SALAH_PERMANENT_PROFILE);
+            setSubscription(SALAH_PERMANENT_SUBSCRIPTION);
+            setLoading(false);
+            return;
+          }
+
           setError("not_found");
           setLoading(false);
           return;
@@ -48,26 +64,36 @@ export default function PublicProfile({ usernameParam }: { usernameParam?: strin
         setProfile(profData);
 
         // 2. Fetch subscription status
-        const subDoc = await getDoc(doc(db, "subscriptions", profData.userId));
-        if (subDoc.exists()) {
-          const subData = subDoc.data() as UserSubscription;
-          
-          // Check expiration
-          const now = Date.now();
-          const trialEnd = subData.trialEndsAt?.toMillis ? subData.trialEndsAt.toMillis() : (subData.trialEndsAt?.seconds ? subData.trialEndsAt.seconds * 1000 : 0);
-          const periodEnd = subData.currentPeriodEnd?.toMillis ? subData.currentPeriodEnd.toMillis() : (subData.currentPeriodEnd?.seconds ? subData.currentPeriodEnd.seconds * 1000 : 0);
+        if (isSalah) {
+          setSubscription(SALAH_PERMANENT_SUBSCRIPTION);
+        } else {
+          const subDoc = await getDoc(doc(db, "subscriptions", profData.userId));
+          if (subDoc.exists()) {
+            const subData = subDoc.data() as UserSubscription;
+            
+            // Check expiration
+            const now = Date.now();
+            const trialEnd = subData.trialEndsAt?.toMillis ? subData.trialEndsAt.toMillis() : (subData.trialEndsAt?.seconds ? subData.trialEndsAt.seconds * 1000 : 0);
+            const periodEnd = subData.currentPeriodEnd?.toMillis ? subData.currentPeriodEnd.toMillis() : (subData.currentPeriodEnd?.seconds ? subData.currentPeriodEnd.seconds * 1000 : 0);
 
-          if (subData.status === "trial" && trialEnd > 0 && now > trialEnd) {
-            subData.status = "expired";
-          } else if (subData.status === "active" && periodEnd > 0 && now > periodEnd) {
-            subData.status = "expired";
+            if (subData.status === "trial" && trialEnd > 0 && now > trialEnd) {
+              subData.status = "expired";
+            } else if (subData.status === "active" && periodEnd > 0 && now > periodEnd) {
+              subData.status = "expired";
+            }
+
+            setSubscription(subData);
           }
-
-          setSubscription(subData);
         }
       } catch (err) {
         console.error("Error loading public profile:", err);
-        setError("حدث خطأ أثناء تحميل الملف الشخصي");
+        // Fallback for permanent profile even if Firestore fails
+        if (isSalah) {
+          setProfile(SALAH_PERMANENT_PROFILE);
+          setSubscription(SALAH_PERMANENT_SUBSCRIPTION);
+        } else {
+          setError("حدث خطأ أثناء تحميل الملف الشخصي");
+        }
       } finally {
         setLoading(false);
       }
@@ -99,14 +125,13 @@ export default function PublicProfile({ usernameParam }: { usernameParam?: strin
         </p>
         <a href="/profiles">
           <Button className="bg-cyan-400 text-black hover:bg-cyan-300 font-bold font-ui text-xs">
-            احجز هذا الاسم الآن
+            أنشئ هذا النطاق الآن
           </Button>
         </a>
       </div>
     );
   }
 
-  // Check if profile is unpublished
   if (!profile.isPublished) {
     return (
       <div className="min-h-screen bg-[#07090e] text-white flex flex-col items-center justify-center p-4 text-center">
@@ -121,7 +146,7 @@ export default function PublicProfile({ usernameParam }: { usernameParam?: strin
     );
   }
 
-  // Check if subscription or trial has expired
+  // Check if subscription or trial has expired (not applicable to permanent profile)
   if (subscription && (subscription.status === "expired" || subscription.status === "suspended")) {
     return (
       <div className="min-h-screen bg-[#07090e] text-white flex flex-col items-center justify-center p-4 text-center">

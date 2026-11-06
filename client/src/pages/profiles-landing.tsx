@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { 
@@ -21,16 +22,107 @@ import { SEO } from "@/components/SEO";
 import { useLang } from "@/lib/i18n";
 import { TEMPLATES } from "@/lib/templates-data";
 import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { SALAH_PERMANENT_PROFILE } from "@/lib/permanent-profiles";
+
+interface ExampleProfile {
+  name: string;
+  username: string;
+  role: string;
+  template: string;
+  avatarUrl?: string | null;
+  isPermanent?: boolean;
+  badge?: string;
+}
+
+const SALAH_EXAMPLE: ExampleProfile = {
+  name: SALAH_PERMANENT_PROFILE.fullName,
+  username: SALAH_PERMANENT_PROFILE.username,
+  role: SALAH_PERMANENT_PROFILE.jobTitle || "Founder & Full-Stack Architect",
+  template: SALAH_PERMANENT_PROFILE.templateId,
+  avatarUrl: SALAH_PERMANENT_PROFILE.avatarUrl,
+  isPermanent: true,
+  badge: "🌟 مثال دائم (Founder)",
+};
+
+const DEFAULT_FALLBACK_EXAMPLES: ExampleProfile[] = [
+  {
+    name: "Ahmed Benali",
+    username: "ahmed",
+    role: "UI/UX Designer",
+    template: "creative-designer",
+    avatarUrl: null,
+    isPermanent: false,
+    badge: "Live Demo",
+  },
+  {
+    name: "Amina Kaci",
+    username: "amina",
+    role: "Business Consultant",
+    template: "luxury-black-gold",
+    avatarUrl: null,
+    isPermanent: false,
+    badge: "Live Demo",
+  },
+];
 
 export default function ProfilesLanding() {
   const { t, isRTL } = useLang();
   const [, setLocation] = useLocation();
 
-  const previewUsernames = [
-    { name: "Salah Eddine", username: "salah", role: "Full-Stack Dev", template: "neon-developer" },
-    { name: "Ahmed Benali", username: "ahmed", role: "UI/UX Designer", template: "creative-designer" },
-    { name: "Amina Kaci", username: "amina", role: "Business Consultant", template: "luxury-black-gold" },
-  ];
+  const [examples, setExamples] = useState<ExampleProfile[]>([
+    SALAH_EXAMPLE,
+    ...DEFAULT_FALLBACK_EXAMPLES,
+  ]);
+
+  // Dynamically load real published accounts from Firestore
+  useEffect(() => {
+    let isMounted = true;
+    async function loadRealAccounts() {
+      try {
+        const q = query(
+          collection(db, "profiles"),
+          where("isPublished", "==", true),
+          limit(12)
+        );
+        const snap = await getDocs(q);
+        const realUsers: ExampleProfile[] = [];
+
+        snap.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (data.username && data.username.toLowerCase().trim() !== "salah") {
+            realUsers.push({
+              name: data.fullName || data.username,
+              username: data.username.toLowerCase().trim(),
+              role: data.jobTitle || "صانع محتوى / محترف",
+              template: data.templateId || "modern-minimalist",
+              avatarUrl: data.avatarUrl || null,
+              isPermanent: false,
+              badge: "🟢 عضو حقيقي Live",
+            });
+          }
+        });
+
+        if (isMounted) {
+          // Always Salah as permanent example #1, followed by real accounts, then fallbacks if fewer than 3
+          const combined: ExampleProfile[] = [
+            SALAH_EXAMPLE,
+            ...realUsers,
+            ...(realUsers.length < 2 ? DEFAULT_FALLBACK_EXAMPLES.slice(realUsers.length) : []),
+          ];
+          setExamples(combined);
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic real accounts from Firestore:", err);
+      }
+    }
+
+    loadRealAccounts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#07090e] text-white selection:bg-cyan-500/30 overflow-hidden relative">
@@ -132,55 +224,92 @@ export default function ProfilesLanding() {
       <section className="py-16 px-4 border-y border-white/5 bg-white/[0.02]">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 text-xs font-bold mb-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>نماذج وأمثلة حقيقية</span>
+            </div>
             <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">
-              أمثلة على نطاقات ومواقع مستخدمينا
+              أمثلة حية على نطاقات ومواقع مستخدمينا
             </h2>
-            <p className="text-gray-400 text-sm max-w-md mx-auto">
-              كل عضو يحصل على نطاق شخصي احترافي جاهز للمشاركة على السيرة الذاتية وإنستغرام ولينكد إن
+            <p className="text-gray-400 text-sm max-w-lg mx-auto">
+              كل حساب يتم إنشاؤه ونشره يصبح مثالاً حياً في المنصة. تصفح موقع المؤسس الدائم ومواقع الأعضاء الحقيقيين:
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {previewUsernames.map((u, i) => (
-              <motion.div
-                key={u.username}
-                whileHover={{ y: -6 }}
-                className="rounded-2xl p-6 bg-gradient-to-b from-white/10 to-white/5 border border-white/10 backdrop-blur-md relative overflow-hidden group"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-500 flex items-center justify-center font-bold text-black text-sm">
-                      {u.name[0]}
+            {examples.map((u) => {
+              const fullSubdomainUrl = `https://${u.username}.novawebdv.com`;
+              return (
+                <motion.div
+                  key={u.username}
+                  whileHover={{ y: -6 }}
+                  className={`rounded-2xl p-6 border backdrop-blur-md relative overflow-hidden group transition-all duration-300 ${
+                    u.isPermanent 
+                      ? "bg-gradient-to-b from-amber-500/15 via-white/5 to-white/5 border-amber-400/40 shadow-[0_0_25px_rgba(251,191,36,0.15)]" 
+                      : "bg-gradient-to-b from-white/10 to-white/5 border-white/10 hover:border-cyan-500/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      {u.avatarUrl ? (
+                        <img 
+                          src={u.avatarUrl} 
+                          alt={u.name} 
+                          className={`w-11 h-11 rounded-full object-cover border-2 ${u.isPermanent ? "border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.4)]" : "border-cyan-400/50"}`} 
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-500 flex items-center justify-center font-bold text-black text-sm">
+                          {u.name[0]}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
+                          <span>{u.name}</span>
+                          {u.isPermanent && <span className="text-amber-400 text-xs">👑</span>}
+                        </h4>
+                        <p className="text-xs text-cyan-400 font-medium">{u.role}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-white">{u.name}</h4>
-                      <p className="text-xs text-cyan-400">{u.role}</p>
-                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-[10px] ${
+                        u.isPermanent 
+                          ? "bg-amber-400/20 text-amber-300 border-amber-400/60 font-bold" 
+                          : "border-cyan-500/30 text-cyan-300 bg-cyan-500/10"
+                      }`}
+                    >
+                      {u.badge}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-[10px] border-white/20 text-gray-300">
-                    Live Demo
-                  </Badge>
-                </div>
 
-                <div 
-                  className="p-3 rounded-xl bg-black/40 border border-white/5 font-mono text-xs text-gray-300 mb-4 flex items-center justify-between cursor-pointer group-hover:border-cyan-500/40 transition-colors"
-                  dir="ltr"
-                  onClick={() => setLocation(`/p/${u.username}`)}
-                >
-                  <span className="truncate">{u.username}.novawebdv.com</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-cyan-400 shrink-0 ml-2" />
-                </div>
+                  <a
+                    href={fullSubdomainUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 rounded-xl bg-black/50 border border-white/10 font-mono text-xs text-gray-300 mb-4 flex items-center justify-between cursor-pointer group-hover:border-cyan-500/50 transition-colors block"
+                    dir="ltr"
+                  >
+                    <span className="truncate font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                      {u.username}.novawebdv.com
+                    </span>
+                    <ExternalLink className="w-3.5 h-3.5 text-cyan-400 shrink-0 ml-2" />
+                  </a>
 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full border-white/10 hover:border-cyan-400 text-xs font-ui"
-                  onClick={() => setLocation(`/p/${u.username}`)}
-                >
-                  معاينة الموقع الشخصي
-                </Button>
-              </motion.div>
-            ))}
+                  <Button 
+                    variant={u.isPermanent ? "default" : "outline"}
+                    size="sm" 
+                    className={`w-full text-xs font-ui ${
+                      u.isPermanent 
+                        ? "bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold hover:opacity-95 shadow-md shadow-amber-500/20" 
+                        : "border-white/15 hover:border-cyan-400 hover:bg-cyan-500/10 text-white"
+                    }`}
+                    onClick={() => setLocation(`/p/${u.username}`)}
+                  >
+                    معاينة الموقع الشخصي
+                  </Button>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -249,7 +378,7 @@ export default function ProfilesLanding() {
             <div>
               <div className="flex items-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-2">
                 <Layers className="w-4 h-4" />
-                <span>8 قوالب عالمية متميزة</span>
+                <span>{TEMPLATES.length} قالباً عالمياً متميزاً</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-display font-bold">
                 اختر المظهر الذي يعكس تميزك
@@ -299,12 +428,11 @@ export default function ProfilesLanding() {
                     <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-3">
                       {tmpl.description}
                     </p>
-                    <div className="space-y-1">
-                      {tmpl.features.slice(0, 2).map((feat, idx) => (
-                        <div key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-300">
-                          <Check className="w-3 h-3 text-cyan-400 shrink-0" />
-                          <span>{feat}</span>
-                        </div>
+                    <div className="flex flex-wrap gap-1">
+                      {tmpl.features.slice(0, 2).map((feat, i) => (
+                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-300 border border-white/5">
+                          {feat}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -314,8 +442,8 @@ export default function ProfilesLanding() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full text-xs border-white/10 hover:border-cyan-400"
                     onClick={() => setLocation("/auth/register")}
+                    className="w-full border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10 text-xs font-ui group-hover:text-cyan-300 transition-colors"
                   >
                     استخدم هذا القالب
                   </Button>
@@ -326,27 +454,11 @@ export default function ProfilesLanding() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing / Plan Section */}
       <section className="py-24 px-4 relative">
         <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-display font-bold mb-4">
-              {t("saas_pricing_title")}{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                {t("saas_pricing_accent")}
-              </span>
-            </h2>
-            <p className="text-gray-400 text-sm max-w-md mx-auto">
-              {t("saas_pricing_trial_badge")}
-            </p>
-          </div>
-
-          <div className="relative rounded-3xl p-8 sm:p-12 bg-gradient-to-b from-white/10 to-white/[0.03] border border-cyan-500/40 backdrop-blur-2xl shadow-[0_0_50px_rgba(6,255,240,0.15)]">
-            <div className="absolute -top-4 right-8">
-              <Badge className="bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold px-4 py-1.5 text-xs uppercase tracking-widest shadow-lg">
-                خطة شاملة
-              </Badge>
-            </div>
+          <div className="rounded-3xl p-8 sm:p-12 bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-cyan-500/30 backdrop-blur-2xl shadow-[0_0_50px_rgba(6,255,240,0.1)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-8 pb-8 border-b border-white/10">
               <div>
