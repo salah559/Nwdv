@@ -14,7 +14,13 @@ import {
   Loader2,
   Lock,
   Unlock,
-  AlertCircle
+  AlertCircle,
+  Code2,
+  Plus,
+  Eye,
+  EyeOff,
+  Edit3,
+  Copy
 } from "lucide-react";
 import { 
   collection, 
@@ -26,7 +32,8 @@ import {
   addDoc, 
   Timestamp, 
   query, 
-  orderBy 
+  orderBy,
+  getDoc
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { UserProfile, UserSubscription, PaymentRecord } from "@shared/saas-schema";
@@ -36,6 +43,472 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { CustomTemplatePreview } from "@/components/templates/CustomTemplateRenderer";
+
+// ─────────────────────────────────────────────────
+// Custom Template Admin Section (standalone component)
+// ─────────────────────────────────────────────────
+interface CustomTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  isPremium: boolean;
+  priceDZD: number;
+  originalPriceDZD?: number;
+  features: string[];
+  thumbnail?: string;
+  htmlCode: string;
+  isActive: boolean;
+  createdAt?: any;
+}
+
+const CHATGPT_PROMPT_TEMPLATE = `أنشئ قالب HTML كامل لصفحة بروفايل شخصية (Profile Page) باستخدام HTML و CSS و JavaScript فقط (ملف واحد).
+
+المتطلبات:
+1. الصفحة تعمل بشكل مستقل بدون أي مكتبات خارجية (إلا إذا حمّلتها عبر CDN)
+2. تصميم جميل ومبدع وعصري
+3. تستخدم هذه المتغيرات (placeholder) التي سيتم استبدالها تلقائياً بالبيانات الحقيقية:
+   - {{fullName}} — الاسم الكامل
+   - {{bio}} — نبذة شخصية
+   - {{jobTitle}} — المسمى الوظيفي
+   - {{location}} — الموقع الجغرافي
+   - {{email}} — البريد الإلكتروني
+   - {{phone}} — رقم الهاتف
+   - {{whatsapp}} — رقم واتساب
+   - {{website}} — الموقع الإلكتروني
+   - {{avatarUrl}} — رابط صورة الأفاتار
+   - {{coverUrl}} — رابط صورة الغلاف
+   - {{socialLinksHtml}} — روابط التواصل الاجتماعي (HTML جاهز، ضعها داخل div)
+   - {{appsHtml}} — روابط التطبيقات (HTML جاهز)
+
+4. استخدام المتغيرات مثال: <h1>{{fullName}}</h1>
+5. الصفحة يجب أن تكون responsive (تعمل على الهاتف والكمبيوتر)
+6. أضف تأثيرات بصرية جميلة (animations, gradients, etc.)
+
+أنشئ القالب الآن:`;
+
+export function CustomTemplatesAdmin() {
+  const [templates, setTemplates] = useState<CustomTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    category: "custom",
+    isPremium: false,
+    priceDZD: 0,
+    originalPriceDZD: 0,
+    features: "",
+    thumbnail: "",
+    htmlCode: "",
+    isActive: true,
+  });
+
+  const fetchTemplates = async () => {
+    try {
+      setLoadingTemplates(true);
+      const snap = await getDocs(query(collection(db, "customTemplates"), orderBy("createdAt", "desc")));
+      setTemplates(snap.docs.map(d => ({ id: d.id, ...d.data() } as CustomTemplate)));
+    } catch {
+      toast.error("فشل تحميل القوالب المخصصة");
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  useEffect(() => { fetchTemplates(); }, []);
+
+  const resetForm = () => {
+    setForm({ name: "", description: "", category: "custom", isPremium: false, priceDZD: 0, originalPriceDZD: 0, features: "", thumbnail: "", htmlCode: "", isActive: true });
+    setEditingTemplate(null);
+  };
+
+  const handleEdit = (t: CustomTemplate) => {
+    setEditingTemplate(t);
+    setForm({
+      name: t.name,
+      description: t.description,
+      category: t.category,
+      isPremium: t.isPremium,
+      priceDZD: t.priceDZD,
+      originalPriceDZD: t.originalPriceDZD || 0,
+      features: (t.features || []).join(", "),
+      thumbnail: t.thumbnail || "",
+      htmlCode: t.htmlCode,
+      isActive: t.isActive,
+    });
+    setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim() || !form.htmlCode.trim()) {
+      toast.error("الاسم وكود HTML مطلوبان");
+      return;
+    }
+    try {
+      const id = editingTemplate?.id || `chatgpt-${Date.now()}`;
+      const data: any = {
+        name: form.name.trim(),
+        description: form.description.trim(),
+        category: form.category,
+        isPremium: form.isPremium,
+        priceDZD: Number(form.priceDZD),
+        originalPriceDZD: Number(form.originalPriceDZD) || undefined,
+        features: form.features.split(",").map(f => f.trim()).filter(Boolean),
+        thumbnail: form.thumbnail.trim() || null,
+        htmlCode: form.htmlCode,
+        isActive: form.isActive,
+        updatedAt: Timestamp.now(),
+      };
+      if (!editingTemplate) data.createdAt = Timestamp.now();
+
+      await setDoc(doc(db, "customTemplates", id), data, { merge: true });
+      toast.success(editingTemplate ? "تم تحديث القالب!" : "تم حفظ القالب الجديد!");
+      setShowForm(false);
+      resetForm();
+      await fetchTemplates();
+    } catch (err) {
+      console.error(err);
+      toast.error("حدث خطأ أثناء الحفظ");
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`هل تريد حذف القالب "${name}"؟`)) return;
+    try {
+      await deleteDoc(doc(db, "customTemplates", id));
+      toast.success("تم حذف القالب");
+      await fetchTemplates();
+    } catch {
+      toast.error("فشل حذف القالب");
+    }
+  };
+
+  const handleToggleActive = async (t: CustomTemplate) => {
+    try {
+      await updateDoc(doc(db, "customTemplates", t.id), { isActive: !t.isActive });
+      toast.success(t.isActive ? "تم إيقاف القالب" : "تم تفعيل القالب");
+      await fetchTemplates();
+    } catch {
+      toast.error("فشل تغيير الحالة");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Code2 className="w-5 h-5 text-purple-400" />
+            القوالب المخصصة (ChatGPT)
+          </h2>
+          <p className="text-xs text-gray-400 mt-1">أضف قوالب HTML مصنوعة بـ ChatGPT — تظهر للمستخدمين في قائمة القوالب</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowPrompt(!showPrompt)}
+            className="border-purple-500/40 text-purple-300 hover:bg-purple-500/10 text-xs"
+          >
+            <Copy className="w-3 h-3 mr-1" />
+            {showPrompt ? "إخفاء البرومبت" : "برومبت ChatGPT"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+          >
+            <Plus className="w-3 h-3 mr-1" />
+            قالب جديد
+          </Button>
+        </div>
+      </div>
+
+      {/* ChatGPT Prompt Box */}
+      {showPrompt && (
+        <Card className="glass border-purple-500/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-purple-300 flex items-center gap-2">
+              <Code2 className="w-4 h-4" />
+              برومبت ChatGPT — انسخه وأرسله لـ ChatGPT لإنشاء قالب
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-black/50 rounded-lg p-4 text-xs text-gray-300 whitespace-pre-wrap font-mono leading-relaxed overflow-x-auto">
+              {CHATGPT_PROMPT_TEMPLATE}
+            </pre>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3 border-purple-500/40 text-purple-300 hover:bg-purple-500/10 text-xs"
+              onClick={() => {
+                navigator.clipboard.writeText(CHATGPT_PROMPT_TEMPLATE);
+                toast.success("تم نسخ البرومبت!");
+              }}
+            >
+              <Copy className="w-3 h-3 mr-1" />
+              نسخ البرومبت
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Add / Edit Form */}
+      {showForm && (
+        <Card className="glass border-purple-500/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm text-purple-300">
+              {editingTemplate ? `تعديل: ${editingTemplate.name}` : "إضافة قالب مخصص جديد"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">اسم القالب *</label>
+                <Input
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="مثال: Cosmic Dark Pro"
+                  className="bg-black/40 border-white/10 text-white text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">الفئة</label>
+                <select
+                  value={form.category}
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  className="w-full h-10 rounded-md border border-white/10 bg-black/40 text-white text-sm px-3"
+                >
+                  <option value="custom">مخصص</option>
+                  <option value="minimal">Minimal</option>
+                  <option value="developer">Developer</option>
+                  <option value="creative">Creative</option>
+                  <option value="luxury">Luxury</option>
+                  <option value="business">Business</option>
+                  <option value="diamond">Diamond</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">الوصف</label>
+              <Input
+                value={form.description}
+                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                placeholder="وصف مختصر للقالب..."
+                className="bg-black/40 border-white/10 text-white text-sm"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center gap-2 mt-5">
+                <input
+                  type="checkbox"
+                  id="isPremium"
+                  checked={form.isPremium}
+                  onChange={e => setForm(f => ({ ...f, isPremium: e.target.checked }))}
+                  className="w-4 h-4 accent-purple-500"
+                />
+                <label htmlFor="isPremium" className="text-xs text-gray-300">مدفوع؟</label>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">السعر (دج)</label>
+                <Input
+                  type="number"
+                  value={form.priceDZD}
+                  onChange={e => setForm(f => ({ ...f, priceDZD: Number(e.target.value) }))}
+                  className="bg-black/40 border-white/10 text-white text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">السعر الأصلي (دج، اختياري)</label>
+                <Input
+                  type="number"
+                  value={form.originalPriceDZD}
+                  onChange={e => setForm(f => ({ ...f, originalPriceDZD: Number(e.target.value) }))}
+                  className="bg-black/40 border-white/10 text-white text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">المميزات (مفصولة بفاصلة)</label>
+              <Input
+                value={form.features}
+                onChange={e => setForm(f => ({ ...f, features: e.target.value }))}
+                placeholder="تصميم متجاوب, ألوان نيون, تأثيرات انيميشن..."
+                className="bg-black/40 border-white/10 text-white text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">رابط الصورة المصغرة (اختياري)</label>
+              <Input
+                value={form.thumbnail}
+                onChange={e => setForm(f => ({ ...f, thumbnail: e.target.value }))}
+                placeholder="https://images.unsplash.com/..."
+                className="bg-black/40 border-white/10 text-white text-sm"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-gray-400">كود HTML الكامل * (من ChatGPT)</label>
+                {form.htmlCode && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPreviewHtml(form.htmlCode)}
+                    className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 text-xs h-6"
+                  >
+                    <Eye className="w-3 h-3 mr-1" />
+                    معاينة
+                  </Button>
+                )}
+              </div>
+              <textarea
+                value={form.htmlCode}
+                onChange={e => setForm(f => ({ ...f, htmlCode: e.target.value }))}
+                placeholder="الصق هنا كود HTML الكامل الذي أنشأه ChatGPT..."
+                rows={12}
+                className="w-full rounded-md border border-white/10 bg-black/40 text-white text-xs p-3 font-mono resize-y focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+              <p className="text-[10px] text-gray-500 mt-1">
+                💡 تأكد أن الكود يحتوي على المتغيرات مثل <code className="text-purple-300">{"{{fullName}}"}</code> و <code className="text-purple-300">{"{{bio}}"}</code>
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                onClick={handleSave}
+                className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
+              >
+                {editingTemplate ? "تحديث القالب" : "حفظ القالب"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => { setShowForm(false); resetForm(); }}
+                className="border-white/10 text-gray-300 text-sm"
+              >
+                إلغاء
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Preview Dialog */}
+      {previewHtml && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col">
+          <div className="flex items-center justify-between p-3 bg-gray-900 border-b border-white/10">
+            <span className="text-sm text-white font-semibold flex items-center gap-2">
+              <Eye className="w-4 h-4 text-cyan-400" />
+              معاينة القالب — بيانات نموذجية
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setPreviewHtml(null)}
+              className="border-white/10 text-white text-xs"
+            >
+              إغلاق
+            </Button>
+          </div>
+          <div className="flex-1 overflow-auto">
+            <CustomTemplatePreview htmlCode={previewHtml} />
+          </div>
+        </div>
+      )}
+
+      {/* Templates List */}
+      {loadingTemplates ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+        </div>
+      ) : templates.length === 0 ? (
+        <Card className="glass border-white/10">
+          <CardContent className="py-12 text-center">
+            <Code2 className="w-10 h-10 text-gray-500 mx-auto mb-3" />
+            <p className="text-gray-400 text-sm">لا توجد قوالب مخصصة بعد</p>
+            <p className="text-gray-500 text-xs mt-1">اضغط "قالب جديد" لإضافة أول قالب</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {templates.map(t => (
+            <Card key={t.id} className={`glass border-white/10 ${!t.isActive ? "opacity-50" : ""}`}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-white truncate">{t.name}</span>
+                      {t.isPremium && <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-[10px]">مدفوع</Badge>}
+                      {!t.isActive && <Badge className="bg-gray-500/20 text-gray-400 text-[10px]">موقوف</Badge>}
+                      <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-[10px]">{t.category}</Badge>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{t.description}</p>
+                    {t.isPremium && (
+                      <p className="text-xs text-green-400 mt-1 font-mono">{t.priceDZD.toLocaleString()} دج</p>
+                    )}
+                    <p className="text-[10px] text-gray-500 mt-2 font-mono">ID: {t.id}</p>
+                  </div>
+                  {t.thumbnail && (
+                    <img src={t.thumbnail} alt={t.name} className="w-16 h-16 rounded-lg object-cover border border-white/10 flex-shrink-0" />
+                  )}
+                </div>
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPreviewHtml(t.htmlCode)}
+                    className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 text-xs h-7"
+                  >
+                    <Eye className="w-3 h-3 mr-1" />
+                    معاينة
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEdit(t)}
+                    className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10 text-xs h-7"
+                  >
+                    <Edit3 className="w-3 h-3 mr-1" />
+                    تعديل
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleToggleActive(t)}
+                    className="border-yellow-500/30 text-yellow-300 hover:bg-yellow-500/10 text-xs h-7"
+                  >
+                    {t.isActive ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                    {t.isActive ? "إيقاف" : "تفعيل"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDelete(t.id, t.name)}
+                    className="border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs h-7"
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    حذف
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function SaasAdminTab() {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -43,6 +516,7 @@ export function SaasAdminTab() {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [adminTab, setAdminTab] = useState<"users" | "templates">("users");
 
   const fetchData = async () => {
     try {
@@ -190,7 +664,30 @@ export function SaasAdminTab() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Admin Section Tabs */}
+      <div className="flex gap-2 border-b border-white/10 pb-3">
+        <button
+          onClick={() => setAdminTab("users")}
+          className={`px-4 py-2 text-sm rounded-t-lg font-medium transition-colors ${adminTab === "users" ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "text-gray-400 hover:text-white"}`}
+        >
+          <Users className="w-4 h-4 inline mr-1" />
+          المستخدمون والمدفوعات
+        </button>
+        <button
+          onClick={() => setAdminTab("templates")}
+          className={`px-4 py-2 text-sm rounded-t-lg font-medium transition-colors ${adminTab === "templates" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "text-gray-400 hover:text-white"}`}
+        >
+          <Code2 className="w-4 h-4 inline mr-1" />
+          القوالب المخصصة
+        </button>
+      </div>
+
+      {/* Custom Templates Tab */}
+      {adminTab === "templates" && <CustomTemplatesAdmin />}
+
+      {/* Users & Payments Tab */}
+      {adminTab === "users" && <div className="space-y-8">
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="glass border-white/10">
@@ -408,6 +905,7 @@ export function SaasAdminTab() {
           </div>
         </CardContent>
       </Card>
+    </div>}{/* end users tab */}
     </div>
   );
 }

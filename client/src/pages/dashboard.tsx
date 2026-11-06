@@ -54,7 +54,7 @@ import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 import { DashboardHeader } from "@/components/ui/DashboardHeader";
 import { UserProfile, SocialLink, PaymentRecord, TemplateDefinition } from "@shared/saas-schema";
 import { SUPPORTED_PLATFORMS, PlatformIcon } from "@/components/ui/PlatformIcon";
-import { collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, Timestamp, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 
@@ -80,6 +80,34 @@ export default function Dashboard() {
   const [templateSearch, setTemplateSearch] = useState("");
   const [templateCategory, setTemplateCategory] = useState<string>("all");
   const [templatePriceFilter, setTemplatePriceFilter] = useState<"all" | "free" | "premium">("all");
+
+  // Custom ChatGPT Templates from Firestore
+  const [customTemplates, setCustomTemplates] = useState<TemplateDefinition[]>([]);
+  useEffect(() => {
+    const loadCustomTemplates = async () => {
+      try {
+        const snap = await getDocs(query(collection(db, "customTemplates"), orderBy("createdAt", "desc")));
+        const list = snap.docs
+          .map(d => ({ id: d.id, ...d.data() } as any))
+          .filter((t: any) => t.isActive !== false)
+          .map((t: any): TemplateDefinition => ({
+            id: t.id,
+            name: t.name || "قالب مخصص",
+            description: t.description || "",
+            category: t.category || "custom",
+            isPremium: !!t.isPremium,
+            priceDZD: t.priceDZD || 0,
+            originalPriceDZD: t.originalPriceDZD,
+            thumbnail: t.thumbnail || "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?auto=format&fit=crop&w=600&q=80",
+            features: t.features || [],
+          }));
+        setCustomTemplates(list);
+      } catch (err) {
+        console.error("Failed to load custom templates:", err);
+      }
+    };
+    loadCustomTemplates();
+  }, []);
 
   // Buy Template Modal State
   const [buyTemplateModal, setBuyTemplateModal] = useState<TemplateDefinition | null>(null);
@@ -210,7 +238,11 @@ export default function Dashboard() {
   const handleSelectTemplate = async (templateId: string) => {
     const isUnlocked = unlockedTemplates.includes(templateId);
     if (!isUnlocked) {
-      const tmpl = getTemplateById(templateId);
+      // Look in both static and custom templates
+      const tmpl =
+        TEMPLATES.find(t => t.id === templateId) ||
+        customTemplates.find(t => t.id === templateId) ||
+        getTemplateById(templateId);
       setBuyTemplateModal(tmpl);
       return;
     }
@@ -840,6 +872,7 @@ export default function Dashboard() {
                     { id: "luxury", label: "👑 فاخر و VIP" },
                     { id: "business", label: "💼 أعمال وشركات" },
                     { id: "minimal", label: "✨ بسيط ونظيف" },
+                    { id: "custom", label: "🤖 ChatGPT مخصص" },
                   ].map((cat) => (
                     <button
                       key={cat.id}
@@ -863,7 +896,8 @@ export default function Dashboard() {
 
             {/* Filtered Templates Grid */}
             {(() => {
-              const filtered = TEMPLATES.filter((tmpl) => {
+              const allTemplates = [...TEMPLATES, ...customTemplates];
+              const filtered = allTemplates.filter((tmpl) => {
                 const matchesSearch =
                   !templateSearch.trim() ||
                   tmpl.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
