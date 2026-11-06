@@ -218,14 +218,15 @@ export function BaryonAnimeLive({ profile }: { profile: UserProfile }) {
         </div>
 
         {/* Powered by */}
-        <div className="mt-auto pt-4 text-center">
+        <div className="mt-auto pt-6 pb-2 text-center">
           <a
-            href="https://novawebdv.com"
+            href="https://www.novawebdv.com/profiles"
             target="_blank"
             rel="noreferrer"
-            className="text-[11px] font-mono text-orange-400/60 hover:text-orange-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors opacity-80 hover:opacity-100"
           >
-            {profile.username}.novawebdv.com
+            <span>make your profile with</span>
+            <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
           </a>
         </div>
       </div>
@@ -390,14 +391,15 @@ export function CustomWallpaperHero({ profile }: { profile: UserProfile }) {
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-4 text-center">
+        <div className="mt-auto pt-6 pb-2 text-center">
           <a
-            href="https://novawebdv.com"
+            href="https://www.novawebdv.com/profiles"
             target="_blank"
             rel="noreferrer"
-            className="text-[11px] font-mono text-zinc-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors opacity-80 hover:opacity-100"
           >
-            {profile.username}.novawebdv.com
+            <span>make your profile with</span>
+            <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
           </a>
         </div>
       </div>
@@ -581,14 +583,15 @@ export function ReactBitsSpotlight({ profile }: { profile: UserProfile }) {
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-4 text-center">
+        <div className="mt-auto pt-6 pb-2 text-center">
           <a
-            href="https://novawebdv.com"
+            href="https://www.novawebdv.com/profiles"
             target="_blank"
             rel="noreferrer"
-            className="text-[11px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors opacity-80 hover:opacity-100"
           >
-            {profile.username}.novawebdv.com
+            <span>make your profile with</span>
+            <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
           </a>
         </div>
       </div>
@@ -752,14 +755,15 @@ export function ReactBitsAuroraMesh({ profile }: { profile: UserProfile }) {
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-4 text-center">
+        <div className="mt-auto pt-6 pb-2 text-center">
           <a
-            href="https://novawebdv.com"
+            href="https://www.novawebdv.com/profiles"
             target="_blank"
             rel="noreferrer"
-            className="text-[11px] font-mono text-cyan-400/60 hover:text-cyan-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors opacity-80 hover:opacity-100"
           >
-            {profile.username}.novawebdv.com
+            <span>make your profile with</span>
+            <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
           </a>
         </div>
       </div>
@@ -928,14 +932,15 @@ export function CyberpunkHologramHUD({ profile }: { profile: UserProfile }) {
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-4 text-center">
+        <div className="mt-auto pt-6 pb-2 text-center">
           <a
-            href="https://novawebdv.com"
+            href="https://www.novawebdv.com/profiles"
             target="_blank"
             rel="noreferrer"
-            className="text-[11px] text-cyan-500/60 hover:text-cyan-400 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors opacity-80 hover:opacity-100"
           >
-            {profile.username}.novawebdv.com
+            <span>make your profile with</span>
+            <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
           </a>
         </div>
       </div>

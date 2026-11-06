@@ -153,14 +153,15 @@ export function ModernMinimalist({ profile }: { profile: UserProfile }) {
       </motion.div>
 
       {/* Modern Minimal Footer */}
-      <footer className="py-6 text-center text-[11px] text-gray-600 font-mono">
+      <footer className="py-6 text-center">
         <a 
-          href="https://novawebdv.com/profiles" 
+          href="https://www.novawebdv.com/profiles" 
           target="_blank" 
           rel="noreferrer" 
-          className="hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors opacity-75 hover:opacity-100"
         >
-          {profile.username}.novawebdv.com
+          <span>make your profile with</span>
+          <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
         </a>
       </footer>
     </div>

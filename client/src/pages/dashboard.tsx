@@ -85,6 +85,7 @@ export default function Dashboard() {
   const [receiptTx, setReceiptTx] = useState("");
   const [receiptUrl, setReceiptUrl] = useState("");
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const [selectedBillingPlan, setSelectedBillingPlan] = useState<"monthly" | "yearly">("monthly");
 
   // User Payment History
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
@@ -918,20 +919,34 @@ export default function Dashboard() {
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               loading="lazy"
                             />
-                            <div className="absolute top-3 right-3 flex gap-1">
+                            <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
                               {tmpl.category === "diamond" ? (
-                                <Badge className="bg-gradient-to-r from-amber-400 via-rose-500 to-cyan-400 text-black font-extrabold border-none shadow-xl text-[10px] flex items-center gap-1">
-                                  <span>💎</span>
-                                  <span>Diamond {tmpl.priceDZD} دج</span>
-                                </Badge>
+                                <>
+                                  <Badge className="bg-gradient-to-r from-amber-400 via-rose-500 to-cyan-400 text-black font-extrabold border-none shadow-xl text-[10px] flex items-center gap-1">
+                                    <span>💎</span>
+                                    <span>Diamond {tmpl.priceDZD} دج</span>
+                                  </Badge>
+                                  {tmpl.originalPriceDZD && (
+                                    <span className="text-[10px] font-bold text-amber-300 bg-black/85 px-1.5 py-0.5 rounded border border-amber-400/40 line-through">
+                                      {tmpl.originalPriceDZD} دج (-10%)
+                                    </span>
+                                  )}
+                                </>
                               ) : tmpl.isPremium ? (
-                                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold border-none shadow-lg text-[10px] flex items-center gap-1">
-                                  <Crown className="w-3 h-3" />
-                                  <span>Premium {tmpl.priceDZD} دج</span>
-                                </Badge>
+                                <>
+                                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold border-none shadow-lg text-[10px] flex items-center gap-1">
+                                    <Crown className="w-3 h-3" />
+                                    <span>Premium {tmpl.priceDZD} دج</span>
+                                  </Badge>
+                                  {tmpl.originalPriceDZD && (
+                                    <span className="text-[10px] font-bold text-emerald-300 bg-black/85 px-1.5 py-0.5 rounded border border-emerald-500/40 line-through">
+                                      {tmpl.originalPriceDZD} دج (-10%)
+                                    </span>
+                                  )}
+                                </>
                               ) : (
-                                <Badge className="bg-cyan-500 text-black font-bold border-none text-[10px]">
-                                  مجاني Free
+                                <Badge className="bg-emerald-500 text-black font-extrabold border-none text-[10px] shadow-md shadow-emerald-500/20">
+                                  مجاني Free (0 دج)
                                 </Badge>
                               )}
                             </div>
@@ -1004,7 +1019,7 @@ export default function Dashboard() {
                               className="text-xs flex-1 bg-gradient-to-r from-amber-500 to-yellow-400 hover:opacity-90 text-black font-bold flex items-center gap-1"
                             >
                               <Lock className="w-3 h-3" />
-                              <span>شراء ({tmpl.priceDZD} دج)</span>
+                              <span>شراء ({tmpl.priceDZD} دج) {tmpl.originalPriceDZD ? "[-10%]" : ""}</span>
                             </Button>
                           )}
                         </div>
@@ -1058,11 +1073,52 @@ export default function Dashboard() {
                 <div>
                   <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
                     <Receipt className="w-5 h-5 text-cyan-400" />
-                    <span>تجديد الاشتراك (500 دج شهرياً) عبر الدفع المحلي</span>
+                    <span>اختر خطة الاشتراك المناسبة لك</span>
                   </h3>
-                  <p className="text-xs text-gray-400 leading-relaxed">
-                    قم بالتحويل عبر تطبيق BaridiMob أو مركز البريد CCP، ثم أدخل رقم العملية أو ارفع صورة الوصل أدناه لتأكيد التجديد.
+                  <p className="text-xs text-gray-400 leading-relaxed mb-4">
+                    اختر بين الاشتراك الشهري أو السنوي الموفر، ثم قم بالتحويل عبر BaridiMob أو CCP لتأكيد التفعيل.
                   </p>
+
+                  {/* Plan Choice Pills */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBillingPlan("monthly")}
+                      className={`p-4 rounded-2xl border text-right transition-all flex flex-col justify-between ${
+                        selectedBillingPlan === "monthly"
+                          ? "bg-cyan-500/15 border-cyan-400 shadow-[0_0_20px_rgba(6,255,240,0.2)]"
+                          : "bg-black/40 border-white/10 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-sm text-white">الاشتراك الشهري</span>
+                        <Badge className="bg-cyan-400 text-black font-extrabold text-[10px]">شهري</Badge>
+                      </div>
+                      <div className="text-2xl font-black text-cyan-400 font-mono mt-1">500 دج <span className="text-xs font-normal text-gray-400 font-ui">/ شهر</span></div>
+                      <p className="text-[11px] text-gray-400 mt-1">مرونة تامة وتجديد شهري عند الرغبة</p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBillingPlan("yearly")}
+                      className={`p-4 rounded-2xl border text-right transition-all flex flex-col justify-between relative overflow-hidden ${
+                        selectedBillingPlan === "yearly"
+                          ? "bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-transparent border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.25)]"
+                          : "bg-black/40 border-white/10 hover:border-amber-400/50"
+                      }`}
+                    >
+                      <div className="absolute top-2 left-2">
+                        <Badge className="bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-black text-[9px] uppercase tracking-wider">
+                          وفر 2,000 دج ⚡
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-sm text-amber-200">الاشتراك السنوي VIP</span>
+                      </div>
+                      <div className="text-2xl font-black text-amber-400 font-mono mt-1">4,000 دج <span className="text-xs font-normal text-gray-400 font-ui">/ سنة</span></div>
+                      <p className="text-[11px] text-amber-300/80 mt-1">سنة كاملة بسعر 8 أشهر فقط (وفرت شهرين!)</p>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Account Details Box */}
@@ -1113,11 +1169,15 @@ export default function Dashboard() {
 
                   <Button
                     disabled={isSubmittingPayment}
-                    onClick={() => handleSubmitPayment("subscription", "basic", 500)}
-                    className="w-full sm:w-auto bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider px-8 h-11 rounded-xl text-xs gap-2"
+                    onClick={() => handleSubmitPayment("subscription", selectedBillingPlan === "yearly" ? "yearly" : "basic", selectedBillingPlan === "yearly" ? 4000 : 500)}
+                    className="w-full sm:w-auto bg-gradient-to-r from-cyan-400 to-amber-400 hover:opacity-90 text-black font-ui font-extrabold uppercase tracking-wider px-8 h-11 rounded-xl text-xs gap-2"
                   >
                     {isSubmittingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    <span>إرسال إشعار التجديد (500 دج)</span>
+                    <span>
+                      {selectedBillingPlan === "yearly"
+                        ? "إرسال إشعار الاشتراك السنوي (4,000 دج)"
+                        : "إرسال إشعار الاشتراك الشهري (500 دج)"}
+                    </span>
                   </Button>
                 </div>
               </div>
@@ -1216,8 +1276,15 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-400 mt-1">
                   شراء القالب يمنحك حق استخدامه مدى الحياة وربطه بحسابك.
                 </p>
-                <div className="text-2xl font-black text-amber-400 mt-2 font-mono">
-                  {buyTemplateModal.priceDZD} دج (لمرة واحدة)
+                <div className="mt-2 flex flex-col items-center gap-1">
+                  <div className="text-2xl font-black text-amber-400 font-mono">
+                    {buyTemplateModal.priceDZD} دج (لمرة واحدة)
+                  </div>
+                  {buyTemplateModal.originalPriceDZD && (
+                    <div className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                      تم تطبيق تخفيض 10% (السعر الأصلي: <span className="line-through text-gray-400">{buyTemplateModal.originalPriceDZD} دج</span>)
+                    </div>
+                  )}
                 </div>
               </div>
 

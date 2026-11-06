@@ -274,15 +274,22 @@ export default function ProfilesLanding() {
                       alt={tmpl.name} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
                       {tmpl.isPremium ? (
-                        <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-bold border-none shadow-lg flex items-center gap-1 text-[11px]">
-                          <Crown className="w-3 h-3" />
-                          <span>Premium • {tmpl.priceDZD} دج</span>
-                        </Badge>
+                        <>
+                          <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-bold border-none shadow-lg flex items-center gap-1 text-[11px]">
+                            <Crown className="w-3 h-3" />
+                            <span>Premium • {tmpl.priceDZD} دج</span>
+                          </Badge>
+                          {tmpl.originalPriceDZD && (
+                            <span className="text-[10px] font-bold text-amber-300 bg-black/85 px-1.5 py-0.5 rounded border border-amber-400/40 line-through">
+                              {tmpl.originalPriceDZD} دج (-10%)
+                            </span>
+                          )}
+                        </>
                       ) : (
-                        <Badge className="bg-cyan-500/90 text-black font-bold border-none text-[11px]">
-                          مجاني Free
+                        <Badge className="bg-emerald-500 text-black font-extrabold border-none text-[11px] shadow-md shadow-emerald-500/20">
+                          مجاني Free (0 دج)
                         </Badge>
                       )}
                     </div>
@@ -349,15 +356,24 @@ export default function ProfilesLanding() {
                 </p>
               </div>
 
-              <div className="text-right" dir="ltr">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-white">
-                    {t("saas_pricing_amount")}
-                  </span>
-                  <span className="text-gray-400 font-ui text-sm">{t("saas_pricing_period")}</span>
+              <div className="text-right flex flex-col sm:flex-row items-end gap-3" dir="ltr">
+                <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 text-right">
+                  <div className="text-xs text-cyan-400 font-bold uppercase mb-0.5">شهري Monthly</div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-white">500 دج</span>
+                    <span className="text-gray-400 font-ui text-xs">/ شهر</span>
+                  </div>
                 </div>
-                <div className="text-xs text-cyan-400 mt-1 font-semibold">
-                  طرق دفع محلية: BaridiMob & CCP
+
+                <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border border-amber-400/60 shadow-[0_0_20px_rgba(251,191,36,0.2)] text-right relative">
+                  <div className="text-[10px] font-black text-amber-300 uppercase mb-0.5 flex items-center justify-end gap-1">
+                    <span>سنوي VIP</span>
+                    <span className="bg-amber-400 text-black px-1 rounded text-[9px] font-extrabold">وفر 2000 دج</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl sm:text-3xl font-black text-amber-300">4,000 دج</span>
+                    <span className="text-amber-200/70 font-ui text-xs">/ سنة</span>
+                  </div>
                 </div>
               </div>
             </div>

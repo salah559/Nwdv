@@ -69,7 +69,7 @@ export interface UserSubscription {
   trialStartsAt: any;
   trialEndsAt: any;
   currentPeriodEnd?: any;
-  planId: "trial" | "basic";
+  planId: "trial" | "basic" | "yearly";
   amountDZD?: number;
   lastPaymentId?: string;
   createdAt?: any;
@@ -82,6 +82,7 @@ export interface TemplateDefinition {
   description: string;
   isPremium: boolean;
   priceDZD: number;
+  originalPriceDZD?: number;
   category: "minimal" | "developer" | "creative" | "luxury" | "business" | "diamond";
   thumbnail: string;
   features: string[];

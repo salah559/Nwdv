@@ -704,15 +704,15 @@ export function ExtendedTemplateView({
       </motion.div>
 
       {/* Powered By Badge */}
-      <div className="py-4 text-center">
+      <div className="py-6 text-center">
         <a
-          href="https://novawebdv.com"
+          href="https://www.novawebdv.com/profiles"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors opacity-75 hover:opacity-100"
         >
-          <span>Powered by</span>
-          <span className="font-bold tracking-wider" style={{ color: theme.primaryColor }}>NOVAWEB</span>
+          <span>make your profile with</span>
+          <span className="font-bold underline underline-offset-4 tracking-wider" style={{ color: theme.primaryColor }}>novaweb</span>
         </a>
       </div>
     </div>

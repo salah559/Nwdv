@@ -160,8 +160,16 @@ export function LuxuryBlackGold({ profile }: { profile: UserProfile }) {
         </div>
       </motion.div>
 
-      <footer className="py-6 text-center text-[10px] text-amber-500/60 font-sans tracking-[0.3em] uppercase">
-        <span>EXCLUSIVE ROYAL NOIR • NOVAWEB PROFILE</span>
+      <footer className="py-6 text-center">
+        <a 
+          href="https://www.novawebdv.com/profiles" 
+          target="_blank" 
+          rel="noreferrer" 
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors opacity-75 hover:opacity-100"
+        >
+          <span>make your profile with</span>
+          <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
+        </a>
       </footer>
     </div>
   );

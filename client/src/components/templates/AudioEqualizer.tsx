@@ -239,14 +239,15 @@ export function AudioEqualizer({ profile }: { profile: UserProfile }) {
       </motion.div>
 
       {/* Footer */}
-      <footer className="py-4 text-center text-xs font-mono text-gray-500">
+      <footer className="py-6 text-center">
         <a 
-          href="https://novawebdv.com/profiles" 
+          href="https://www.novawebdv.com/profiles" 
           target="_blank" 
           rel="noreferrer" 
-          className="hover:text-emerald-400 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors opacity-75 hover:opacity-100"
         >
-          {profile.username}.novawebdv.com
+          <span>make your profile with</span>
+          <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
         </a>
       </footer>
     </div>

@@ -161,10 +161,16 @@ export function CreativeDesigner({ profile }: { profile: UserProfile }) {
         </div>
       </motion.div>
 
-      <footer className="py-6 text-center text-xs text-pink-400/60 font-sans flex items-center gap-1 justify-center">
-        <span>Handcrafted with</span>
-        <Heart className="w-3.5 h-3.5 text-pink-500 fill-pink-500" />
-        <span>on Novaweb Profile</span>
+      <footer className="py-6 text-center">
+        <a 
+          href="https://www.novawebdv.com/profiles" 
+          target="_blank" 
+          rel="noreferrer" 
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors opacity-75 hover:opacity-100"
+        >
+          <span>make your profile with</span>
+          <span className="font-bold underline underline-offset-4 tracking-wider">novaweb</span>
+        </a>
       </footer>
     </div>
   );
