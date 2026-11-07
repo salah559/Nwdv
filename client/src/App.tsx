@@ -73,6 +73,7 @@ function Router() {
       <Route path="/auth/register" component={Login} />
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/p/:username/product/:productId" component={PublicProfile} />
       <Route path="/p/:username" component={PublicProfile} />
       <Route path="/u/:username" component={PublicProfile} />
       <Route path="/projects" component={Projects} />

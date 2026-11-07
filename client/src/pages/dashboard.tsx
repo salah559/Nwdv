@@ -614,8 +614,17 @@ export default function Dashboard() {
       setIsSavingStoreSettings(true);
       await updateUserProfileData({
         storeSettings: profileForm.storeSettings,
+        customTheme: profileForm.customTheme,
+        templateId: profileForm.templateId,
+        fullName: profileForm.fullName,
+        bio: profileForm.bio,
+        avatarUrl: profileForm.avatarUrl,
+        coverUrl: profileForm.coverUrl,
+        location: profileForm.location,
+        phone: profileForm.phone,
+        whatsapp: profileForm.whatsapp,
       });
-      toast.success("تم حفظ إعدادات وهوية المتجر بنجاح!");
+      toast.success("تم حفظ إعدادات وهوية المتجر وتحديثها بنجاح! 💾");
     } catch (err: any) {
       console.error(err);
       toast.error("فشل حفظ إعدادات المتجر: " + err.message);
@@ -1526,37 +1535,54 @@ export default function Dashboard() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2">
+                    <div className="pt-3 border-t border-white/5 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleToggleProductStock(prod)}
+                          className={`text-[11px] h-8 px-2.5 border-white/10 ${
+                            prod.inStock ? "text-gray-300 hover:text-white" : "text-emerald-400 border-emerald-500/30"
+                          }`}
+                        >
+                          {prod.inStock ? "إيقاف التوفر" : "تفعيل التوفر"}
+                        </Button>
+
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditProductModal(prod)}
+                            className="text-[11px] h-8 px-2.5 border-white/10 text-cyan-300 hover:border-cyan-400"
+                          >
+                            <Edit2 className="w-3.5 h-3.5 mr-1" />
+                            <span>تعديل</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteProduct(prod.id)}
+                            className="text-[11px] h-8 px-2.5 border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Direct Single Product Share Link Button */}
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleToggleProductStock(prod)}
-                        className={`text-[11px] h-8 px-2.5 border-white/10 ${
-                          prod.inStock ? "text-gray-300 hover:text-white" : "text-emerald-400 border-emerald-500/30"
-                        }`}
+                        onClick={() => {
+                          const prodUrl = `${window.location.origin}/p/${userProfile.username}?product=${prod.id}`;
+                          navigator.clipboard.writeText(prodUrl);
+                          toast.success(`تم نسخ رابط المنتج "${prod.title}" المباشر! يمكنك الآن نشره في إعلاناتك 🔗`);
+                        }}
+                        className="w-full text-[11px] h-8 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 gap-1.5 font-bold"
                       >
-                        {prod.inStock ? "إيقاف التوفر" : "تفعيل التوفر"}
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span>نسخ رابط المنتج المباشر للإعلانات 🔗</span>
                       </Button>
-
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditProductModal(prod)}
-                          className="text-[11px] h-8 px-2.5 border-white/10 text-cyan-300 hover:border-cyan-400"
-                        >
-                          <Edit2 className="w-3.5 h-3.5 mr-1" />
-                          <span>تعديل</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteProduct(prod.id)}
-                          className="text-[11px] h-8 px-2.5 border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
                     </div>
                   </div>
                 ))}

@@ -16,8 +16,9 @@ import {
 export default function PublicProfile({ usernameParam }: { usernameParam?: string }) {
   const [, params] = useRoute("/p/:username");
   const [, uParams] = useRoute("/u/:username");
+  const [, prodParams] = useRoute("/p/:username/product/:productId");
   
-  const targetUsername = usernameParam || params?.username || uParams?.username || "";
+  const targetUsername = usernameParam || prodParams?.username || params?.username || uParams?.username || "";
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
