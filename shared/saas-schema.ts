@@ -93,7 +93,42 @@ export interface StoreOrder {
   updatedAt?: any;
 }
 
+export interface StoreComponent {
+  id: string;
+  type: "text" | "image" | "button" | "gallery" | "html";
+  props: Record<string, any>;
+}
+
+export interface StorePage {
+  id: string;
+  title: string;
+  slug: string;
+  components: StoreComponent[];
+}
+
 export interface StoreSettings {
+  storeName?: string;
+  currency?: string;
+  whatsappForOrders?: string;
+  enableDirectCheckout?: boolean;
+  deliveryNotice?: string;
+  returnPolicyNotice?: string;
+  thankYouMessage?: string;
+  storeBio?: string;
+  accentColor?: string;
+  allowCashOnDelivery?: boolean;
+  announcementText?: string;
+  announcementBgColor?: string;
+  defaultShippingCostDZD?: number;
+  freeShippingThresholdDZD?: number;
+  promoBannerUrl?: string;
+  promoBannerTitle?: string;
+  promoBannerSubtitle?: string;
+  showTrustBadges?: boolean;
+  showStockCounter?: boolean;
+  showDirectWhatsappBtn?: boolean;
+  pages?: StorePage[]; // جديد: صفحات المتجر القابلة للتخصيص
+
   storeName?: string;
   currency?: string;
   whatsappForOrders?: string;
