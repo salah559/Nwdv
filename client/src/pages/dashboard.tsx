@@ -1450,7 +1450,6 @@ export default function Dashboard() {
                   </button>
                 ))}
               </div>
-            </div>
 
             {/* Orders Feed */}
             {isLoadingOrders ? (
