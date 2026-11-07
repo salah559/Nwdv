@@ -60,14 +60,20 @@ export default function PublicProfile({ usernameParam }: { usernameParam?: strin
           return;
         }
 
-        const profData = snap.docs[0].data() as UserProfile;
-        setProfile(profData);
+        const docSnap = snap.docs[0];
+        const profData = docSnap.data() as UserProfile;
+        const resolvedUserId = profData.userId || docSnap.id;
+        setProfile({
+          ...profData,
+          id: docSnap.id,
+          userId: resolvedUserId,
+        });
 
         // 2. Fetch subscription status
         if (isSalah) {
           setSubscription(SALAH_PERMANENT_SUBSCRIPTION);
         } else {
-          const subDoc = await getDoc(doc(db, "subscriptions", profData.userId));
+          const subDoc = await getDoc(doc(db, "subscriptions", resolvedUserId));
           if (subDoc.exists()) {
             const subData = subDoc.data() as UserSubscription;
             

@@ -43,8 +43,10 @@ import {
   MapPin,
   MessageCircle,
   Truck,
-  Edit2
+  Edit2,
+  Store
 } from "lucide-react";
+import { ALGERIA_WILAYAS } from "@/lib/algeria-wilayas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,6 +131,21 @@ export default function Dashboard() {
   });
   const [isSavingProduct, setIsSavingProduct] = useState(false);
 
+  // Manual Order Modal State
+  const [manualOrderModalOpen, setManualOrderModalOpen] = useState(false);
+  const [manualOrderForm, setManualOrderForm] = useState({
+    customerName: "",
+    customerPhone: "",
+    customerWilaya: "16 - الجزائر (Algiers)",
+    customerAddress: "",
+    customerNotes: "",
+    productTitle: "",
+    productPriceDZD: 0,
+    quantity: 1,
+  });
+  const [isSavingManualOrder, setIsSavingManualOrder] = useState(false);
+  const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
+
   useEffect(() => {
     if (!loading) {
       if (!currentUser) {
@@ -163,32 +180,78 @@ export default function Dashboard() {
   useEffect(() => {
     if (!currentUser) return;
     setIsLoadingOrders(true);
-    const q = query(
+
+    const ordersMap = new Map<string, StoreOrder>();
+
+    // Load local storage fallback orders first
+    try {
+      const local = JSON.parse(localStorage.getItem(`orders_${currentUser.uid}`) || "[]");
+      if (Array.isArray(local)) {
+        local.forEach((o: any) => {
+          if (o && o.id) ordersMap.set(o.id, o);
+        });
+      }
+    } catch (e) {
+      // Ignore
+    }
+
+    const updateOrdersList = () => {
+      const list = Array.from(ordersMap.values());
+      list.sort((a, b) => {
+        const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (typeof a.createdAt === "string" ? new Date(a.createdAt).getTime() : 0));
+        const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (typeof b.createdAt === "string" ? new Date(b.createdAt).getTime() : 0));
+        return tB - tA;
+      });
+      setOrders(list);
+      setIsLoadingOrders(false);
+    };
+
+    // 1. Query by userId
+    const qUserId = query(
       collection(db, "orders"),
       where("userId", "==", currentUser.uid)
     );
-    const unsubscribe = onSnapshot(
-      q,
+
+    const unsubUserId = onSnapshot(
+      qUserId,
       (snapshot) => {
-        const list = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as StoreOrder[];
-        list.sort((a, b) => {
-          const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
-          const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
-          return tB - tA;
+        snapshot.docs.forEach((d) => {
+          ordersMap.set(d.id, { id: d.id, ...d.data() } as StoreOrder);
         });
-        setOrders(list);
-        setIsLoadingOrders(false);
+        updateOrdersList();
       },
       (error) => {
-        console.error("Error listening to orders:", error);
+        console.error("Error listening to orders by userId:", error);
         setIsLoadingOrders(false);
       }
     );
-    return () => unsubscribe();
-  }, [currentUser]);
+
+    // 2. Query by username if available
+    let unsubUsername: (() => void) | null = null;
+    if (userProfile?.username) {
+      const qUsername = query(
+        collection(db, "orders"),
+        where("username", "==", userProfile.username)
+      );
+      unsubUsername = onSnapshot(
+        qUsername,
+        (snapshot) => {
+          snapshot.docs.forEach((d) => {
+            ordersMap.set(d.id, { id: d.id, ...d.data() } as StoreOrder);
+          });
+          updateOrdersList();
+        },
+        (error) => {
+          console.error("Error listening to orders by username:", error);
+        }
+      );
+    }
+
+    return () => {
+      unsubUserId();
+      if (unsubUsername) unsubUsername();
+    };
+  }, [currentUser, userProfile?.username]);
 
   if (loading || !userProfile || !profileForm) {
     return (
@@ -479,6 +542,79 @@ export default function Dashboard() {
       case "shipping": return "قيد التوصيل";
       case "delivered": return "تم التسليم";
       case "cancelled": return "ملغي";
+    }
+  };
+
+  const openManualOrderModal = () => {
+    setManualOrderForm({
+      customerName: "",
+      customerPhone: "",
+      customerWilaya: "16 - الجزائر (Algiers)",
+      customerAddress: "",
+      customerNotes: "",
+      productTitle: profileForm.products?.[0]?.title || "طلب زبون",
+      productPriceDZD: profileForm.products?.[0]?.priceDZD || 1500,
+      quantity: 1,
+    });
+    setManualOrderModalOpen(true);
+  };
+
+  const handleSaveManualOrder = async () => {
+    if (!manualOrderForm.customerName.trim() || !manualOrderForm.customerPhone.trim()) {
+      toast.error("يرجى إدخال اسم الزبون ورقم الهاتف");
+      return;
+    }
+    if (!manualOrderForm.productTitle.trim() || !manualOrderForm.productPriceDZD) {
+      toast.error("يرجى إدخال اسم المنتج وسعره بالدينار الجزائري");
+      return;
+    }
+
+    try {
+      setIsSavingManualOrder(true);
+      const total = Number(manualOrderForm.productPriceDZD) * Number(manualOrderForm.quantity);
+      const newOrder: StoreOrder = {
+        userId: currentUser?.uid || "",
+        username: userProfile?.username || "",
+        productId: "manual-" + Date.now(),
+        productTitle: manualOrderForm.productTitle.trim(),
+        productPriceDZD: Number(manualOrderForm.productPriceDZD),
+        productImageUrl: "",
+        quantity: Number(manualOrderForm.quantity) || 1,
+        totalPriceDZD: total,
+        customerName: manualOrderForm.customerName.trim(),
+        customerPhone: manualOrderForm.customerPhone.trim(),
+        customerWilaya: manualOrderForm.customerWilaya,
+        customerAddress: manualOrderForm.customerAddress.trim(),
+        customerNotes: manualOrderForm.customerNotes.trim() + " (طلب يدوي مسجل من لوحة التحكم)",
+        status: "confirmed",
+        createdAt: Timestamp.now(),
+      };
+
+      const docRef = await addDoc(collection(db, "orders"), newOrder);
+      const saved = { ...newOrder, id: docRef.id };
+      setOrders((prev) => [saved, ...prev]);
+      toast.success("تم تسجيل الطلب اليدوي بنجاح!");
+      setManualOrderModalOpen(false);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("فشل حفظ الطلب: " + err.message);
+    } finally {
+      setIsSavingManualOrder(false);
+    }
+  };
+
+  const handleSaveStoreSettings = async () => {
+    try {
+      setIsSavingStoreSettings(true);
+      await updateUserProfileData({
+        storeSettings: profileForm.storeSettings,
+      });
+      toast.success("تم حفظ إعدادات وهوية المتجر بنجاح!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("فشل حفظ إعدادات المتجر: " + err.message);
+    } finally {
+      setIsSavingStoreSettings(false);
     }
   };
 
@@ -1075,6 +1211,73 @@ export default function Dashboard() {
               </div>
             )}
 
+            {/* Store Quick Customizer Panel */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-white/[0.04] to-cyan-950/20 border border-cyan-500/20 backdrop-blur-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Store className="w-5 h-5 text-cyan-400" />
+                  <div>
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <span>تخصيص وهوية المتجر السريعة</span>
+                      <Badge className="bg-cyan-500/20 text-cyan-300 border-none text-[10px]">مباشر</Badge>
+                    </h4>
+                    <p className="text-[11px] text-gray-400">حدد اسم متجرك ورقم الواتساب لاستقبال طلبات الزبائن مباشرةً</p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  disabled={isSavingStoreSettings}
+                  onClick={handleSaveStoreSettings}
+                  className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 h-8 px-4 rounded-xl shadow-[0_0_15px_rgba(6,255,240,0.25)] self-start sm:self-auto"
+                >
+                  {isSavingStoreSettings ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  <span>حفظ إعدادات المتجر</span>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-gray-300 font-bold">اسم المتجر / العلامة</Label>
+                  <Input
+                    value={profileForm.storeSettings?.storeName || ""}
+                    onChange={(e) => setProfileForm({
+                      ...profileForm,
+                      storeSettings: { ...(profileForm.storeSettings || {}), storeName: e.target.value }
+                    })}
+                    placeholder={profileForm.fullName || "اسم متجرك"}
+                    className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-gray-300 font-bold">رقم واتساب استقبال الطلبات</Label>
+                  <Input
+                    value={profileForm.storeSettings?.whatsappForOrders || ""}
+                    onChange={(e) => setProfileForm({
+                      ...profileForm,
+                      storeSettings: { ...(profileForm.storeSettings || {}), whatsappForOrders: e.target.value }
+                    })}
+                    placeholder="05XXXXXXXX أو 06XXXXXXXX"
+                    className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl font-mono"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-gray-300 font-bold">شريط الإعلان أعلى المتجر</Label>
+                  <Input
+                    value={profileForm.storeSettings?.deliveryNotice || ""}
+                    onChange={(e) => setProfileForm({
+                      ...profileForm,
+                      storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
+                    })}
+                    placeholder="🚚 توصيل متوفر لـ 58 ولاية والدفع عند الاستلام"
+                    className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Products Grid */}
             {(!profileForm.products || profileForm.products.length === 0) ? (
               <div className="text-center py-16 px-4 bg-white/[0.02] border border-white/10 rounded-3xl">
@@ -1207,8 +1410,23 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              {/* Status Filter Pills */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={openManualOrderModal}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs gap-1.5 h-10 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.25)] shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>تسجيل طلب يدوي</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Status Filter Pills Row */}
+            <div className="flex items-center gap-1.5 flex-wrap p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+              <span className="text-xs text-gray-400 font-bold ml-1 flex items-center gap-1">
+                <Filter className="w-3.5 h-3.5" />
+                <span>حالة الطلبات:</span>
+              </span>
                 {(
                   [
                     { id: "all", label: `الكل (${orders.length})` },
@@ -2549,6 +2767,142 @@ export default function Dashboard() {
               >
                 {isSavingProduct ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 <span>{editingProduct ? "حفظ التعديلات" : "إضافة المنتج"}</span>
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MANUAL ORDER MODAL (لإضافة وتوثيق الطلبات يدوياً) */}
+      <Dialog open={manualOrderModalOpen} onOpenChange={setManualOrderModalOpen}>
+        <DialogContent className="max-w-md bg-[#0a0d16] border border-emerald-500/30 text-white rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-white">
+              <Package className="w-5 h-5 text-emerald-400" />
+              <span>تسجيل طلب زبون يدوياً</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              سجل الطلبات الواردة عبر الهاتف، إنستغرام أو وجهاً لوجه لإدارتها في لوحة الطلبات
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3.5 pt-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-300 font-bold">اسم الزبون *</Label>
+              <Input
+                value={manualOrderForm.customerName}
+                onChange={(e) => setManualOrderForm({ ...manualOrderForm, customerName: e.target.value })}
+                placeholder="مثال: يوسف معمري"
+                className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-300 font-bold">رقم الهاتف *</Label>
+              <Input
+                type="tel"
+                value={manualOrderForm.customerPhone}
+                onChange={(e) => setManualOrderForm({ ...manualOrderForm, customerPhone: e.target.value })}
+                placeholder="06XXXXXXXX"
+                className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl font-mono"
+                dir="ltr"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-300 font-bold">الولاية *</Label>
+                <select
+                  value={manualOrderForm.customerWilaya}
+                  onChange={(e) => setManualOrderForm({ ...manualOrderForm, customerWilaya: e.target.value })}
+                  className="w-full bg-[#0d1220] border border-white/10 text-xs rounded-xl px-2.5 text-white h-9 focus:outline-none focus:border-cyan-400"
+                >
+                  {ALGERIA_WILAYAS.map((w) => (
+                    <option key={w.code} value={w.nameAr}>{w.nameAr}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-300 font-bold">العنوان / البلدية</Label>
+                <Input
+                  value={manualOrderForm.customerAddress}
+                  onChange={(e) => setManualOrderForm({ ...manualOrderForm, customerAddress: e.target.value })}
+                  placeholder="البلدية والحي"
+                  className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-300 font-bold">اسم المنتج المطلوب *</Label>
+              <Input
+                value={manualOrderForm.productTitle}
+                onChange={(e) => setManualOrderForm({ ...manualOrderForm, productTitle: e.target.value })}
+                placeholder="مثال: ساعة يد Ultra"
+                className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-300 font-bold">سعر الحبة (دج) *</Label>
+                <Input
+                  type="number"
+                  value={manualOrderForm.productPriceDZD || ""}
+                  onChange={(e) => setManualOrderForm({ ...manualOrderForm, productPriceDZD: Number(e.target.value) })}
+                  placeholder="3500"
+                  className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl font-mono"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-300 font-bold">الكمية</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={manualOrderForm.quantity}
+                  onChange={(e) => setManualOrderForm({ ...manualOrderForm, quantity: Math.max(1, Number(e.target.value)) })}
+                  className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs text-gray-300 font-bold">ملاحظات إضافية</Label>
+              <Input
+                value={manualOrderForm.customerNotes}
+                onChange={(e) => setManualOrderForm({ ...manualOrderForm, customerNotes: e.target.value })}
+                placeholder="أي تفاصيل خاصة بالشحن أو الزبون"
+                className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
+              />
+            </div>
+
+            {/* Total */}
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center text-xs">
+              <span className="text-gray-300 font-bold">المجموع الإجمالي:</span>
+              <span className="text-emerald-300 font-mono font-black text-sm">
+                {(Number(manualOrderForm.productPriceDZD || 0) * Number(manualOrderForm.quantity || 1)).toLocaleString()} دج
+              </span>
+            </div>
+
+            <DialogFooter className="pt-2 flex gap-2">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setManualOrderModalOpen(false)}
+                className="text-xs border-white/10 text-gray-300"
+              >
+                إلغاء
+              </Button>
+              <Button
+                type="button"
+                disabled={isSavingManualOrder}
+                onClick={handleSaveManualOrder}
+                className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs gap-1.5 flex-1"
+              >
+                {isSavingManualOrder ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                <span>حفظ وتأكيد الطلب</span>
               </Button>
             </DialogFooter>
           </div>

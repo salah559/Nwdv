@@ -80,6 +80,9 @@ export interface StoreSettings {
   whatsappForOrders?: string;
   enableDirectCheckout?: boolean;
   deliveryNotice?: string;
+  storeBio?: string;
+  accentColor?: string;
+  allowCashOnDelivery?: boolean;
 }
 
 export interface UserProfile {

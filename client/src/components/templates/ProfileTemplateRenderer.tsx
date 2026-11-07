@@ -31,6 +31,12 @@ export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
       return <StoreTemplateView profile={profile} variant="cyber" />;
     case "store-luxury-brand":
       return <StoreTemplateView profile={profile} variant="luxury" />;
+    case "store-organic-nature":
+      return <StoreTemplateView profile={profile} variant="organic" />;
+    case "store-streetwear-bold":
+      return <StoreTemplateView profile={profile} variant="streetwear" />;
+    case "store-instant-catalog":
+      return <StoreTemplateView profile={profile} variant="catalog" />;
   }
 
   // 💎 5 Diamond tier templates — bespoke innovative renderers

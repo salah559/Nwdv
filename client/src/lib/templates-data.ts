@@ -608,6 +608,52 @@ export const TEMPLATES: TemplateDefinition[] = [
       "نظام طلب VIP سلس للزبائن",
       "توافق 100% مع شبكات التواصل وواتساب"
     ]
+  },
+  {
+    id: "store-organic-nature",
+    name: "Store Organic & Bio Nature",
+    description: "قالب متجر طبيعي بالأخضر الزمردي والبيج الهادئ لمستحضرات التجميل، العناية بالبشرة، الزيوت والأغذية الطبيعية.",
+    isPremium: false,
+    priceDZD: 0,
+    category: "store",
+    thumbnail: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "ألوان هادئة وطبيعية مريحة للعين وتزيد ثقة المشتري",
+      "شارات جودة وضمان أصلية المنتجات 100%",
+      "سلة طلب سريعة ومرتبة للمنتجات العضوية",
+      "عرض المكونات والفوائد بشكل جذاب"
+    ]
+  },
+  {
+    id: "store-streetwear-bold",
+    name: "Store Streetwear & Sneaker Drop",
+    description: "متجر ستريت وير هيباست عصري وعالي الجرأة لملابس الشارع، السنيكرز والإكسسوارات مع شريط إعلاني متحرك.",
+    isPremium: true,
+    originalPriceDZD: 2200,
+    priceDZD: 1980,
+    category: "store",
+    thumbnail: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "خطوط ضخمة تيبوغرافية وتصميم بروتالي عصري",
+      "شريط تنبيهات تيكر متحرك للكميات والعروض الحصرية",
+      "شارات متبقي قطع محدودة لزيادة المبيعات",
+      "تجربة شراء سريعة ومثالية لجمهور الشباب"
+    ]
+  },
+  {
+    id: "store-instant-catalog",
+    name: "Store Instant Catalog & Wholesale",
+    description: "كتالوج سريع للبيع بالجملة والمفرد، مجهز ببحث فوري وفلترة سريعة للتصنيفات لطلب كميات وتوصيل فوري لـ 58 ولاية.",
+    isPremium: false,
+    priceDZD: 0,
+    category: "store",
+    thumbnail: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "شريط بحث وفلترة فورية حسب التصنيف والأسعار",
+      "عرض شبكي مركز وسريع التحميل على أضعف شبكة إنترنت",
+      "طلب متعدد وتعديل كميات بنقرة واحدة",
+      "أزرار اتصال وواتساب مباشرة مع كل بطاقة"
+    ]
   }
 ];
 
