@@ -1,0 +1,59 @@
+/* ============================================================
+   PRINT STYLES — Delivery Slips (Bons de Livraison)
+   Only #printable-bons is shown when window.print() is called
+   ============================================================ */
+@media print {
+  /* Hide everything on the page */
+  body > * {
+    display: none !important;
+  }
+
+  /* Show only the Radix Dialog portal that contains the print dialog */
+  body > [data-radix-dialog-overlay],
+  body > [data-radix-portal] {
+    display: block !important;
+  }
+
+  /* Hide the overlay/backdrop */
+  [data-radix-dialog-overlay] {
+    display: none !important;
+  }
+
+  /* Show the dialog content wrapper */
+  [data-radix-dialog-content] {
+    display: block !important;
+    position: static !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: white !important;
+    color: black !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Hide all UI controls inside the dialog (header, buttons, layout toggle) */
+  .print\:hidden,
+  [class*="print:hidden"] {
+    display: none !important;
+  }
+
+  /* Only show the printable slips container */
+  #printable-bons {
+    display: block !important;
+  }
+
+  /* Page breaks between slips */
+  #printable-bons > div {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Reset page margins */
+  @page {
+    margin: 10mm;
+  }
+}

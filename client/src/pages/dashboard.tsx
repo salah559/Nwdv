@@ -3991,7 +3991,88 @@ export default function Dashboard() {
                   إغلاق
                 </Button>
                 <Button
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    // Open a clean print window with pure HTML — avoids Tailwind classes and Dialog double-print
+                    const storeName = profileForm.storeSettings?.storeName || profileForm.fullName || "المتجر";
+                    const storePhone = profileForm.storeSettings?.whatsappForOrders || profileForm.phone || "—";
+                    const storeLocation = profileForm.location || "الجزائر";
+                    const isDouble = printSlipLayout === "double";
+
+                    const slipsHtml = (ordersToPrint || []).map((order) => {
+                      const orderId = order.id?.slice(-6).toUpperCase() ?? "——";
+                      const orderDate = order.createdAt?.toDate
+                        ? order.createdAt.toDate().toLocaleDateString("ar-DZ")
+                        : new Date().toLocaleDateString("ar-DZ");
+                      const notes = order.customerNotes && order.customerNotes !== "بدون ملاحظات"
+                        ? `<div class="full note">ملاحظة: ${order.customerNotes}</div>` : "";
+                      return `
+                        <div class="slip">
+                          <div class="slip-header">
+                            <div>
+                              <div class="store-name">${storeName}</div>
+                              <div class="meta">هاتف: ${storePhone}</div>
+                              <div class="meta">${storeLocation}</div>
+                            </div>
+                            <div style="text-align:left">
+                              <div class="order-id">#${orderId}</div>
+                              <div class="meta">${orderDate}</div>
+                            </div>
+                          </div>
+                          <div class="section">
+                            <div class="section-title">المستلم (Destinataire):</div>
+                            <div class="grid2">
+                              <div><span class="label">الاسم: </span><strong>${order.customerName}</strong></div>
+                              <div><span class="label">الهاتف: </span><strong dir="ltr">${order.customerPhone}</strong></div>
+                              <div class="full"><span class="label">الولاية والعنوان: </span><strong>${order.customerWilaya}${order.customerAddress ? ` — ${order.customerAddress}` : ""}</strong></div>
+                              ${notes}
+                            </div>
+                          </div>
+                          <div class="section" style="padding:0;overflow:hidden">
+                            <div class="table-header"><span>المنتج المطلوب</span><span>الكمية × السعر</span></div>
+                            <div class="table-row"><strong>${order.productTitle}</strong><span>${order.quantity} × ${order.productPriceDZD} دج</span></div>
+                          </div>
+                          <div class="cod-box">
+                            <div>
+                              <div class="cod-label">MONTANT À ENCAISSER (COD)</div>
+                              <div style="font-weight:bold;font-size:11px">المبلغ الواجب تحصيله:</div>
+                            </div>
+                            <div class="cod-amount">${order.totalPriceDZD.toLocaleString()} دج</div>
+                          </div>
+                        </div>`;
+                    }).join("");
+
+                    const printWindow = window.open("", "_blank", "width=900,height=700");
+                    if (!printWindow) return;
+                    printWindow.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+                      <meta charset="UTF-8"/>
+                      <title>أوصال التوصيل</title>
+                      <style>
+                        *{box-sizing:border-box;margin:0;padding:0}
+                        body{font-family:Arial,sans-serif;font-size:12px;color:#000;background:#fff;padding:8mm}
+                        .wrap{${isDouble ? "display:grid;grid-template-columns:1fr 1fr;gap:8mm" : ""}}
+                        .slip{border:1px solid #999;border-radius:3px;padding:10px;${isDouble ? "" : "margin-bottom:12px;"}break-inside:avoid;page-break-inside:avoid}
+                        .slip-header{display:flex;justify-content:space-between;border-bottom:1px solid #ccc;padding-bottom:7px;margin-bottom:7px}
+                        .store-name{font-size:13px;font-weight:900}
+                        .order-id{font-family:monospace;font-size:13px;font-weight:900}
+                        .meta{font-size:10px;color:#555;margin-top:1px}
+                        .section{border:1px solid #ccc;border-radius:3px;margin-bottom:7px;padding:7px}
+                        .section-title{font-weight:bold;font-size:10px;margin-bottom:4px;color:#333}
+                        .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:11px}
+                        .full{grid-column:1/-1}
+                        .note{color:#b45309;margin-top:2px}
+                        .label{color:#666}
+                        .table-header{display:flex;justify-content:space-between;background:#f2f2f2;padding:5px 9px;font-weight:bold;font-size:10px}
+                        .table-row{display:flex;justify-content:space-between;padding:5px 9px;font-size:11px}
+                        .cod-box{display:flex;justify-content:space-between;align-items:center;border:2px solid #000;border-radius:3px;padding:9px 11px;margin-top:7px}
+                        .cod-label{font-size:9px;font-weight:bold;text-transform:uppercase;letter-spacing:.05em;color:#222}
+                        .cod-amount{font-size:19px;font-weight:900;font-family:monospace}
+                        @media print{@page{margin:8mm}}
+                      </style></head>
+                      <body><div class="wrap">${slipsHtml}</div></body></html>`);
+                    printWindow.document.close();
+                    printWindow.focus();
+                    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+                  }}
                   className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 flex-1"
                 >
                   <Printer className="w-4 h-4" />
