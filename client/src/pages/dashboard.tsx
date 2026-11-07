@@ -148,6 +148,9 @@ export default function Dashboard() {
   const [isSavingManualOrder, setIsSavingManualOrder] = useState(false);
   const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
 
+  // Print Invoice State (must be declared here, not after early returns)
+  const [printOrder, setPrintOrder] = useState<StoreOrder | null>(null);
+
   useEffect(() => {
     if (!loading) {
       if (!currentUser) {
@@ -619,9 +622,6 @@ export default function Dashboard() {
       setIsSavingStoreSettings(false);
     }
   };
-
-  // Shopify-style Order Invoice Print State
-  const [printOrder, setPrintOrder] = useState<StoreOrder | null>(null);
 
   // Export Orders as CSV (Excel compatible) for Algerian shipping companies
   const handleExportOrdersCSV = () => {
