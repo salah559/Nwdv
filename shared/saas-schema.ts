@@ -49,6 +49,10 @@ export interface StoreProduct {
   category?: string;
   inStock: boolean;
   order?: number;
+  colors?: string[];
+  sizes?: string[];
+  stockQuantity?: number;
+  sku?: string;
   createdAt?: any;
 }
 
@@ -60,6 +64,8 @@ export interface StoreOrderItem {
   priceDZD: number;
   quantity: number;
   imageUrl?: string;
+  selectedColor?: string;
+  selectedSize?: string;
 }
 
 export interface StoreOrder {
@@ -73,6 +79,10 @@ export interface StoreOrder {
   quantity: number;
   items?: StoreOrderItem[];
   totalPriceDZD: number;
+  selectedColor?: string;
+  selectedSize?: string;
+  trackingNumber?: string;
+  shippingCompany?: string;
   customerName: string;
   customerPhone: string;
   customerWilaya: string;
@@ -89,12 +99,15 @@ export interface StoreSettings {
   whatsappForOrders?: string;
   enableDirectCheckout?: boolean;
   deliveryNotice?: string;
+  returnPolicyNotice?: string;
+  thankYouMessage?: string;
   storeBio?: string;
   accentColor?: string;
   allowCashOnDelivery?: boolean;
   announcementText?: string;
   announcementBgColor?: string;
   defaultShippingCostDZD?: number;
+  freeShippingThresholdDZD?: number;
   promoBannerUrl?: string;
   promoBannerTitle?: string;
   promoBannerSubtitle?: string;

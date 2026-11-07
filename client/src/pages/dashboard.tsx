@@ -133,6 +133,9 @@ export default function Dashboard() {
     imageUrl: "",
     category: "",
     inStock: true,
+    colors: "",
+    sizes: "",
+    stockQuantity: 10,
   });
   const [isSavingProduct, setIsSavingProduct] = useState(false);
 
@@ -151,8 +154,10 @@ export default function Dashboard() {
   const [isSavingManualOrder, setIsSavingManualOrder] = useState(false);
   const [isSavingStoreSettings, setIsSavingStoreSettings] = useState(false);
 
-  // Print Invoice State (must be declared here, not after early returns)
-  const [printOrder, setPrintOrder] = useState<StoreOrder | null>(null);
+  // Print Slips (Single & Bulk) State (must be declared here, not after early returns)
+  const [ordersToPrint, setOrdersToPrint] = useState<StoreOrder[] | null>(null);
+  const [printSlipLayout, setPrintSlipLayout] = useState<"single" | "double">("single");
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
 
   useEffect(() => {
     if (!loading) {
@@ -436,6 +441,9 @@ export default function Dashboard() {
       imageUrl: "",
       category: "",
       inStock: true,
+      colors: "",
+      sizes: "",
+      stockQuantity: 10,
     });
     setProductModalOpen(true);
   };
@@ -450,6 +458,9 @@ export default function Dashboard() {
       imageUrl: p.imageUrl || "",
       category: p.category || "",
       inStock: p.inStock ?? true,
+      colors: Array.isArray(p.colors) ? p.colors.join(", ") : "",
+      sizes: Array.isArray(p.sizes) ? p.sizes.join(", ") : "",
+      stockQuantity: p.stockQuantity ?? 10,
     });
     setProductModalOpen(true);
   };
@@ -464,6 +475,14 @@ export default function Dashboard() {
       toast.error("يرجى إدخال سعر صحيح للمنتج بالدينار الجزائري");
       return;
     }
+
+    const colorsArray = productForm.colors
+      ? productForm.colors.split(",").map((c) => c.trim()).filter(Boolean)
+      : [];
+    const sizesArray = productForm.sizes
+      ? productForm.sizes.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    const stockQty = Number(productForm.stockQuantity) || 10;
 
     try {
       setIsSavingProduct(true);
@@ -482,6 +501,9 @@ export default function Dashboard() {
                 imageUrl: productForm.imageUrl,
                 category: productForm.category.trim(),
                 inStock: productForm.inStock,
+                colors: colorsArray,
+                sizes: sizesArray,
+                stockQuantity: stockQty,
               }
             : p
         );
@@ -496,6 +518,9 @@ export default function Dashboard() {
           imageUrl: productForm.imageUrl,
           category: productForm.category.trim(),
           inStock: productForm.inStock,
+          colors: colorsArray,
+          sizes: sizesArray,
+          stockQuantity: stockQty,
           order: currentProducts.length,
           createdAt: Timestamp.now(),
         };
@@ -1260,6 +1285,25 @@ export default function Dashboard() {
                         </div>
 
                         <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">عتبة الشحن المجاني التلقائي (DZD)</Label>
+                          <Input
+                            type="number"
+                            value={profileForm.storeSettings?.freeShippingThresholdDZD ?? 0}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), freeShippingThresholdDZD: Number(e.target.value) }
+                            })}
+                            placeholder="مثال: 5000 (0 = بدون عتبة)"
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl font-mono text-white"
+                          />
+                          <p className="text-[11px] text-gray-400">
+                            يصبح الشحن مجانياً للطلبات الأكبر من هذا المبلغ لزيادة سلة المشتريات.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                        <div className="space-y-1.5">
                           <Label className="text-xs text-gray-300 font-bold">شريط الإعلانات أعلى المتجر</Label>
                           <Input
                             value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"}
@@ -1274,19 +1318,50 @@ export default function Dashboard() {
                             يظهر كشريط متحرك أو شريط بارز أعلى صفحة المتجر لجذب الانتباه.
                           </p>
                         </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">ملاحظة التوصيل وشروط الاستلام للزبون</Label>
+                          <Input
+                            value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
+                            })}
+                            placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
+                          />
+                          <p className="text-[11px] text-gray-400">
+                            تظهر في نافذة الطلب وتطمئن الزبون قبل تأكيد طلبه.
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="space-y-1.5 pt-1">
-                        <Label className="text-xs text-gray-300 font-bold">ملاحظة التوصيل وشروط الاستلام للزبون</Label>
-                        <Input
-                          value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
-                          onChange={(e) => setProfileForm({
-                            ...profileForm,
-                            storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
-                          })}
-                          placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
-                          className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">سياسة الضمان والاسترجاع</Label>
+                          <Input
+                            value={profileForm.storeSettings?.returnPolicyNotice ?? "إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
+                            })}
+                            placeholder="إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">رسالة الشكر بعد إتمام الطلب</Label>
+                          <Input
+                            value={profileForm.storeSettings?.thankYouMessage ?? "شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
+                            })}
+                            placeholder="شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -2064,12 +2139,13 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Status Filter Pills Row */}
-            <div className="flex items-center gap-1.5 flex-wrap p-3 rounded-2xl bg-white/[0.02] border border-white/5">
-              <span className="text-xs text-gray-400 font-bold ml-1 flex items-center gap-1">
-                <Filter className="w-3.5 h-3.5" />
-                <span>حالة الطلبات:</span>
-              </span>
+            {/* Status Filter Pills & Search Row */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-gray-400 font-bold ml-1 flex items-center gap-1">
+                  <Filter className="w-3.5 h-3.5" />
+                  <span>حالة الطلبات:</span>
+                </span>
                 {(
                   [
                     { id: "all", label: `الكل (${orders.length})` },
@@ -2094,6 +2170,27 @@ export default function Dashboard() {
                 ))}
               </div>
 
+              {/* Instant Search Bar */}
+              <div className="relative min-w-[220px]">
+                <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  value={orderSearchQuery}
+                  onChange={(e) => setOrderSearchQuery(e.target.value)}
+                  placeholder="ابحث بالاسم، الهاتف، الولاية، أو #الكود..."
+                  className="bg-black/50 border-white/10 text-xs h-9 pr-9 pl-8 rounded-xl text-white"
+                />
+                {orderSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setOrderSearchQuery("")}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Orders Feed */}
             {isLoadingOrders ? (
               <div className="text-center py-16 bg-white/[0.02] border border-white/10 rounded-3xl">
@@ -2101,17 +2198,29 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-400">جاري تحميل طلبات الزبائن...</p>
               </div>
             ) : (() => {
-              const filteredOrders = orderFilter === "all" ? orders : orders.filter(o => o.status === orderFilter);
+              const filteredOrders = orders.filter((o) => {
+                const matchesStatus = orderFilter === "all" || o.status === orderFilter;
+                const q = orderSearchQuery.trim().toLowerCase();
+                const matchesSearch =
+                  !q ||
+                  (o.customerName && o.customerName.toLowerCase().includes(q)) ||
+                  (o.customerPhone && o.customerPhone.toLowerCase().includes(q)) ||
+                  (o.customerWilaya && o.customerWilaya.toLowerCase().includes(q)) ||
+                  (o.customerAddress && o.customerAddress.toLowerCase().includes(q)) ||
+                  (o.productTitle && o.productTitle.toLowerCase().includes(q)) ||
+                  (o.id && o.id.toLowerCase().includes(q));
+                return matchesStatus && matchesSearch;
+              });
 
               if (filteredOrders.length === 0) {
                 return (
                   <div className="text-center py-16 px-4 bg-white/[0.02] border border-white/10 rounded-3xl">
                     <Package className="w-12 h-12 text-gray-500 mx-auto mb-3 opacity-40" />
                     <h4 className="text-base font-bold text-white mb-1">
-                      {orderFilter === "all" ? "لا توجد أي طلبات واردة بعد" : `لا توجد طلبات بحالة "${getOrderStatusLabel(orderFilter)}"`}
+                      {orderSearchQuery ? "لا توجد نتائج مطابقة لبحثك" : orderFilter === "all" ? "لا توجد أي طلبات واردة بعد" : `لا توجد طلبات بحالة "${getOrderStatusLabel(orderFilter)}"`}
                     </h4>
                     <p className="text-xs text-gray-400 max-w-sm mx-auto">
-                      عندما يقوم زوار موقعك بتأكيد طلب منتج من قوالب المتجر، ستظهر بياناتهم هنا فوراً وبشكل حي.
+                      {orderSearchQuery ? "جرّب البحث باسم آخر أو رقم هاتف مختلف." : "عندما يقوم زوار موقعك بتأكيد طلب منتج من قوالب المتجر، ستظهر بياناتهم هنا فوراً وبشكل حي."}
                     </p>
                   </div>
                 );
@@ -2147,6 +2256,24 @@ export default function Dashboard() {
                         <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20">
                           تم تحديد: {selectedOrderIds.length}
                         </span>
+
+                        {/* Bulk Print Delivery Slips Button */}
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const selected = orders.filter((o) => selectedOrderIds.includes(o.id!));
+                            if (selected.length === 0) {
+                              toast.error("يرجى تحديد طلب واحد على الأقل للطباعة");
+                              return;
+                            }
+                            setOrdersToPrint(selected);
+                          }}
+                          className="bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs h-8 px-3 gap-1.5 rounded-xl shadow-[0_0_15px_rgba(6,255,240,0.3)]"
+                          title="طباعة أوصال التوصيل للطلبات المحددة"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>طباعة الأوصال ({selectedOrderIds.length})</span>
+                        </Button>
 
                         <select
                           disabled={isBulkUpdating}
@@ -2336,7 +2463,7 @@ export default function Dashboard() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setPrintOrder(order)}
+                            onClick={() => setOrdersToPrint([order])}
                             className="w-full border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 text-xs gap-1.5 h-9 rounded-xl font-bold"
                           >
                             <Printer className="w-3.5 h-3.5 text-cyan-400" />
@@ -3515,14 +3642,67 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs text-gray-300 font-bold">التصنيف (اختياري)</Label>
-              <Input
-                value={productForm.category}
-                onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                placeholder="مثال: ساعات، ملابس، إلكترونيات..."
-                className="bg-black/50 border-white/10 text-xs text-white"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-300 font-bold">المقاسات (افصل بفاصلة)</Label>
+                <Input
+                  value={productForm.sizes}
+                  onChange={(e) => setProductForm({ ...productForm, sizes: e.target.value })}
+                  placeholder="مثال: S, M, L, XL أو 38, 39, 40"
+                  className="bg-black/50 border-white/10 text-xs text-white"
+                />
+                {productForm.sizes && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {productForm.sizes.split(",").map((s, i) => s.trim() && (
+                      <Badge key={i} variant="outline" className="border-cyan-500/40 text-cyan-300 text-[10px] py-0 px-1.5">
+                        {s.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-300 font-bold">الألوان (افصل بفاصلة)</Label>
+                <Input
+                  value={productForm.colors}
+                  onChange={(e) => setProductForm({ ...productForm, colors: e.target.value })}
+                  placeholder="مثال: أسود, أبيض, أزرق, أحمر"
+                  className="bg-black/50 border-white/10 text-xs text-white"
+                />
+                {productForm.colors && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {productForm.colors.split(",").map((c, i) => c.trim() && (
+                      <Badge key={i} variant="outline" className="border-purple-500/40 text-purple-300 text-[10px] py-0 px-1.5">
+                        {c.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-300 font-bold">التصنيف (اختياري)</Label>
+                <Input
+                  value={productForm.category}
+                  onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                  placeholder="مثال: ساعات، ملابس، إلكترونيات..."
+                  className="bg-black/50 border-white/10 text-xs text-white"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-300 font-bold">الكمية بالمخزون</Label>
+                <Input
+                  type="number"
+                  value={productForm.stockQuantity || 10}
+                  onChange={(e) => setProductForm({ ...productForm, stockQuantity: Number(e.target.value) })}
+                  placeholder="10"
+                  className="bg-black/50 border-white/10 text-xs text-white font-mono"
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -3708,101 +3888,104 @@ export default function Dashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* SHOPIFY-STYLE BON DE LIVRAISON (وصل الشحن والتسليم للطباعة) */}
-      <Dialog open={!!printOrder} onOpenChange={(open) => !open && setPrintOrder(null)}>
-        <DialogContent className="max-w-lg bg-[#0d111a] border border-cyan-500/30 text-white rounded-3xl p-6 max-h-[92vh] overflow-y-auto print:bg-white print:text-black">
-          {printOrder && (
+      {/* BULK BON DE LIVRAISON PRINT DIALOG */}
+      <Dialog open={!!ordersToPrint} onOpenChange={(open) => !open && setOrdersToPrint(null)}>
+        <DialogContent className="max-w-3xl bg-[#0d111a] border border-cyan-500/30 text-white rounded-3xl p-6 max-h-[92vh] overflow-y-auto print:bg-white print:text-black print:max-h-none print:overflow-visible">
+          {ordersToPrint && (
             <div className="space-y-4">
               <DialogHeader className="print:hidden">
-                <DialogTitle className="text-base font-bold flex items-center justify-between text-white">
-                  <div className="flex items-center gap-2">
-                    <Printer className="w-4 h-4 text-cyan-400" />
-                    <span>وصل الشحن والتوصيل (Bon de Livraison)</span>
-                  </div>
-                  <Badge className="bg-cyan-500/20 text-cyan-300 font-mono text-[10px]">
-                    #{printOrder.id?.slice(-6).toUpperCase()}
-                  </Badge>
+                <DialogTitle className="flex items-center gap-2 text-white">
+                  <Printer className="w-4 h-4 text-cyan-400" />
+                  <span>طباعة أوصال التوصيل — {ordersToPrint.length} طلب</span>
                 </DialogTitle>
                 <DialogDescription className="text-xs text-gray-400">
-                  وصل مجهز وجاهز للطباعة أو الإرفاق مع الطرد لشركات التوصيل (Yalidine, ZR Express, Procolis)
+                  سيتم طباعة وصل لكل طلب محدد مع بيانات الزبون والمبلغ الواجب تحصيله (Yalidine, ZR Express, Procolis)
                 </DialogDescription>
               </DialogHeader>
 
-              {/* Printable Area */}
-              <div id="printable-bon" className="p-4 sm:p-5 rounded-2xl bg-black/60 border border-white/10 text-xs space-y-4 print:p-0 print:border-none print:text-black print:bg-white">
-                {/* Header: Store / Sender Info */}
-                <div className="flex justify-between items-start border-b border-white/10 pb-3">
-                  <div>
-                    <h2 className="text-base font-black text-white">{profileForm.storeSettings?.storeName || profileForm.fullName}</h2>
-                    <p className="text-[11px] text-gray-400">هاتف المتجر: {profileForm.storeSettings?.whatsappForOrders || profileForm.phone || "غير محدد"}</p>
-                    <p className="text-[11px] text-gray-400">الولاية: {profileForm.location || "الجزائر"}</p>
-                  </div>
-                  <div className="text-left font-mono">
-                    <div className="text-sm font-black text-cyan-400">#{printOrder.id?.slice(-6).toUpperCase()}</div>
-                    <div className="text-[10px] text-gray-400">
-                      {printOrder.createdAt?.toDate ? printOrder.createdAt.toDate().toLocaleDateString("ar-DZ") : "اليوم"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Customer / Destinataire Box */}
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5">
-                  <div className="text-[11px] font-bold text-cyan-400">بيانات المستلم (الزبون / Destinataire):</div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-gray-400">الاسم واللقب: </span>
-                      <strong className="text-white">{printOrder.customerName}</strong>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">رقم الهاتف: </span>
-                      <strong className="text-white font-mono" dir="ltr">{printOrder.customerPhone}</strong>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-gray-400">الولاية والعنوان: </span>
-                      <strong className="text-white">{printOrder.customerWilaya} {printOrder.customerAddress ? `— ${printOrder.customerAddress}` : ""}</strong>
-                    </div>
-                    {printOrder.customerNotes && (
-                      <div className="col-span-2 text-amber-300 text-[11px]">
-                        <span className="text-gray-400">ملاحظة: </span>
-                        {printOrder.customerNotes}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Items Breakdown */}
-                <div className="border border-white/10 rounded-xl overflow-hidden">
-                  <div className="bg-white/5 p-2 px-3 font-bold text-[11px] flex justify-between text-gray-300">
-                    <span>المنتج المطلوب</span>
-                    <span>الكمية × السعر</span>
-                  </div>
-                  <div className="p-2.5 px-3 flex justify-between items-center text-xs border-t border-white/5">
-                    <div>
-                      <div className="font-bold text-white">{printOrder.productTitle}</div>
-                    </div>
-                    <div className="text-left font-mono">
-                      <span>{printOrder.quantity} × {printOrder.productPriceDZD} دج</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* COD Total Box for Courier */}
-                <div className="p-3.5 rounded-2xl bg-cyan-500/10 border-2 border-cyan-400/50 flex justify-between items-center">
-                  <div>
-                    <div className="text-[10px] uppercase font-bold text-cyan-300 tracking-wider">MONTANT À ENCAISSER (COD)</div>
-                    <div className="text-xs font-bold text-white">المبلغ الواجب تحصيله عند التسليم:</div>
-                  </div>
-                  <div className="text-xl font-black text-cyan-300 font-mono">
-                    {printOrder.totalPriceDZD.toLocaleString()} دج
-                  </div>
-                </div>
+              {/* Layout toggle */}
+              <div className="flex items-center gap-2 print:hidden">
+                <span className="text-xs text-gray-400">تخطيط الطباعة:</span>
+                <button
+                  onClick={() => setPrintSlipLayout("single")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${printSlipLayout === "single" ? "bg-cyan-400 text-black border-cyan-400" : "border-white/20 text-gray-300 hover:border-cyan-400/50"}`}
+                >
+                  وصل واحد في الصفحة
+                </button>
+                <button
+                  onClick={() => setPrintSlipLayout("double")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${printSlipLayout === "double" ? "bg-cyan-400 text-black border-cyan-400" : "border-white/20 text-gray-300 hover:border-cyan-400/50"}`}
+                >
+                  وصلان في الصفحة
+                </button>
               </div>
 
-              {/* Actions Footer */}
+              {/* Printable slips */}
+              <div
+                id="printable-bons"
+                className={printSlipLayout === "double" ? "grid grid-cols-2 gap-4 print:grid print:grid-cols-2 print:gap-3" : "space-y-6 print:space-y-4"}
+              >
+                {ordersToPrint.map((order) => (
+                  <div
+                    key={order.id}
+                    className="p-4 rounded-2xl bg-black/60 border border-white/10 text-xs space-y-3 print:bg-white print:text-black print:border print:border-gray-400 print:rounded-none print:break-inside-avoid print:p-3"
+                  >
+                    {/* Header: Store / Sender Info */}
+                    <div className="flex justify-between items-start border-b border-white/10 pb-3 print:border-gray-300">
+                      <div>
+                        <h2 className="text-sm font-black text-white print:text-black">{profileForm.storeSettings?.storeName || profileForm.fullName}</h2>
+                        <p className="text-[11px] text-gray-400 print:text-gray-600">هاتف: {profileForm.storeSettings?.whatsappForOrders || profileForm.phone || "—"}</p>
+                        <p className="text-[11px] text-gray-400 print:text-gray-600">{profileForm.location || "الجزائر"}</p>
+                      </div>
+                      <div className="text-left font-mono">
+                        <div className="text-sm font-black text-cyan-400 print:text-black">#{order.id?.slice(-6).toUpperCase()}</div>
+                        <div className="text-[10px] text-gray-400 print:text-gray-600">
+                          {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString("ar-DZ") : "اليوم"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Customer Info */}
+                    <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 print:border-gray-300 space-y-1">
+                      <div className="text-[11px] font-bold text-cyan-400 print:text-black">المستلم (Destinataire):</div>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                        <div><span className="text-gray-400 print:text-gray-600">الاسم: </span><strong className="text-white print:text-black">{order.customerName}</strong></div>
+                        <div><span className="text-gray-400 print:text-gray-600">الهاتف: </span><strong className="text-white print:text-black font-mono" dir="ltr">{order.customerPhone}</strong></div>
+                        <div className="col-span-2"><span className="text-gray-400 print:text-gray-600">الولاية والعنوان: </span><strong className="text-white print:text-black">{order.customerWilaya}{order.customerAddress ? ` — ${order.customerAddress}` : ""}</strong></div>
+                        {order.customerNotes && order.customerNotes !== "بدون ملاحظات" && (
+                          <div className="col-span-2 text-amber-300 print:text-amber-700"><span className="text-gray-400 print:text-gray-600">ملاحظة: </span>{order.customerNotes}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Product */}
+                    <div className="border border-white/10 print:border-gray-300 rounded-xl overflow-hidden">
+                      <div className="bg-white/5 print:bg-gray-100 p-2 px-3 font-bold text-[11px] flex justify-between text-gray-300 print:text-black">
+                        <span>المنتج المطلوب</span>
+                        <span>الكمية × السعر</span>
+                      </div>
+                      <div className="p-2.5 px-3 flex justify-between items-center text-xs border-t border-white/5 print:border-gray-200">
+                        <div className="font-bold text-white print:text-black">{order.productTitle}</div>
+                        <div className="text-left font-mono text-white print:text-black">{order.quantity} × {order.productPriceDZD} دج</div>
+                      </div>
+                    </div>
+
+                    {/* COD Total */}
+                    <div className="p-3 rounded-xl bg-cyan-500/10 border-2 border-cyan-400/50 print:border-black flex justify-between items-center">
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-cyan-300 print:text-black tracking-wider">MONTANT À ENCAISSER (COD)</div>
+                        <div className="text-xs font-bold text-white print:text-black">المبلغ الواجب تحصيله:</div>
+                      </div>
+                      <div className="text-xl font-black text-cyan-300 print:text-black font-mono">{order.totalPriceDZD.toLocaleString()} دج</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <DialogFooter className="flex gap-2 print:hidden pt-1">
                 <Button
                   variant="outline"
-                  onClick={() => setPrintOrder(null)}
+                  onClick={() => setOrdersToPrint(null)}
                   className="text-xs border-white/10 text-gray-300"
                 >
                   إغلاق
@@ -3812,7 +3995,7 @@ export default function Dashboard() {
                   className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 flex-1"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>طباعة الوصل الآن (Imprimer)</span>
+                  <span>طباعة {ordersToPrint.length} وصل الآن (Imprimer)</span>
                 </Button>
               </DialogFooter>
             </div>
