@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { UserProfile, StoreProduct, StoreOrder } from "@shared/saas-schema";
+import { UserProfile, StoreProduct, StoreOrder, StoreOrderItem } from "@shared/saas-schema";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShoppingBag, 
@@ -27,7 +27,10 @@ import {
   Flame,
   Leaf,
   Layers,
-  Award
+  Award,
+  ShoppingCart,
+  Trash2,
+  Zap
 } from "lucide-react";
 import { PlatformIcon } from "@/components/ui/PlatformIcon";
 import { Button } from "@/components/ui/button";
@@ -40,7 +43,7 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogDescription,
+  DialogDescription, 
   DialogFooter 
 } from "@/components/ui/dialog";
 import { ALGERIA_WILAYAS } from "@/lib/algeria-wilayas";
@@ -98,9 +101,21 @@ interface StoreTemplateProps {
   variant?: StoreVariant;
 }
 
+interface CartItem {
+  product: StoreProduct;
+  quantity: number;
+}
+
 export function StoreTemplateView({ profile, variant = "minimal" }: StoreTemplateProps) {
+  // Shopify-like Shopping Cart State
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Single Item Instant Checkout Modal State
   const [selectedProduct, setSelectedProduct] = useState<StoreProduct | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
+  const [singleQty, setSingleQty] = useState<number>(1);
+
+  // Checkout Customer Details (shared for single item and full cart)
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerWilaya, setCustomerWilaya] = useState(ALGERIA_WILAYAS[15].nameAr); // 16 - Algiers default
@@ -146,37 +161,108 @@ export function StoreTemplateView({ profile, variant = "minimal" }: StoreTemplat
 
   const activeLinks = profile.socialLinks?.filter((l) => l.enabled) || [];
 
-  const handleOpenOrder = (prod: StoreProduct) => {
+  // Cart Calculations
+  const cartItemCount = useMemo(() => {
+    return cart.reduce((acc, item) => acc + item.quantity, 0);
+  }, [cart]);
+
+  const cartTotalDZD = useMemo(() => {
+    return cart.reduce((acc, item) => acc + item.product.priceDZD * item.quantity, 0);
+  }, [cart]);
+
+  // Add to Cart
+  const handleAddToCart = (product: StoreProduct) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+    toast.success(`تمت إضافة "${product.title}" إلى السلة 🛒`);
+  };
+
+  const handleUpdateCartQty = (productId: string, delta: number) => {
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.product.id === productId) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean) as CartItem[]
+    );
+  };
+
+  const handleRemoveFromCart = (productId: string) => {
+    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+    toast.info("تمت إزالة المنتج من السلة");
+  };
+
+  // Open single product quick modal
+  const handleOpenQuickOrder = (prod: StoreProduct) => {
     setSelectedProduct(prod);
-    setQuantity(1);
+    setSingleQty(1);
     setOrderSuccess(null);
   };
 
-  const handleOrderSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedProduct) return;
-
+  // Submit Order (Universal for both single product and multi-item cart)
+  const handleOrderSubmit = async (isCartCheckout: boolean) => {
     if (!customerName.trim() || !customerPhone.trim()) {
       toast.error("يرجى إدخال اسمك ورقم الهاتف للتوصيل");
       return;
     }
 
+    const targetUserId = profile.userId || profile.id || "user";
+    const targetUsername = profile.username || "";
+
+    let itemsPayload: StoreOrderItem[] = [];
+    let grandTotal = 0;
+    let mainProductTitle = "";
+
+    if (isCartCheckout) {
+      if (cart.length === 0) return;
+      itemsPayload = cart.map((item) => ({
+        productId: item.product.id,
+        title: item.product.title,
+        priceDZD: item.product.priceDZD,
+        quantity: item.quantity,
+        imageUrl: item.product.imageUrl || "",
+      }));
+      grandTotal = cartTotalDZD;
+      mainProductTitle = cart.map((i) => `${i.product.title} (×${i.quantity})`).join(" + ");
+    } else {
+      if (!selectedProduct) return;
+      grandTotal = Number(selectedProduct.priceDZD || 0) * singleQty;
+      mainProductTitle = selectedProduct.title;
+      itemsPayload = [{
+        productId: selectedProduct.id,
+        title: selectedProduct.title,
+        priceDZD: selectedProduct.priceDZD,
+        quantity: singleQty,
+        imageUrl: selectedProduct.imageUrl || "",
+      }];
+    }
+
     try {
       setIsSubmitting(true);
-      const total = Number(selectedProduct.priceDZD || 0) * quantity;
-      const targetUserId = profile.userId || profile.id || "user";
-      const targetUsername = profile.username || "";
 
-      // Sanitize order payload to prevent any `undefined` values that crash Firestore addDoc
       const newOrder: StoreOrder = {
         userId: targetUserId,
         username: targetUsername,
-        productId: String(selectedProduct.id || "prod"),
-        productTitle: String(selectedProduct.title || "منتج"),
-        productPriceDZD: Number(selectedProduct.priceDZD) || 0,
-        productImageUrl: String(selectedProduct.imageUrl || ""),
-        quantity: Number(quantity) || 1,
-        totalPriceDZD: total,
+        productId: itemsPayload[0]?.productId || "prod",
+        productTitle: mainProductTitle,
+        productPriceDZD: itemsPayload[0]?.priceDZD || grandTotal,
+        productImageUrl: itemsPayload[0]?.imageUrl || "",
+        quantity: isCartCheckout ? cartItemCount : singleQty,
+        items: itemsPayload,
+        totalPriceDZD: grandTotal,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         customerWilaya: String(customerWilaya || "16 - الجزائر"),
@@ -190,7 +276,7 @@ export function StoreTemplateView({ profile, variant = "minimal" }: StoreTemplat
       const docRef = await addDoc(collection(db, "orders"), newOrder);
       const savedOrder = { ...newOrder, id: docRef.id };
 
-      // 2. Also persist in localStorage as a bulletproof redundancy
+      // 2. Also persist in localStorage
       try {
         const existingLocal = JSON.parse(localStorage.getItem(`orders_${targetUserId}`) || "[]");
         existingLocal.unshift({ ...savedOrder, createdAt: new Date().toISOString() });
@@ -200,19 +286,22 @@ export function StoreTemplateView({ profile, variant = "minimal" }: StoreTemplat
       }
 
       setOrderSuccess(savedOrder);
-      toast.success("تم تسجيل طلبك بنجاح!");
+      if (isCartCheckout) {
+        setCart([]);
+      }
+      toast.success("تم تسجيل طلبك بنجاح! 🎉");
     } catch (err: any) {
       console.error("Order submit error:", err);
-      // Fallback: Even if Firestore fails, allow WhatsApp completion so the order is never lost!
+      // Fallback
       const fallbackOrder: StoreOrder = {
-        userId: profile.userId || "",
-        username: profile.username || "",
-        productId: selectedProduct.id || "prod",
-        productTitle: selectedProduct.title || "منتج",
-        productPriceDZD: selectedProduct.priceDZD,
-        productImageUrl: selectedProduct.imageUrl || "",
-        quantity: quantity,
-        totalPriceDZD: selectedProduct.priceDZD * quantity,
+        userId: targetUserId,
+        username: targetUsername,
+        productId: itemsPayload[0]?.productId || "prod",
+        productTitle: mainProductTitle,
+        productPriceDZD: grandTotal,
+        quantity: isCartCheckout ? cartItemCount : singleQty,
+        items: itemsPayload,
+        totalPriceDZD: grandTotal,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         customerWilaya: customerWilaya,
@@ -223,7 +312,8 @@ export function StoreTemplateView({ profile, variant = "minimal" }: StoreTemplat
         id: "offline-" + Date.now().toString().slice(-5),
       };
       setOrderSuccess(fallbackOrder);
-      toast.info("تم تجهيز الطلب! يرجى إرساله الآن للبائع عبر واتساب لتأكيد الشحن.");
+      if (isCartCheckout) setCart([]);
+      toast.info("تم تجهيز الطلب! اضغط لتأكيده مع البائع عبر واتساب مباشرة.");
     } finally {
       setIsSubmitting(false);
     }
@@ -234,17 +324,22 @@ export function StoreTemplateView({ profile, variant = "minimal" }: StoreTemplat
     const formattedPhone = cleanPhone.startsWith("0") ? cleanPhone.slice(1) : cleanPhone;
     const finalPhone = formattedPhone.startsWith("213") ? formattedPhone : `213${formattedPhone}`;
 
+    const itemsText = order.items && order.items.length > 0
+      ? order.items.map((i) => `• ${i.title} × ${i.quantity} = ${i.priceDZD * i.quantity} دج`).join("\n")
+      : `• ${order.productTitle} × ${order.quantity}`;
+
     const msg = encodeURIComponent(
-      `مرحباً! قمت بطلب منتج من متجرك الإلكتروني (${storeTitle}):
-📦 المنتج: ${order.productTitle}
-🔢 الكمية: ${order.quantity}
-💰 الإجمالي: ${order.totalPriceDZD} دج
+      `مرحباً! قمت بطلب مشتريات من متجرك الإلكتروني (${storeTitle}):
+📦 المنتجات المطلوبة:
+${itemsText}
+
+💰 المبلغ الإجمالي: ${order.totalPriceDZD} دج
 👤 الاسم: ${order.customerName}
-📞 رقم الهاتف: ${order.customerPhone}
+📞 الهاتف: ${order.customerPhone}
 📍 الولاية: ${order.customerWilaya}
 🏠 العنوان بالتفصيل: ${order.customerAddress || "غير محدد"}
 ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
-يرجى تأكيد استلام الطلب والشحن، شكراً!`
+يرجى تأكيد استلام الطلب وتفاصيل الشحن شكراً!`
     );
     return `https://wa.me/${finalPhone}?text=${msg}`;
   };
@@ -318,12 +413,30 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
   }, [variant]);
 
   return (
-    <div className={`min-h-screen ${theme.bg} selection:bg-cyan-500/30 pb-24`} dir="rtl">
+    <div className={`min-h-screen ${theme.bg} selection:bg-cyan-500/30 pb-28`} dir="rtl">
       {/* Top Announcement Bar */}
       <div className="w-full bg-gradient-to-r from-black/80 via-white/5 to-black/80 border-b border-white/10 py-2.5 px-4 text-center text-xs backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 font-medium">
-          <Truck className="w-4 h-4 shrink-0 text-cyan-400 animate-pulse" />
-          <span>{storeNotice}</span>
+        <div className="max-w-4xl mx-auto flex items-center justify-between font-medium">
+          <div className="flex items-center gap-2">
+            <Truck className="w-4 h-4 shrink-0 text-cyan-400 animate-pulse" />
+            <span>{storeNotice}</span>
+          </div>
+          {/* Header Cart Toggle Button */}
+          <button
+            onClick={() => {
+              setOrderSuccess(null);
+              setIsCartOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold text-xs transition-all"
+          >
+            <ShoppingCart className="w-3.5 h-3.5 text-cyan-400" />
+            <span>السلة</span>
+            {cartItemCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-cyan-400 text-black font-mono text-[11px] flex items-center justify-center font-black">
+                {cartItemCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -555,19 +668,31 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
                   </div>
                 </div>
 
-                {/* Order Button */}
-                <Button
-                  onClick={() => handleOpenOrder(prod)}
-                  disabled={!prod.inStock}
-                  className={`w-full text-xs font-bold h-10 rounded-xl gap-2 transition-all ${
-                    prod.inStock
-                      ? theme.accentBtn
-                      : "bg-white/10 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>{prod.inStock ? "طلب شراء الآن (الدفع عند الاستلام)" : "غير متوفر حالياً"}</span>
-                </Button>
+                {/* Shopify-style Dual Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleAddToCart(prod)}
+                    disabled={!prod.inStock}
+                    className="border-white/10 hover:border-cyan-400 text-xs h-9 rounded-xl font-bold gap-1 bg-white/5"
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>أضف للسلة</span>
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={() => handleOpenQuickOrder(prod)}
+                    disabled={!prod.inStock}
+                    className={`text-xs h-9 rounded-xl font-bold gap-1 ${
+                      prod.inStock ? theme.accentBtn : "bg-white/10 text-gray-400"
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>شراء فوري</span>
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -608,7 +733,263 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
         </div>
       </div>
 
-      {/* QUICK CHECKOUT ORDER MODAL */}
+      {/* SHOPIFY-STYLE FLOATING CART PILL (Appears whenever cart has items) */}
+      <AnimatePresence>
+        {cartItemCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md"
+          >
+            <div
+              onClick={() => {
+                setOrderSuccess(null);
+                setIsCartOpen(true);
+              }}
+              className="p-3.5 px-5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-cyan-400 text-black font-bold shadow-2xl shadow-cyan-500/30 flex items-center justify-between cursor-pointer border border-white/20 hover:scale-[1.02] transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <ShoppingCart className="w-6 h-6" />
+                  <span className="absolute -top-1.5 -right-1.5 bg-black text-cyan-300 text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-mono font-black">
+                    {cartItemCount}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs font-black">سلة التسوق ({cartItemCount} منتجات)</div>
+                  <div className="text-[11px] text-black/80 font-normal">اضغط لإتمام الطلب للشحن</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-black text-sm">{cartTotalDZD.toLocaleString()} دج</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FULL SHOPPING CART DRAWER / MODAL */}
+      <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <DialogContent className="max-w-lg bg-[#0a0d16] border border-white/15 text-white rounded-3xl p-6 max-h-[92vh] overflow-y-auto">
+          <DialogHeader className="mb-3">
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-white">
+              <ShoppingCart className="w-5 h-5 text-cyan-400" />
+              <span>سلة التسوق ({cartItemCount} منتجات)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              راجع منتجاتك المختارة وأكمل بيانات التوصيل والدفع عند الاستلام
+            </DialogDescription>
+          </DialogHeader>
+
+          {orderSuccess ? (
+            /* ORDER SUCCESS SCREEN FOR CART */
+            <div className="text-center py-4 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">تم استلام طلبك بنجاح! 🎉</h3>
+                <p className="text-xs text-gray-300 mt-1">
+                  رقم الطلب الخاص بك: <strong className="text-cyan-400 font-mono">#{orderSuccess.id?.slice(-6).toUpperCase()}</strong>
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 text-xs text-right space-y-2">
+                <div className="space-y-1 border-b border-white/5 pb-2">
+                  <div className="text-gray-400 text-[11px]">المنتجات المطلوبة:</div>
+                  <div className="font-bold text-white leading-relaxed">{orderSuccess.productTitle}</div>
+                </div>
+                <div className="flex justify-between text-gray-300">
+                  <span>الولاية والعنوان:</span>
+                  <span className="font-bold text-white">{orderSuccess.customerWilaya} {orderSuccess.customerAddress ? `(${orderSuccess.customerAddress})` : ""}</span>
+                </div>
+                <div className="flex justify-between text-gray-300 border-t border-white/5 pt-2">
+                  <span>المبلغ الإجمالي للدفع:</span>
+                  <span className="text-cyan-400 font-black font-mono text-sm">{orderSuccess.totalPriceDZD.toLocaleString()} دج</span>
+                </div>
+              </div>
+
+              {/* WhatsApp Forward Button */}
+              <a
+                href={getWhatsAppMessageUrl(orderSuccess)}
+                target="_blank"
+                rel="noreferrer"
+                className="block w-full"
+              >
+                <Button className="w-full bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs h-11 rounded-xl shadow-lg gap-2">
+                  <MessageCircle className="w-4 h-4 fill-black" />
+                  <span>تأكيد الطلب الآن عبر واتساب البائع 📲</span>
+                </Button>
+              </a>
+
+              <Button
+                variant="outline"
+                onClick={() => setIsCartOpen(false)}
+                className="w-full border-white/10 text-xs h-9 rounded-xl text-gray-300"
+              >
+                إغلاق والعودة للمتجر
+              </Button>
+            </div>
+          ) : cart.length === 0 ? (
+            <div className="text-center py-10 space-y-3">
+              <ShoppingCart className="w-12 h-12 text-gray-600 mx-auto opacity-40" />
+              <p className="text-xs text-gray-400">سلة التسوق فارغة حالياً</p>
+              <Button
+                size="sm"
+                onClick={() => setIsCartOpen(false)}
+                className="text-xs bg-cyan-400 text-black font-bold"
+              >
+                تصفح المنتجات وأضف للسلة
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Cart Items List */}
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {cart.map((item) => (
+                  <div
+                    key={item.product.id}
+                    className="p-2.5 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={item.product.imageUrl || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&q=80"}
+                        alt={item.product.title}
+                        className="w-10 h-10 rounded-xl object-cover shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="font-bold text-white truncate">{item.product.title}</div>
+                        <div className="text-cyan-400 font-mono">{item.product.priceDZD} دج</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateCartQty(item.product.id, -1)}
+                          className="w-5 h-5 rounded-lg bg-white/10 flex items-center justify-center text-white"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="w-5 text-center font-bold text-xs font-mono">{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateCartQty(item.product.id, 1)}
+                          className="w-5 h-5 rounded-lg bg-white/10 flex items-center justify-center text-white"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFromCart(item.product.id)}
+                        className="text-gray-400 hover:text-red-400 p-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Subtotal Calculation */}
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs">
+                <span className="text-gray-300 font-bold">المجموع الفرعي ({cartItemCount} قطع):</span>
+                <span className="text-cyan-400 font-black font-mono text-base">{cartTotalDZD.toLocaleString()} دج</span>
+              </div>
+
+              {/* Checkout Customer Form */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleOrderSubmit(true);
+                }}
+                className="space-y-3 pt-2 border-t border-white/10"
+              >
+                <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-cyan-400" />
+                  <span>معلومات التوصيل (الدفع عند الاستلام)</span>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-300">الاسم واللقب *</Label>
+                  <Input
+                    required
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="مثال: كريم بن علي"
+                    className="bg-black/50 border-white/10 text-xs h-9 rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-300">رقم الهاتف للتوصيل *</Label>
+                  <Input
+                    required
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="06XXXXXXXX / 07XXXXXXXX"
+                    className="bg-black/50 border-white/10 text-xs h-9 rounded-xl font-mono"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-300">الولاية *</Label>
+                    <select
+                      value={customerWilaya}
+                      onChange={(e) => setCustomerWilaya(e.target.value)}
+                      className="w-full bg-[#0d1220] border border-white/10 text-xs rounded-xl px-2.5 text-white h-9 focus:outline-none focus:border-cyan-400"
+                    >
+                      {ALGERIA_WILAYAS.map((w) => (
+                        <option key={w.code} value={w.nameAr}>{w.nameAr}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-300">البلدية / العنوان</Label>
+                    <Input
+                      value={customerAddress}
+                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      placeholder="البلدية والحي"
+                      className="bg-black/50 border-white/10 text-xs h-9 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-300">ملاحظة إضافية (اختياري)</Label>
+                  <Input
+                    value={customerNotes}
+                    onChange={(e) => setCustomerNotes(e.target.value)}
+                    placeholder="مثال: الاتصال بعد العصر"
+                    className="bg-black/50 border-white/10 text-xs h-9 rounded-xl"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs h-11 rounded-xl shadow-lg gap-2 mt-2"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  <span>تأكيد طلب السلة الآن ({cartTotalDZD.toLocaleString()} دج) 📦</span>
+                </Button>
+              </form>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* SINGLE ITEM QUICK CHECKOUT MODAL */}
       <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
         <DialogContent className="max-w-md bg-[#0a0d16] border border-white/15 text-white rounded-3xl p-6 max-h-[92vh] overflow-y-auto">
           {selectedProduct && (
@@ -616,7 +997,7 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
               <DialogHeader className="mb-4">
                 <DialogTitle className="text-lg font-bold flex items-center gap-2 text-white">
                   <ShoppingBag className="w-5 h-5 text-cyan-400" />
-                  <span>تأكيد طلب الشراء</span>
+                  <span>تأكيد طلب الشراء الفوري</span>
                 </DialogTitle>
                 <DialogDescription className="text-xs text-gray-400">
                   املأ بياناتك وسيتم شحن الطلب فوراً إلى عنوانك والدفع عند الاستلام.
@@ -651,7 +1032,7 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
                     </div>
                     <div className="flex justify-between text-gray-300 border-t border-white/5 pt-2">
                       <span>المبلغ الإجمالي:</span>
-                      <span className="text-cyan-400 font-black font-mono text-sm">{orderSuccess.totalPriceDZD} دج</span>
+                      <span className="text-cyan-400 font-black font-mono text-sm">{orderSuccess.totalPriceDZD.toLocaleString()} دج</span>
                     </div>
                   </div>
 
@@ -678,7 +1059,13 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
                 </div>
               ) : (
                 /* ORDER FORM */
-                <form onSubmit={handleOrderSubmit} className="space-y-4">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleOrderSubmit(false);
+                  }}
+                  className="space-y-4"
+                >
                   {/* Selected Product Summary */}
                   <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -699,15 +1086,15 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
                     <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-xl border border-white/10">
                       <button
                         type="button"
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        onClick={() => setSingleQty((q) => Math.max(1, q - 1))}
                         className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="w-6 text-center font-bold text-xs font-mono">{quantity}</span>
+                      <span className="w-6 text-center font-bold text-xs font-mono">{singleQty}</span>
                       <button
                         type="button"
-                        onClick={() => setQuantity((q) => q + 1)}
+                        onClick={() => setSingleQty((q) => q + 1)}
                         className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
                       >
                         <Plus className="w-3 h-3" />
@@ -783,7 +1170,7 @@ ${order.customerNotes ? `📝 ملاحظة: ${order.customerNotes}\n` : ""}
                   <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
                     <span className="text-xs text-gray-300 font-bold">المجموع الكلي للدفع:</span>
                     <span className="text-base font-black text-cyan-300 font-mono">
-                      {(selectedProduct.priceDZD * quantity).toLocaleString()} دج
+                      {(selectedProduct.priceDZD * singleQty).toLocaleString()} دج
                     </span>
                   </div>
 

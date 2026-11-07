@@ -44,7 +44,9 @@ import {
   MessageCircle,
   Truck,
   Edit2,
-  Store
+  Store,
+  Printer,
+  FileSpreadsheet
 } from "lucide-react";
 import { ALGERIA_WILAYAS } from "@/lib/algeria-wilayas";
 import { Button } from "@/components/ui/button";
@@ -616,6 +618,41 @@ export default function Dashboard() {
     } finally {
       setIsSavingStoreSettings(false);
     }
+  };
+
+  // Shopify-style Order Invoice Print State
+  const [printOrder, setPrintOrder] = useState<StoreOrder | null>(null);
+
+  // Export Orders as CSV (Excel compatible) for Algerian shipping companies
+  const handleExportOrdersCSV = () => {
+    if (orders.length === 0) {
+      toast.info("لا توجد طلبات لتصديرها");
+      return;
+    }
+    const headers = ["رقم الطلب", "التاريخ", "الزبون", "الهاتف", "الولاية", "العنوان", "المنتج", "الكمية", "المبلغ الإجمالي DZD", "الحالة", "ملاحظات"];
+    const rows = orders.map((o) => [
+      o.id || "",
+      o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString("ar-DZ") : "",
+      o.customerName || "",
+      o.customerPhone || "",
+      o.customerWilaya || "",
+      `"${(o.customerAddress || "").replace(/"/g, '""')}"`,
+      `"${(o.productTitle || "").replace(/"/g, '""')}"`,
+      o.quantity || 1,
+      o.totalPriceDZD || 0,
+      getOrderStatusLabel(o.status),
+      `"${(o.customerNotes || "").replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `orders-${userProfile?.username || "store"}-${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("تم تصدير الطلبات كملف Excel / CSV بنجاح!");
   };
 
   return (
@@ -1410,7 +1447,16 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportOrdersCSV}
+                  className="border-white/10 hover:border-cyan-400 text-xs gap-1.5 h-10 px-3.5 rounded-xl text-gray-300 hover:text-white"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-cyan-400" />
+                  <span>تصدير (Excel / CSV)</span>
+                </Button>
                 <Button
                   onClick={openManualOrderModal}
                   className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs gap-1.5 h-10 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.25)] shrink-0"
@@ -1418,6 +1464,34 @@ export default function Dashboard() {
                   <Plus className="w-4 h-4" />
                   <span>تسجيل طلب يدوي</span>
                 </Button>
+              </div>
+            </div>
+
+            {/* Shopify-style Sales KPIs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-[11px] text-gray-400 font-bold mb-1">إجمالي المبيعات (DZD)</div>
+                <div className="text-xl sm:text-2xl font-black text-cyan-400 font-mono">
+                  {orders.reduce((acc, o) => acc + (Number(o.totalPriceDZD) || 0), 0).toLocaleString()} دج
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-[11px] text-gray-400 font-bold mb-1">إجمالي الطلبات</div>
+                <div className="text-xl sm:text-2xl font-black text-white font-mono">
+                  {orders.length}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-[11px] text-gray-400 font-bold mb-1">قيد الشحن والتوصيل</div>
+                <div className="text-xl sm:text-2xl font-black text-purple-400 font-mono">
+                  {orders.filter((o) => o.status === "shipping" || o.status === "confirmed").length}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+                <div className="text-[11px] text-gray-400 font-bold mb-1">تم تسليمها بنجاح</div>
+                <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
+                  {orders.filter((o) => o.status === "delivered").length}
+                </div>
               </div>
             </div>
 
@@ -1595,6 +1669,17 @@ export default function Dashboard() {
                               <span>اتصال مباشر</span>
                             </Button>
                           </a>
+
+                          {/* Print Bon de Livraison Button */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setPrintOrder(order)}
+                            className="w-full border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 text-xs gap-1.5 h-9 rounded-xl font-bold"
+                          >
+                            <Printer className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>وصل التوصيل (Bon)</span>
+                          </Button>
 
                           {/* Status Progression Buttons */}
                           <div className="pt-2 border-t border-white/5 space-y-1">
@@ -2905,6 +2990,118 @@ export default function Dashboard() {
               </Button>
             </DialogFooter>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* SHOPIFY-STYLE BON DE LIVRAISON (وصل الشحن والتسليم للطباعة) */}
+      <Dialog open={!!printOrder} onOpenChange={(open) => !open && setPrintOrder(null)}>
+        <DialogContent className="max-w-lg bg-[#0d111a] border border-cyan-500/30 text-white rounded-3xl p-6 max-h-[92vh] overflow-y-auto print:bg-white print:text-black">
+          {printOrder && (
+            <div className="space-y-4">
+              <DialogHeader className="print:hidden">
+                <DialogTitle className="text-base font-bold flex items-center justify-between text-white">
+                  <div className="flex items-center gap-2">
+                    <Printer className="w-4 h-4 text-cyan-400" />
+                    <span>وصل الشحن والتوصيل (Bon de Livraison)</span>
+                  </div>
+                  <Badge className="bg-cyan-500/20 text-cyan-300 font-mono text-[10px]">
+                    #{printOrder.id?.slice(-6).toUpperCase()}
+                  </Badge>
+                </DialogTitle>
+                <DialogDescription className="text-xs text-gray-400">
+                  وصل مجهز وجاهز للطباعة أو الإرفاق مع الطرد لشركات التوصيل (Yalidine, ZR Express, Procolis)
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Printable Area */}
+              <div id="printable-bon" className="p-4 sm:p-5 rounded-2xl bg-black/60 border border-white/10 text-xs space-y-4 print:p-0 print:border-none print:text-black print:bg-white">
+                {/* Header: Store / Sender Info */}
+                <div className="flex justify-between items-start border-b border-white/10 pb-3">
+                  <div>
+                    <h2 className="text-base font-black text-white">{profileForm.storeSettings?.storeName || profileForm.fullName}</h2>
+                    <p className="text-[11px] text-gray-400">هاتف المتجر: {profileForm.storeSettings?.whatsappForOrders || profileForm.phone || "غير محدد"}</p>
+                    <p className="text-[11px] text-gray-400">الولاية: {profileForm.location || "الجزائر"}</p>
+                  </div>
+                  <div className="text-left font-mono">
+                    <div className="text-sm font-black text-cyan-400">#{printOrder.id?.slice(-6).toUpperCase()}</div>
+                    <div className="text-[10px] text-gray-400">
+                      {printOrder.createdAt?.toDate ? printOrder.createdAt.toDate().toLocaleDateString("ar-DZ") : "اليوم"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Customer / Destinataire Box */}
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5">
+                  <div className="text-[11px] font-bold text-cyan-400">بيانات المستلم (الزبون / Destinataire):</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-gray-400">الاسم واللقب: </span>
+                      <strong className="text-white">{printOrder.customerName}</strong>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">رقم الهاتف: </span>
+                      <strong className="text-white font-mono" dir="ltr">{printOrder.customerPhone}</strong>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-gray-400">الولاية والعنوان: </span>
+                      <strong className="text-white">{printOrder.customerWilaya} {printOrder.customerAddress ? `— ${printOrder.customerAddress}` : ""}</strong>
+                    </div>
+                    {printOrder.customerNotes && (
+                      <div className="col-span-2 text-amber-300 text-[11px]">
+                        <span className="text-gray-400">ملاحظة: </span>
+                        {printOrder.customerNotes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Items Breakdown */}
+                <div className="border border-white/10 rounded-xl overflow-hidden">
+                  <div className="bg-white/5 p-2 px-3 font-bold text-[11px] flex justify-between text-gray-300">
+                    <span>المنتج المطلوب</span>
+                    <span>الكمية × السعر</span>
+                  </div>
+                  <div className="p-2.5 px-3 flex justify-between items-center text-xs border-t border-white/5">
+                    <div>
+                      <div className="font-bold text-white">{printOrder.productTitle}</div>
+                    </div>
+                    <div className="text-left font-mono">
+                      <span>{printOrder.quantity} × {printOrder.productPriceDZD} دج</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* COD Total Box for Courier */}
+                <div className="p-3.5 rounded-2xl bg-cyan-500/10 border-2 border-cyan-400/50 flex justify-between items-center">
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-cyan-300 tracking-wider">MONTANT À ENCAISSER (COD)</div>
+                    <div className="text-xs font-bold text-white">المبلغ الواجب تحصيله عند التسليم:</div>
+                  </div>
+                  <div className="text-xl font-black text-cyan-300 font-mono">
+                    {printOrder.totalPriceDZD.toLocaleString()} دج
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <DialogFooter className="flex gap-2 print:hidden pt-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setPrintOrder(null)}
+                  className="text-xs border-white/10 text-gray-300"
+                >
+                  إغلاق
+                </Button>
+                <Button
+                  onClick={() => window.print()}
+                  className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 flex-1"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>طباعة الوصل الآن (Imprimer)</span>
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
       </main>

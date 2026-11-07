@@ -54,6 +54,14 @@ export interface StoreProduct {
 
 export type OrderStatus = "pending" | "confirmed" | "shipping" | "delivered" | "cancelled";
 
+export interface StoreOrderItem {
+  productId: string;
+  title: string;
+  priceDZD: number;
+  quantity: number;
+  imageUrl?: string;
+}
+
 export interface StoreOrder {
   id?: string;
   userId: string;
@@ -63,6 +71,7 @@ export interface StoreOrder {
   productPriceDZD: number;
   productImageUrl?: string;
   quantity: number;
+  items?: StoreOrderItem[];
   totalPriceDZD: number;
   customerName: string;
   customerPhone: string;
