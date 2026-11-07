@@ -589,54 +589,8 @@ export function StoreTemplateView({ profile, variant = "minimal" }: StoreTemplat
           )}
         </div>
 
-        {/* 3. HERO BANNER SECTION */}
-        {settings.promoBannerUrl ? (
-          <div className="relative rounded-3xl overflow-hidden mb-6 border border-white/10 shadow-2xl h-48 sm:h-64 bg-black">
-            <img 
-              src={settings.promoBannerUrl} 
-              alt="Promo Banner" 
-              className="w-full h-full object-cover opacity-85"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-5 sm:p-8">
-              {settings.promoBannerSubtitle && (
-                <Badge className="bg-amber-400 text-black font-black text-xs w-fit mb-2">
-                  {settings.promoBannerSubtitle}
-                </Badge>
-              )}
-              <h2 className="text-xl sm:text-3xl font-black text-white leading-tight">
-                {settings.promoBannerTitle || "تخفيضات وعروض حصرية لفترة محدودة 🔥"}
-              </h2>
-            </div>
-          </div>
-        ) : (
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-cyan-950/30 via-black to-blue-950/30 border border-white/10 mb-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center sm:text-right">
-              <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest">
-                • متجر إلكتروني متكامل
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-white">
-                أفضل المنتجات المختارة بعناية مع الدفع عند الاستلام
-              </h2>
-              <p className="text-xs text-gray-300 max-w-lg">
-                اطلب الآن بسهولة وسيصلك المنتج إلى باب منزلك مع إمكانية المعاينة قبل الدفع.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  const el = document.getElementById("products-catalog");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }}
-                className={`${theme.accentBtn} text-xs font-bold px-6 h-10 rounded-xl`}
-              >
-                تصفح المنتجات 👇
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* 4. VALUE PROPOSITION BAR (مزايا التسوق) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        {/* 3. VALUE PROPOSITION BAR (مزايا التسوق) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-6">
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
             <Truck className="w-5 h-5 text-cyan-400 shrink-0" />
             <div className="text-right">

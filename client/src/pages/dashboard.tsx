@@ -74,7 +74,7 @@ import {
   OrderStatus
 } from "@shared/saas-schema";
 import { SUPPORTED_PLATFORMS, PlatformIcon } from "@/components/ui/PlatformIcon";
-import { collection, addDoc, Timestamp, query, where, getDocs, onSnapshot, updateDoc, doc } from "firebase/firestore";
+import { collection, addDoc, Timestamp, query, where, getDocs, onSnapshot, updateDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 
@@ -119,6 +119,8 @@ export default function Dashboard() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [orderFilter, setOrderFilter] = useState<"all" | OrderStatus>("all");
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   // Product Add / Edit Modal State
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -539,6 +541,95 @@ export default function Dashboard() {
     } finally {
       setUpdatingOrderId(null);
     }
+  };
+
+  const toggleSelectOrder = (orderId: string) => {
+    setSelectedOrderIds((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+    );
+  };
+
+  const toggleSelectAllOrders = (currentOrders: StoreOrder[]) => {
+    const allIds = currentOrders.map((o) => o.id).filter(Boolean) as string[];
+    const allSelected = allIds.length > 0 && allIds.every((id) => selectedOrderIds.includes(id));
+    if (allSelected) {
+      setSelectedOrderIds([]);
+    } else {
+      setSelectedOrderIds(allIds);
+    }
+  };
+
+  const handleBulkUpdateOrderStatus = async (newStatus: OrderStatus) => {
+    if (selectedOrderIds.length === 0) return;
+    try {
+      setIsBulkUpdating(true);
+      await Promise.all(
+        selectedOrderIds.map((id) =>
+          updateDoc(doc(db, "orders", id), {
+            status: newStatus,
+            updatedAt: Timestamp.now(),
+          })
+        )
+      );
+      setOrders((prev) =>
+        prev.map((o) => (selectedOrderIds.includes(o.id!) ? { ...o, status: newStatus } : o))
+      );
+      toast.success(`تم تحديث حالة ${selectedOrderIds.length} طلب إلى: ${getOrderStatusLabel(newStatus)}`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("فشل التحديث الجماعي: " + err.message);
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  const handleBulkDeleteOrders = async () => {
+    if (selectedOrderIds.length === 0) return;
+    if (!confirm(`هل أنت متأكد من حذف ${selectedOrderIds.length} طلب محدد نهائياً؟`)) return;
+    try {
+      setIsBulkUpdating(true);
+      await Promise.all(selectedOrderIds.map((id) => deleteDoc(doc(db, "orders", id))));
+      setOrders((prev) => prev.filter((o) => !selectedOrderIds.includes(o.id!)));
+      toast.success(`تم حذف ${selectedOrderIds.length} طلب بنجاح`);
+      setSelectedOrderIds([]);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("فشل حذف الطلبات: " + err.message);
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  const handleExportSelectedOrdersCSV = () => {
+    const targetOrders = orders.filter((o) => selectedOrderIds.includes(o.id!));
+    if (targetOrders.length === 0) {
+      toast.info("لم يتم تحديد أي طلب لتصديره");
+      return;
+    }
+    const headers = ["رقم الطلب", "التاريخ", "الزبون", "الهاتف", "الولاية", "العنوان", "المنتج", "الكمية", "المبلغ الإجمالي DZD", "الحالة", "ملاحظات"];
+    const rows = targetOrders.map((o) => [
+      o.id || "",
+      o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString("ar-DZ") : "",
+      o.customerName || "",
+      o.customerPhone || "",
+      o.customerWilaya || "",
+      `"${(o.customerAddress || "").replace(/"/g, '""')}"`,
+      `"${(o.productTitle || "").replace(/"/g, '""')}"`,
+      o.quantity || 1,
+      o.totalPriceDZD || 0,
+      getOrderStatusLabel(o.status),
+      `"${(o.customerNotes || "").replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `selected-orders-${userProfile?.username || "store"}-${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`تم تصدير ${targetOrders.length} طلب محدد كملف Excel / CSV بنجاح!`);
   };
 
   const getOrderStatusLabel = (status: OrderStatus) => {
@@ -1358,59 +1449,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Optional Promotional Hero Banner */}
-              <div className="pt-2 border-t border-white/5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs text-cyan-400 font-bold flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>بانر ترويجي إعلاني أعلى المتجر (اختياري)</span>
-                  </Label>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-1">
-                    <ImageUploadInput
-                      label="صورة البانر الإعلاني"
-                      value={profileForm.storeSettings?.promoBannerUrl || ""}
-                      onChange={(url) => setProfileForm({
-                        ...profileForm,
-                        storeSettings: { ...(profileForm.storeSettings || {}), promoBannerUrl: url }
-                      })}
-                      placeholder="https://i.ibb.co/..."
-                      aspectRatio="cover"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2 space-y-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">عنوان البانر الإعلاني</Label>
-                      <Input
-                        value={profileForm.storeSettings?.promoBannerTitle || ""}
-                        onChange={(e) => setProfileForm({
-                          ...profileForm,
-                          storeSettings: { ...(profileForm.storeSettings || {}), promoBannerTitle: e.target.value }
-                        })}
-                        placeholder="تخفيضات حصرية تصل إلى 40% لفترة محدودة 🔥"
-                        className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">الشارة الترويجية الصغيرة</Label>
-                      <Input
-                        value={profileForm.storeSettings?.promoBannerSubtitle || ""}
-                        onChange={(e) => setProfileForm({
-                          ...profileForm,
-                          storeSettings: { ...(profileForm.storeSettings || {}), promoBannerSubtitle: e.target.value }
-                        })}
-                        placeholder="عرض خاص • خصم حصري"
-                        className="bg-black/50 border-white/10 text-xs text-white h-9 rounded-xl"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Feature Toggles */}
               <div className="pt-3 border-t border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
@@ -1709,6 +1747,78 @@ export default function Dashboard() {
 
               return (
                 <div className="space-y-4">
+                  {/* Bulk Selection Bar */}
+                  <div className="p-3 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleSelectAllOrders(filteredOrders)}
+                      className="flex items-center gap-2.5 text-xs font-bold text-white hover:text-cyan-400 transition-colors cursor-pointer"
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
+                          filteredOrders.length > 0 && filteredOrders.every((o) => selectedOrderIds.includes(o.id!))
+                            ? "bg-cyan-400 border-cyan-400 text-black shadow-md shadow-cyan-500/25"
+                            : "border-white/30 bg-black/40 text-transparent"
+                        }`}
+                      >
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                      <span>
+                        {filteredOrders.length > 0 && filteredOrders.every((o) => selectedOrderIds.includes(o.id!))
+                          ? "إلغاء تحديد الكل"
+                          : `تحديد كل الطلبات في هذه القائمة (${filteredOrders.length})`}
+                      </span>
+                    </button>
+
+                    {selectedOrderIds.length > 0 && (
+                      <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                        <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20">
+                          تم تحديد: {selectedOrderIds.length}
+                        </span>
+
+                        <select
+                          disabled={isBulkUpdating}
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              handleBulkUpdateOrderStatus(e.target.value as OrderStatus);
+                              e.target.value = "";
+                            }
+                          }}
+                          className="bg-[#0e1422] border border-white/20 text-white text-xs rounded-xl px-2.5 h-8 focus:outline-none focus:border-cyan-400 font-semibold cursor-pointer"
+                        >
+                          <option value="">تغيير الحالة إلى...</option>
+                          <option value="confirmed">تأكيد الطلبات (مؤكد)</option>
+                          <option value="shipping">قيد الشحن والتوصيل 🚚</option>
+                          <option value="delivered">تم التسليم بنجاح ✅</option>
+                          <option value="cancelled">إلغاء الطلبات ❌</option>
+                        </select>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleExportSelectedOrdersCSV}
+                          className="border-white/10 text-xs h-8 px-2.5 text-cyan-400 hover:border-cyan-400 gap-1 rounded-xl"
+                          title="تصدير الطلبات المحددة كملف Excel"
+                        >
+                          <FileSpreadsheet className="w-3.5 h-3.5" />
+                          <span>تصدير (CSV)</span>
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isBulkUpdating}
+                          onClick={handleBulkDeleteOrders}
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs h-8 px-2.5 gap-1 rounded-xl"
+                          title="حذف الطلبات المحددة"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>حذف</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
                   {filteredOrders.map((order) => {
                     const cleanPhone = (order.customerPhone || "").replace(/[^0-9]/g, "");
                     const formattedPhone = cleanPhone.startsWith("0") ? cleanPhone.slice(1) : cleanPhone;
@@ -1720,12 +1830,33 @@ export default function Dashboard() {
                     return (
                       <div
                         key={order.id}
-                        className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+                        className={`p-5 sm:p-6 rounded-3xl transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 ${
+                          selectedOrderIds.includes(order.id!)
+                            ? "bg-cyan-950/20 border-2 border-cyan-400 shadow-xl shadow-cyan-500/10"
+                            : "bg-white/[0.03] border border-white/10 hover:border-white/20"
+                        }`}
                       >
                         {/* Order Left: Customer & Product Info */}
                         <div className="space-y-3 flex-1 min-w-0">
                           {/* Order Header Badge & Date */}
                           <div className="flex items-center gap-3 flex-wrap">
+                            {/* Order Checkbox */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSelectOrder(order.id!);
+                              }}
+                              className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
+                                selectedOrderIds.includes(order.id!)
+                                  ? "bg-cyan-400 border-cyan-400 text-black shadow-md shadow-cyan-500/30"
+                                  : "border-white/30 bg-black/40 hover:border-cyan-400 text-transparent"
+                              }`}
+                              title="تحديد هذا الطلب"
+                            >
+                              <Check className="w-4 h-4 stroke-[3]" />
+                            </button>
+
                             <span className="font-mono text-xs text-cyan-400 font-bold bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/20" dir="ltr">
                               #{order.id?.slice(-6).toUpperCase()}
                             </span>
