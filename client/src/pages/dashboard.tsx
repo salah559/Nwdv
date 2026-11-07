@@ -284,6 +284,12 @@ export default function Dashboard() {
   const remainingDays = Math.floor(remainingMillis / (1000 * 60 * 60 * 24));
   const remainingHours = Math.floor((remainingMillis % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
+  const currentTemplate = getTemplateById(profileForm.templateId || "default");
+  const isStoreTemplate = Boolean(
+    profileForm.templateId?.startsWith("store-") ||
+    currentTemplate?.category === "store"
+  );
+
   const profileUrl = `${window.location.origin}/p/${userProfile.username}`;
   const subdomainUrl = `https://${userProfile.username}.novawebdv.com`;
 
@@ -298,7 +304,7 @@ export default function Dashboard() {
     try {
       setIsSaving(true);
       await updateUserProfileData(profileForm);
-      toast.success("تم حفظ التعديلات بنجاح!");
+      toast.success(isStoreTemplate ? "تم حفظ هوية وإعدادات المتجر بنجاح!" : "تم حفظ التعديلات بنجاح!");
     } catch (err: any) {
       console.error(err);
       toast.error("فشل حفظ التعديلات: " + err.message);
@@ -352,10 +358,18 @@ export default function Dashboard() {
       return;
     }
 
+    const selectedTmpl = getTemplateById(templateId);
+    const isStore = templateId.startsWith("store-") || selectedTmpl?.category === "store";
+
     setProfileForm({ ...profileForm, templateId });
     try {
       await updateUserProfileData({ templateId });
-      toast.success("تم تغيير القالب بنجاح!");
+      if (isStore) {
+        toast.success("تم تطبيق قالب المتجر بنجاح! تم فتح قسم 'هوية وتخصيص المتجر'");
+        setActiveTab("builder");
+      } else {
+        toast.success("تم تغيير القالب بنجاح!");
+      }
     } catch (err) {
       toast.error("حدث خطأ أثناء تغيير القالب");
     }
@@ -900,8 +914,13 @@ export default function Dashboard() {
                 value="builder"
                 className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
               >
-                <User className="w-4 h-4" />
-                <span>منشئ الموقع</span>
+                {isStoreTemplate ? <Store className="w-4 h-4 text-cyan-400" /> : <User className="w-4 h-4" />}
+                <span>{isStoreTemplate ? "هوية وتخصيص المتجر" : "منشئ الموقع"}</span>
+                {isStoreTemplate && (
+                  <Badge className="bg-cyan-500/25 text-cyan-300 border-none text-[9px] px-1.5 py-0 h-4">
+                    متجر
+                  </Badge>
+                )}
               </TabsTrigger>
 
               <TabsTrigger
@@ -997,16 +1016,20 @@ export default function Dashboard() {
                   <Button
                     size="sm"
                     onClick={() => {
-                      setActiveTab("templates");
-                      setTimeout(() => {
-                        const el = document.querySelector("[data-customizer]");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }, 200);
+                      if (isStoreTemplate) {
+                        setActiveTab("builder");
+                      } else {
+                        setActiveTab("templates");
+                        setTimeout(() => {
+                          const el = document.querySelector("[data-customizer]");
+                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 200);
+                      }
                     }}
-                    className="text-xs w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 gap-1.5"
+                    className="text-xs w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 gap-1.5"
                   >
-                    <Palette className="w-3.5 h-3.5" />
-                    تخصيص الألوان والخط
+                    {isStoreTemplate ? <Store className="w-3.5 h-3.5" /> : <Palette className="w-3.5 h-3.5" />}
+                    <span>{isStoreTemplate ? "هوية وتخصيص المتجر" : "تخصيص الألوان والخط"}</span>
                   </Button>
                 </div>
               </div>
@@ -1036,245 +1059,718 @@ export default function Dashboard() {
                 </div>
                 <div className="mt-6 pt-4 border-t border-white/5">
                   <Button size="sm" variant="outline" onClick={() => setActiveTab("builder")} className="text-xs w-full">
-                    تعديل المحتوى والروابط
+                    {isStoreTemplate ? "هوية وإعدادات المتجر" : "تعديل المحتوى والروابط"}
                   </Button>
                 </div>
               </div>
             </div>
           </TabsContent>
 
-          {/* TAB 2: PROFILE BUILDER */}
+          {/* TAB 2: BUILDER (ADAPTIVE: STORE BUILDER vs PERSONAL BUILDER) */}
           <TabsContent value="builder" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Form: Info & Social Links */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Basic Info Card */}
-                <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <User className="w-4 h-4 text-cyan-400" />
-                    <span>المعلومات الأساسية</span>
-                  </h3>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">الاسم الكامل</Label>
-                      <Input
-                        value={profileForm.fullName}
-                        onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
-                        className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
-                      />
+            {isStoreTemplate ? (
+              /* =========================================================
+                 STORE IDENTITY & BRANDING STUDIO (SHOPIFY-STYLE)
+                 ========================================================= */
+              <div className="space-y-6">
+                {/* Store Top Notice Banner */}
+                <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-cyan-500/15 via-blue-900/15 to-black/60 border border-cyan-500/30 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-cyan-400 text-black flex items-center justify-center font-bold shrink-0 shadow-[0_0_20px_rgba(6,255,240,0.35)]">
+                      <Store className="w-6 h-6" />
                     </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">المسمى الوظيفي</Label>
-                      <Input
-                        value={profileForm.jobTitle || ""}
-                        onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
-                        placeholder="مثال: مطور برمجيات / مصمم واجهات"
-                        className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
-                      />
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-bold text-white">هوية وتخصيص المتجر الإلكتروني</h3>
+                        <Badge className="bg-cyan-400 text-black font-extrabold text-[10px] px-2 py-0.5">Shopify Style</Badge>
+                        <Badge variant="outline" className="border-cyan-500/40 text-cyan-300 text-[10px]">{currentTemplate.name}</Badge>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        تحكم مباشر وشامل في شعار متجرك، الغلاف، شريط الإعلانات، تكاليف التوصيل لـ 58 ولاية، وأزرار الشراء الفوري
+                      </p>
                     </div>
                   </div>
 
-                  {/* IMGBB DIRECT IMAGE UPLOADS FOR AVATAR & COVER */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-                    <ImageUploadInput
-                      label="الصورة الشخصية (Avatar)"
-                      value={profileForm.avatarUrl || ""}
-                      onChange={(url) => setProfileForm({ ...profileForm, avatarUrl: url })}
-                      placeholder="https://i.ibb.co/..."
-                      aspectRatio="square"
-                    />
-
-                    <ImageUploadInput
-                      label="صورة الغلاف (Cover Photo)"
-                      value={profileForm.coverUrl || ""}
-                      onChange={(url) => setProfileForm({ ...profileForm, coverUrl: url })}
-                      placeholder="https://i.ibb.co/..."
-                      aspectRatio="cover"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5 pt-2">
-                    <Label className="text-xs text-gray-300">النبذة التعريفية (Bio)</Label>
-                    <Textarea
-                      rows={3}
-                      value={profileForm.bio || ""}
-                      onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                      placeholder="اكتب نبذة مختصرة عن نفسك، مهاراتك أو ما تقدمه..."
-                      className="bg-black/40 border-white/10 text-sm rounded-xl resize-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">الموقع الجغرافي</Label>
-                      <Input
-                        value={profileForm.location || ""}
-                        onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
-                        placeholder="الجزائر العاصمة"
-                        className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">رقم الهاتف</Label>
-                      <Input
-                        value={profileForm.phone || ""}
-                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                        placeholder="+213 660 00 00 00"
-                        className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
-                        dir="ltr"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-300">رقم الواتساب</Label>
-                      <Input
-                        value={profileForm.whatsapp || ""}
-                        onChange={(e) => setProfileForm({ ...profileForm, whatsapp: e.target.value })}
-                        placeholder="213660000000"
-                        className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
-                        dir="ltr"
-                      />
-                    </div>
+                  <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setActiveTab("products")}
+                      className="text-xs border-white/20 hover:border-cyan-400 text-gray-200 gap-1.5 h-9 rounded-xl"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>إدارة المنتجات ({profileForm.products?.length || 0})</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setActiveTab("templates")}
+                      className="text-xs border-white/20 hover:border-purple-400 text-gray-200 gap-1.5 h-9 rounded-xl"
+                    >
+                      <Palette className="w-3.5 h-3.5 text-purple-400" />
+                      <span>تغيير القالب</span>
+                    </Button>
                   </div>
                 </div>
 
-                {/* Social Links Manager */}
-                <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <Share2 className="w-4 h-4 text-cyan-400" />
-                      <span>روابط التواصل والمواقع</span>
-                    </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Left Column: Form Cards */}
+                  <div className="lg:col-span-2 space-y-6">
 
-                    <Button
-                      size="sm"
-                      onClick={addSocialLink}
-                      className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>إضافة رابط</span>
-                    </Button>
-                  </div>
+                    {/* CARD 1: STORE BRANDING & LOGO */}
+                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h4 className="text-base font-bold text-white flex items-center gap-2">
+                          <Store className="w-4 h-4 text-cyan-400" />
+                          <span>1. هوية المتجر والعلامة التجارية (Store Branding)</span>
+                        </h4>
+                        <span className="text-[11px] text-gray-400">تظهر في الترويسة والفاتورة</span>
+                      </div>
 
-                  <div className="space-y-3">
-                    {profileForm.socialLinks.map((link, idx) => (
-                      <div
-                        key={link.id || idx}
-                        className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col sm:flex-row items-center gap-3"
-                      >
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                          <div className="w-9 h-9 rounded-xl bg-[#0d1117] border border-white/10 flex items-center justify-center p-2 shrink-0">
-                            <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
-                          </div>
-                          <select
-                            value={link.platform}
-                            onChange={(e) => updateSocialLink(idx, "platform", e.target.value)}
-                            className="w-full sm:w-40 bg-[#0d1117] border border-white/10 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400"
-                          >
-                            {Object.values(SUPPORTED_PLATFORMS).map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                              </option>
-                            ))}
-                            <option value="other">أخرى / Custom</option>
-                          </select>
-                        </div>
-
-                        <div className="w-full sm:w-40">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">اسم المتجر أو البراند التجاري</Label>
                           <Input
-                            value={link.title}
-                            onChange={(e) => updateSocialLink(idx, "title", e.target.value)}
-                            placeholder="عنوان الرابط"
-                            className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl"
+                            value={profileForm.storeSettings?.storeName ?? profileForm.fullName}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setProfileForm({
+                                ...profileForm,
+                                fullName: val,
+                                storeSettings: { ...(profileForm.storeSettings || {}), storeName: val }
+                              });
+                            }}
+                            placeholder="مثال: متجر الأناقة / TechStore DZ"
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl focus:border-cyan-400 text-white"
                           />
                         </div>
 
-                        <div className="w-full sm:flex-1">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">شعار أو مسمى المتجر الفرعي (Slogan)</Label>
                           <Input
-                            value={link.url}
-                            onChange={(e) => updateSocialLink(idx, "url", e.target.value)}
-                            placeholder="https://..."
-                            className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl font-mono"
+                            value={profileForm.jobTitle || ""}
+                            onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
+                            placeholder="مثال: أفضل الإلكترونيات الأصلية بضمان"
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
+                          />
+                        </div>
+                      </div>
+
+                      {/* IMGBB LOGO & COVER BANNER */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-1">
+                        <ImageUploadInput
+                          label="شعار المتجر (Store Logo)"
+                          value={profileForm.avatarUrl || ""}
+                          onChange={(url) => setProfileForm({ ...profileForm, avatarUrl: url })}
+                          placeholder="https://i.ibb.co/..."
+                          aspectRatio="square"
+                        />
+
+                        <ImageUploadInput
+                          label="بانر أو صورة غلاف المتجر (Cover Banner)"
+                          value={profileForm.coverUrl || ""}
+                          onChange={(url) => setProfileForm({ ...profileForm, coverUrl: url })}
+                          placeholder="https://i.ibb.co/..."
+                          aspectRatio="cover"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 pt-1">
+                        <Label className="text-xs text-gray-300 font-bold">نبذة عن المتجر وسياسته (About Store)</Label>
+                        <Textarea
+                          rows={3}
+                          value={profileForm.bio || ""}
+                          onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                          placeholder="اكتب نبذة مختصرة لزبائنك: الجودة العالية، مصدر السلع، الالتزام بالمواعيد..."
+                          className="bg-black/40 border-white/10 text-sm rounded-xl resize-none text-white"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">مقر المتجر / الولاية</Label>
+                          <Input
+                            value={profileForm.location || ""}
+                            onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
+                            placeholder="الجزائر العاصمة / وهران..."
+                            className="bg-black/40 border-white/10 text-sm h-10 rounded-xl text-white"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">رقم الهاتف للاتصال المباشر</Label>
+                          <Input
+                            value={profileForm.phone || ""}
+                            onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                            placeholder="05XXXXXXXX / 06XXXXXXXX"
+                            className="bg-black/40 border-white/10 text-sm h-10 rounded-xl font-mono text-white"
                             dir="ltr"
                           />
                         </div>
 
-                        <div className="flex items-center gap-2 self-end sm:self-center">
-                          <Switch
-                            checked={link.enabled}
-                            onCheckedChange={(checked) => updateSocialLink(idx, "enabled", checked)}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold flex items-center gap-1">
+                            <span>رقم واتساب الطلبات</span>
+                            <span className="text-[10px] text-emerald-400 font-normal">(مباشر)</span>
+                          </Label>
+                          <Input
+                            value={profileForm.storeSettings?.whatsappForOrders ?? profileForm.whatsapp ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setProfileForm({
+                                ...profileForm,
+                                whatsapp: val,
+                                storeSettings: { ...(profileForm.storeSettings || {}), whatsappForOrders: val }
+                              });
+                            }}
+                            placeholder="213660000000 أو 0660000000"
+                            className="bg-black/40 border-white/10 text-sm h-10 rounded-xl font-mono text-white"
+                            dir="ltr"
                           />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeSocialLink(idx)}
-                            className="text-gray-400 hover:text-red-400 h-8 w-8 p-0"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* CARD 2: ALGERIAN SHIPPING & COD */}
+                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h4 className="text-base font-bold text-white flex items-center gap-2">
+                          <Truck className="w-4 h-4 text-amber-400" />
+                          <span>2. إعدادات الشحن والدفع عند الاستلام (COD - 58 ولاية)</span>
+                        </h4>
+                        <Badge className="bg-amber-500/20 text-amber-300 border-none text-[10px]">الدفع عند الاستلام</Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">سعر التوصيل الافتراضي (DZD)</Label>
+                          <Input
+                            type="number"
+                            value={profileForm.storeSettings?.defaultShippingCostDZD ?? 0}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), defaultShippingCostDZD: Number(e.target.value) }
+                            })}
+                            placeholder="0 = توصيل مجاني"
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl font-mono text-white"
+                          />
+                          <p className="text-[11px] text-cyan-400">
+                            💡 إذا كتبت 0، سيظهر لزبائنك "توصيل مجاني 🎁" تلقائياً في المتجر ونموذج الطلب.
+                          </p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">شريط الإعلانات أعلى المتجر</Label>
+                          <Input
+                            value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
+                            })}
+                            placeholder="🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"
+                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
+                          />
+                          <p className="text-[11px] text-gray-400">
+                            يظهر كشريط متحرك أو شريط بارز أعلى صفحة المتجر لجذب الانتباه.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 pt-1">
+                        <Label className="text-xs text-gray-300 font-bold">ملاحظة التوصيل وشروط الاستلام للزبون</Label>
+                        <Input
+                          value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
+                          onChange={(e) => setProfileForm({
+                            ...profileForm,
+                            storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
+                          })}
+                          placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
+                          className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* CARD 3: CONVERSION BOOSTERS */}
+                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h4 className="text-base font-bold text-white flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-emerald-400" />
+                          <span>3. ميزات تحفيز الشراء وزيادة المبيعات (Conversion Boosters)</span>
+                        </h4>
+                        <Badge className="bg-emerald-500/20 text-emerald-300 border-none text-[10px]">مبيعات</Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between gap-3">
+                          <div>
+                            <div className="text-xs font-bold text-white mb-1">شارات الأمان والضمان</div>
+                            <div className="text-[11px] text-gray-400">توصيل 58 ولاية + فحص قبل الدفع + ضمان الجودة</div>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                            <span className="text-[10px] text-gray-400">تفعيل الشارات</span>
+                            <Switch
+                              checked={profileForm.storeSettings?.showTrustBadges !== false}
+                              onCheckedChange={(checked) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), showTrustBadges: checked }
+                              })}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between gap-3">
+                          <div>
+                            <div className="text-xs font-bold text-white mb-1">طلب سريع بنقرة واتساب</div>
+                            <div className="text-[11px] text-gray-400">زر شراء فوري في بطاقة المنتج يفتح محادثة جاهزة</div>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                            <span className="text-[10px] text-gray-400">تفعيل الزر</span>
+                            <Switch
+                              checked={profileForm.storeSettings?.showDirectWhatsappBtn !== false}
+                              onCheckedChange={(checked) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), showDirectWhatsappBtn: checked }
+                              })}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between gap-3">
+                          <div>
+                            <div className="text-xs font-bold text-white mb-1">مؤشر نفاذ المخزون 🔥</div>
+                            <div className="text-[11px] text-gray-400">عرض شارة "بقي عدد محدود من القطع" للتحفيز</div>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                            <span className="text-[10px] text-gray-400">تفعيل المؤشر</span>
+                            <Switch
+                              checked={profileForm.storeSettings?.showStockCounter !== false}
+                              onCheckedChange={(checked) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), showStockCounter: checked }
+                              })}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CARD 4: STORE ACCENT COLOR */}
+                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h4 className="text-base font-bold text-white flex items-center gap-2">
+                          <Palette className="w-4 h-4 text-purple-400" />
+                          <span>4. تخصيص أزرار ومظهر المتجر (Store Accent Color)</span>
+                        </h4>
+                        <span className="text-[11px] text-gray-400">اللون المميز للأزرار والشارات</span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        {[
+                          { color: "#06fff0", label: "سيان نيون" },
+                          { color: "#10b981", label: "زمردي فاخر" },
+                          { color: "#f59e0b", label: "ذهبي ملكي" },
+                          { color: "#ec4899", label: "وردي بوتيك" },
+                          { color: "#3b82f6", label: "أزرق تجاري" },
+                          { color: "#ef4444", label: "أحمر تخفيضات" },
+                          { color: "#ffffff", label: "أبيض ناصع" },
+                          { color: "#a855f7", label: "بنفسجي أنيق" },
+                        ].map(({ color, label }) => (
+                          <button
+                            key={color}
+                            type="button"
+                            title={label}
+                            onClick={() => setProfileForm({
+                              ...profileForm,
+                              customTheme: { ...(profileForm.customTheme || {}), primaryColor: color }
+                            })}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                              (profileForm.customTheme?.primaryColor || "#06fff0") === color
+                                ? "border-white bg-white/15 text-white scale-105 shadow-lg"
+                                : "border-white/10 bg-black/30 text-gray-400 hover:text-white hover:border-white/20"
+                            }`}
+                          >
+                            <span className="w-3.5 h-3.5 rounded-full border border-black/40 shadow-sm" style={{ backgroundColor: color }} />
+                            <span>{label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* CARD 5: STORE SOCIAL CHANNELS */}
+                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h4 className="text-base font-bold text-white flex items-center gap-2">
+                          <Share2 className="w-4 h-4 text-cyan-400" />
+                          <span>5. حسابات التواصل وصفحات المتجر (Social Channels)</span>
+                        </h4>
+
+                        <Button
+                          size="sm"
+                          onClick={addSocialLink}
+                          className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5 h-8 px-3 rounded-xl"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>إضافة صفحة</span>
+                        </Button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {profileForm.socialLinks.map((link, idx) => (
+                          <div
+                            key={link.id || idx}
+                            className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col sm:flex-row items-center gap-3"
+                          >
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                              <div className="w-9 h-9 rounded-xl bg-[#0d1117] border border-white/10 flex items-center justify-center p-2 shrink-0">
+                                <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
+                              </div>
+                              <select
+                                value={link.platform}
+                                onChange={(e) => updateSocialLink(idx, "platform", e.target.value)}
+                                className="w-full sm:w-40 bg-[#0d1117] border border-white/10 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400"
+                              >
+                                {Object.values(SUPPORTED_PLATFORMS).map((p) => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.name}
+                                  </option>
+                                ))}
+                                <option value="other">أخرى / Custom</option>
+                              </select>
+                            </div>
+
+                            <div className="w-full sm:w-40">
+                              <Input
+                                value={link.title}
+                                onChange={(e) => updateSocialLink(idx, "title", e.target.value)}
+                                placeholder="اسم الصفحة / الحساب"
+                                className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl text-white"
+                              />
+                            </div>
+
+                            <div className="w-full sm:flex-1">
+                              <Input
+                                value={link.url}
+                                onChange={(e) => updateSocialLink(idx, "url", e.target.value)}
+                                placeholder="https://instagram.com/..."
+                                className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl font-mono text-white"
+                                dir="ltr"
+                              />
+                            </div>
+
+                            <div className="flex items-center gap-2 self-end sm:self-center">
+                              <Switch
+                                checked={link.enabled}
+                                onCheckedChange={(checked) => updateSocialLink(idx, "enabled", checked)}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeSocialLink(idx)}
+                                className="text-gray-400 hover:text-red-400 h-8 w-8 p-0"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Floating Save Bar */}
+                    <div className="sticky bottom-4 z-20 p-2 sm:p-0 rounded-2xl bg-[#07090e]/80 sm:bg-transparent backdrop-blur-lg sm:backdrop-blur-none border border-white/10 sm:border-none flex items-center justify-between sm:justify-end gap-3 shadow-2xl sm:shadow-none">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setPreviewTemplateId(profileForm.templateId);
+                          setPreviewOpen(true);
+                        }}
+                        className="sm:hidden border-white/20 text-xs gap-1.5 h-11 px-4 flex-1"
+                      >
+                        <Eye className="w-4 h-4 text-cyan-400" />
+                        <span>معاينة المتجر</span>
+                      </Button>
+
+                      <Button
+                        size="lg"
+                        disabled={isSaving}
+                        onClick={handleSaveProfile}
+                        className="bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider px-6 sm:px-8 h-11 sm:h-12 rounded-xl shadow-[0_0_25px_rgba(6,255,240,0.4)] gap-2 flex-[2] sm:flex-initial"
+                      >
+                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        <span>حفظ هوية وإعدادات المتجر</span>
+                      </Button>
+                    </div>
+
+                  </div>
+
+                  {/* Right Live Mini Preview (Sticky) */}
+                  <div className="hidden lg:block">
+                    <div className="sticky top-24 rounded-3xl bg-black border border-white/10 p-4 shadow-2xl space-y-3">
+                      <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                        <span className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                          <Smartphone className="w-4 h-4 text-cyan-400" />
+                          <span>معاينة المتجر المباشرة</span>
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setPreviewTemplateId(profileForm.templateId);
+                            setPreviewOpen(true);
+                          }}
+                          className="text-xs text-cyan-400 hover:text-cyan-300 p-0 h-auto"
+                        >
+                          شاشة كاملة
+                        </Button>
+                      </div>
+
+                      <div className="w-full h-[620px] rounded-2xl overflow-y-auto border border-white/10 bg-black flex flex-col relative shadow-inner">
+                        <ProfileTemplateRenderer
+                          profile={profileForm}
+                          templateId={profileForm.templateId}
+                          isOwnerPreview={true}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                {/* Save Button Floating Bar */}
-                <div className="sticky bottom-4 z-20 p-2 sm:p-0 rounded-2xl bg-[#07090e]/80 sm:bg-transparent backdrop-blur-lg sm:backdrop-blur-none border border-white/10 sm:border-none flex items-center justify-between sm:justify-end gap-3 shadow-2xl sm:shadow-none">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setPreviewTemplateId(profileForm.templateId);
-                      setPreviewOpen(true);
-                    }}
-                    className="sm:hidden border-white/20 text-xs gap-1.5 h-11 px-4 flex-1"
-                  >
-                    <Eye className="w-4 h-4 text-cyan-400" />
-                    <span>معاينة</span>
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    disabled={isSaving}
-                    onClick={handleSaveProfile}
-                    className="bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider px-6 sm:px-8 h-11 sm:h-12 rounded-xl shadow-[0_0_25px_rgba(6,255,240,0.4)] gap-2 flex-[2] sm:flex-initial"
-                  >
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    <span>حفظ التعديلات</span>
-                  </Button>
-                </div>
               </div>
+            ) : (
+              /* =========================================================
+                 STANDARD PERSONAL / PORTFOLIO BUILDER
+                 ========================================================= */
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Form: Info & Social Links */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Basic Info Card */}
+                  <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
+                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                      <User className="w-4 h-4 text-cyan-400" />
+                      <span>المعلومات الأساسية</span>
+                    </h3>
 
-              {/* Right Mini Live Preview */}
-              <div className="hidden lg:block">
-                <div className="sticky top-24 rounded-3xl bg-black border border-white/10 p-4 shadow-2xl">
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
-                    <span className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Smartphone className="w-4 h-4 text-cyan-400" />
-                      <span>معاينة الجوال المباشرة</span>
-                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-300">الاسم الكامل</Label>
+                        <Input
+                          value={profileForm.fullName}
+                          onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
+                          className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-300">المسمى الوظيفي</Label>
+                        <Input
+                          value={profileForm.jobTitle || ""}
+                          onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
+                          placeholder="مثال: مطور برمجيات / مصمم واجهات"
+                          className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
+                        />
+                      </div>
+                    </div>
+
+                    {/* IMGBB DIRECT IMAGE UPLOADS FOR AVATAR & COVER */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+                      <ImageUploadInput
+                        label="الصورة الشخصية (Avatar)"
+                        value={profileForm.avatarUrl || ""}
+                        onChange={(url) => setProfileForm({ ...profileForm, avatarUrl: url })}
+                        placeholder="https://i.ibb.co/..."
+                        aspectRatio="square"
+                      />
+
+                      <ImageUploadInput
+                        label="صورة الغلاف (Cover Photo)"
+                        value={profileForm.coverUrl || ""}
+                        onChange={(url) => setProfileForm({ ...profileForm, coverUrl: url })}
+                        placeholder="https://i.ibb.co/..."
+                        aspectRatio="cover"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 pt-2">
+                      <Label className="text-xs text-gray-300">النبذة التعريفية (Bio)</Label>
+                      <Textarea
+                        rows={3}
+                        value={profileForm.bio || ""}
+                        onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                        placeholder="اكتب نبذة مختصرة عن نفسك، مهاراتك أو ما تقدمه..."
+                        className="bg-black/40 border-white/10 text-sm rounded-xl resize-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-300">الموقع الجغرافي</Label>
+                        <Input
+                          value={profileForm.location || ""}
+                          onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
+                          placeholder="الجزائر العاصمة"
+                          className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-300">رقم الهاتف</Label>
+                        <Input
+                          value={profileForm.phone || ""}
+                          onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                          placeholder="+213 660 00 00 00"
+                          className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
+                          dir="ltr"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-gray-300">رقم الواتساب</Label>
+                        <Input
+                          value={profileForm.whatsapp || ""}
+                          onChange={(e) => setProfileForm({ ...profileForm, whatsapp: e.target.value })}
+                          placeholder="213660000000"
+                          className="bg-black/40 border-white/10 text-sm h-10 rounded-xl"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Social Links Manager */}
+                  <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-bold text-white flex items-center gap-2">
+                        <Share2 className="w-4 h-4 text-cyan-400" />
+                        <span>روابط التواصل والمواقع</span>
+                      </h3>
+
+                      <Button
+                        size="sm"
+                        onClick={addSocialLink}
+                        className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>إضافة رابط</span>
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {profileForm.socialLinks.map((link, idx) => (
+                        <div
+                          key={link.id || idx}
+                          className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col sm:flex-row items-center gap-3"
+                        >
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <div className="w-9 h-9 rounded-xl bg-[#0d1117] border border-white/10 flex items-center justify-center p-2 shrink-0">
+                              <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
+                            </div>
+                            <select
+                              value={link.platform}
+                              onChange={(e) => updateSocialLink(idx, "platform", e.target.value)}
+                              className="w-full sm:w-40 bg-[#0d1117] border border-white/10 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400"
+                            >
+                              {Object.values(SUPPORTED_PLATFORMS).map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.name}
+                                </option>
+                              ))}
+                              <option value="other">أخرى / Custom</option>
+                            </select>
+                          </div>
+
+                          <div className="w-full sm:w-40">
+                            <Input
+                              value={link.title}
+                              onChange={(e) => updateSocialLink(idx, "title", e.target.value)}
+                              placeholder="عنوان الرابط"
+                              className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl"
+                            />
+                          </div>
+
+                          <div className="w-full sm:flex-1">
+                            <Input
+                              value={link.url}
+                              onChange={(e) => updateSocialLink(idx, "url", e.target.value)}
+                              placeholder="https://..."
+                              className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl font-mono"
+                              dir="ltr"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-2 self-end sm:self-center">
+                            <Switch
+                              checked={link.enabled}
+                              onCheckedChange={(checked) => updateSocialLink(idx, "enabled", checked)}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSocialLink(idx)}
+                              className="text-gray-400 hover:text-red-400 h-8 w-8 p-0"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Save Button Floating Bar */}
+                  <div className="sticky bottom-4 z-20 p-2 sm:p-0 rounded-2xl bg-[#07090e]/80 sm:bg-transparent backdrop-blur-lg sm:backdrop-blur-none border border-white/10 sm:border-none flex items-center justify-between sm:justify-end gap-3 shadow-2xl sm:shadow-none">
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="outline"
                       onClick={() => {
                         setPreviewTemplateId(profileForm.templateId);
                         setPreviewOpen(true);
                       }}
-                      className="text-[11px] text-cyan-400 hover:text-cyan-300 h-7 px-2"
+                      className="sm:hidden border-white/20 text-xs gap-1.5 h-11 px-4 flex-1"
                     >
-                      تكبير الشاشة
+                      <Eye className="w-4 h-4 text-cyan-400" />
+                      <span>معاينة</span>
+                    </Button>
+
+                    <Button
+                      size="lg"
+                      disabled={isSaving}
+                      onClick={handleSaveProfile}
+                      className="bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider px-6 sm:px-8 h-11 sm:h-12 rounded-xl shadow-[0_0_25px_rgba(6,255,240,0.4)] gap-2 flex-[2] sm:flex-initial"
+                    >
+                      {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      <span>حفظ التعديلات</span>
                     </Button>
                   </div>
+                </div>
 
-                  <div className="h-[620px] rounded-2xl overflow-y-auto border border-white/5 scrollbar-thin scrollbar-thumb-white/10">
-                    <ProfileTemplateRenderer profile={profileForm} />
+                {/* Right Mini Live Preview */}
+                <div className="hidden lg:block">
+                  <div className="sticky top-24 rounded-3xl bg-black border border-white/10 p-4 shadow-2xl">
+                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                      <span className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                        <Smartphone className="w-4 h-4 text-cyan-400" />
+                        <span>معاينة الجوال المباشرة</span>
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setPreviewTemplateId(profileForm.templateId);
+                          setPreviewOpen(true);
+                        }}
+                        className="text-[11px] text-cyan-400 hover:text-cyan-300 h-7 px-2"
+                      >
+                        تكبير الشاشة
+                      </Button>
+                    </div>
+
+                    <div className="h-[620px] rounded-2xl overflow-y-auto border border-white/5 scrollbar-thin scrollbar-thumb-white/10">
+                      <ProfileTemplateRenderer profile={profileForm} />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </TabsContent>
 
           {/* TAB: PRODUCTS MANAGEMENT */}
@@ -1304,8 +1800,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Store Templates Notice */}
-            {!profileForm.templateId.startsWith("store-") ? (
+            {/* Store Templates Notice & Store Identity Shortcut */}
+            {!isStoreTemplate ? (
               <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-black border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
@@ -1314,7 +1810,7 @@ export default function Dashboard() {
                   <div>
                     <h4 className="text-sm font-bold text-white">تريد عرض منتجاتك في متجر حقيقي؟</h4>
                     <p className="text-xs text-gray-300 mt-0.5">
-                      اختر أحد قوالب المتاجر الثلاثة (Minimal Boutique, Cyber Tech, Luxury Brand) لظهور منتجاتك وسلة الطلب الفورية.
+                      اختر أحد قوالب المتاجر لعرض منتجاتك، سلة الشراء، والدفع عند الاستلام.
                     </p>
                   </div>
                 </div>
@@ -1329,171 +1825,47 @@ export default function Dashboard() {
                 </div>
               </div>
             ) : (
-              <div className="p-3.5 px-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-2 text-xs text-emerald-300">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>أنت تستخدم قالب متجر نشط: <strong className="text-white">{getTemplateById(profileForm.templateId)?.name}</strong></span>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setPreviewTemplateId(profileForm.templateId);
-                    setPreviewOpen(true);
-                  }}
-                  className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 text-xs h-7 px-2.5 rounded-lg"
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  معاينة المتجر
-                </Button>
-              </div>
-            )}
-
-            {/* Shopify-Style Store Customizer Panel */}
-            <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-white/[0.05] via-cyan-950/20 to-black border border-cyan-500/25 backdrop-blur-xl space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2.5 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-cyan-950/40 via-black to-black border border-cyan-500/20 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,255,240,0.2)]">
                     <Store className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <span>تخصيص وهوية المتجر (Shopify Customizer)</span>
-                      <Badge className="bg-cyan-500/20 text-cyan-300 border-none text-[10px]">مباشر</Badge>
+                    <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                      <span>هوية المتجر، الشحن وشريط الإعلانات</span>
+                      <Badge className="bg-cyan-500/20 text-cyan-300 border-none text-[9px]">نشط</Badge>
+                      <span className="text-[11px] text-gray-400">({currentTemplate.name})</span>
                     </h4>
-                    <p className="text-[11px] text-gray-400">تحكم كامل في مظهر متجرك، شريط الإعلانات، تكاليف التوصيل وخيارات الشراء</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      اسم المتجر: <span className="text-white font-semibold">{profileForm.storeSettings?.storeName || profileForm.fullName}</span> | سعر التوصيل: <span className="text-cyan-300 font-semibold">{profileForm.storeSettings?.defaultShippingCostDZD ? `${profileForm.storeSettings.defaultShippingCostDZD} دج` : "توصيل مجاني 🎁"}</span>
+                    </p>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  disabled={isSavingStoreSettings}
-                  onClick={handleSaveStoreSettings}
-                  className="bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs gap-1.5 h-9 px-5 rounded-xl shadow-[0_0_20px_rgba(6,255,240,0.3)] self-start sm:self-auto"
-                >
-                  {isSavingStoreSettings ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                  <span>حفظ إعدادات المتجر</span>
-                </Button>
-              </div>
 
-              {/* Core Store Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-300 font-bold">اسم المتجر أو البراند</Label>
-                  <Input
-                    value={profileForm.storeSettings?.storeName || ""}
-                    onChange={(e) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), storeName: e.target.value }
-                    })}
-                    placeholder={profileForm.fullName || "متجري الإلكتروني"}
-                    className="bg-black/50 border-white/10 text-xs text-white h-10 rounded-xl"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-300 font-bold">رقم واتساب لاستقبال الطلبات</Label>
-                  <Input
-                    value={profileForm.storeSettings?.whatsappForOrders || ""}
-                    onChange={(e) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), whatsappForOrders: e.target.value }
-                    })}
-                    placeholder="05XXXXXXXX أو 06XXXXXXXX"
-                    className="bg-black/50 border-white/10 text-xs text-white h-10 rounded-xl font-mono"
-                    dir="ltr"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-300 font-bold">سعر التوصيل الافتراضي (DZD)</Label>
-                  <Input
-                    type="number"
-                    value={profileForm.storeSettings?.defaultShippingCostDZD ?? 0}
-                    onChange={(e) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), defaultShippingCostDZD: Number(e.target.value) }
-                    })}
-                    placeholder="0 = توصيل مجاني"
-                    className="bg-black/50 border-white/10 text-xs text-white h-10 rounded-xl font-mono"
-                  />
-                  <span className="text-[10px] text-gray-400">إذا كان 0 سيظهر للمشتري توصيل مجاني 🎁</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setPreviewTemplateId(profileForm.templateId);
+                      setPreviewOpen(true);
+                    }}
+                    className="text-xs border-white/20 hover:border-cyan-400 text-gray-200 h-9 px-3 rounded-xl gap-1"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>معاينة</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setActiveTab("builder")}
+                    className="bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs gap-1.5 h-9 px-4 rounded-xl shadow-[0_0_15px_rgba(6,255,240,0.25)]"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>تعديل هوية وإعدادات المتجر ⚙️</span>
+                  </Button>
                 </div>
               </div>
-
-              {/* Announcement Bar & Delivery Notice */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-white/5">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-300 font-bold">شريط الإعلانات العلوي للمتجر</Label>
-                  <Input
-                    value={profileForm.storeSettings?.announcementText || ""}
-                    onChange={(e) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
-                    })}
-                    placeholder="🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"
-                    className="bg-black/50 border-white/10 text-xs text-white h-10 rounded-xl"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-300 font-bold">ملاحظة التوصيل والشحن (COD)</Label>
-                  <Input
-                    value={profileForm.storeSettings?.deliveryNotice || ""}
-                    onChange={(e) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
-                    })}
-                    placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
-                    className="bg-black/50 border-white/10 text-xs text-white h-10 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              {/* Feature Toggles */}
-              <div className="pt-3 border-t border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-bold text-white">شارات الأمان والضمان</div>
-                    <div className="text-[10px] text-gray-400">توصيل 58 ولاية + فحص قبل الدفع</div>
-                  </div>
-                  <Switch
-                    checked={profileForm.storeSettings?.showTrustBadges !== false}
-                    onCheckedChange={(checked) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), showTrustBadges: checked }
-                    })}
-                  />
-                </div>
-
-                <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-bold text-white">طلب سريع عبر واتساب</div>
-                    <div className="text-[10px] text-gray-400">زر الشراء بنقرة في بطاقة المنتج</div>
-                  </div>
-                  <Switch
-                    checked={profileForm.storeSettings?.showDirectWhatsappBtn !== false}
-                    onCheckedChange={(checked) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), showDirectWhatsappBtn: checked }
-                    })}
-                  />
-                </div>
-
-                <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-bold text-white">مؤشر نفاذ المخزون 🔥</div>
-                    <div className="text-[10px] text-gray-400">شارة "بقي قطع محدودة" لزيادة المبيعات</div>
-                  </div>
-                  <Switch
-                    checked={profileForm.storeSettings?.showStockCounter !== false}
-                    onCheckedChange={(checked) => setProfileForm({
-                      ...profileForm,
-                      storeSettings: { ...(profileForm.storeSettings || {}), showStockCounter: checked }
-                    })}
-                  />
-                </div>
-              </div>
-            </div>
+            )}
 
             {/* Products Grid */}
             {(!profileForm.products || profileForm.products.length === 0) ? (
