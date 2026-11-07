@@ -92,6 +92,15 @@ export interface StoreSettings {
   storeBio?: string;
   accentColor?: string;
   allowCashOnDelivery?: boolean;
+  announcementText?: string;
+  announcementBgColor?: string;
+  defaultShippingCostDZD?: number;
+  promoBannerUrl?: string;
+  promoBannerTitle?: string;
+  promoBannerSubtitle?: string;
+  showTrustBadges?: boolean;
+  showStockCounter?: boolean;
+  showDirectWhatsappBtn?: boolean;
 }
 
 export interface UserProfile {
