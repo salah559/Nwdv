@@ -560,6 +560,54 @@ export const TEMPLATES: TemplateDefinition[] = [
       "خطوط تقنية رقمية بطابع الوكالات المستقبلية",
       "تأثيرات Hover كهربائية عالية الاستجابة"
     ]
+  },
+  // ===================== STORE & E-COMMERCE PORTFOLIO TEMPLATES =====================
+  {
+    id: "store-minimal-boutique",
+    name: "Store Minimal Boutique",
+    description: "بورتفوليو متجر عصري بنمط البوتيك الأنيق، يجمع بين بروفايلك الشخصي وكتالوج متجرك مع واجهة طلب سريعة وطلب مباشر عبر واتساب.",
+    isPremium: false,
+    priceDZD: 0,
+    category: "store",
+    thumbnail: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "عرض كتالوج المنتجات مع الأسعار والصور",
+      "نافذة طلب سريعة للزبون (الاسم، الهاتف، الولاية)",
+      "ربط مباشر بواتساب التاجر لتأكيد الطلب فوراً",
+      "شريط تنبيه لحالة توفر المنتجات في المخزون"
+    ]
+  },
+  {
+    id: "store-cyber-tech",
+    name: "Store Cyber Tech & Gadgets",
+    description: "متجر وبورتفوليو تقني بطابع السايبربانك النيوني للإلكترونيات، الإكسسوارات، والمنتجات الرقمية مع بطاقات تفاعلية متوهجة.",
+    isPremium: true,
+    originalPriceDZD: 2200,
+    priceDZD: 1980,
+    category: "store",
+    thumbnail: "https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "بطاقات منتجات نيون هولوغرافية متوهجة",
+      "عرض شارات التخفيضات والأسعار الأصلية",
+      "طلب فوري مع إمكانية تحديد الكمية والعنوان",
+      "واجهة سايبر مظلمة فائقة السرعة على الهواتف"
+    ]
+  },
+  {
+    id: "store-luxury-brand",
+    name: "Store Luxury Brand & Atelier",
+    description: "بورتفوليو متجر فخم بالأسود والذهب الملكي لعرض العطور، الأزياء الراقية، الساعات، والمجوهرات الحصرية.",
+    isPremium: true,
+    originalPriceDZD: 2500,
+    priceDZD: 2250,
+    category: "store",
+    thumbnail: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
+    features: [
+      "تصميم ملكي فخم يبرز قيمة المنتجات الراقية",
+      "بطاقات زجاجية سوداء مع إطارات ذهبية مشعة",
+      "نظام طلب VIP سلس للزبائن",
+      "توافق 100% مع شبكات التواصل وواتساب"
+    ]
   }
 ];
 

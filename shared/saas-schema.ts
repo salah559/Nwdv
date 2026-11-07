@@ -38,6 +38,50 @@ export interface SocialLink {
   order: number;
 }
 
+export interface StoreProduct {
+  id: string;
+  userId?: string;
+  title: string;
+  description?: string;
+  priceDZD: number;
+  originalPriceDZD?: number;
+  imageUrl: string;
+  category?: string;
+  inStock: boolean;
+  order?: number;
+  createdAt?: any;
+}
+
+export type OrderStatus = "pending" | "confirmed" | "shipping" | "delivered" | "cancelled";
+
+export interface StoreOrder {
+  id?: string;
+  userId: string;
+  username: string;
+  productId: string;
+  productTitle: string;
+  productPriceDZD: number;
+  productImageUrl?: string;
+  quantity: number;
+  totalPriceDZD: number;
+  customerName: string;
+  customerPhone: string;
+  customerWilaya: string;
+  customerAddress?: string;
+  customerNotes?: string;
+  status: OrderStatus;
+  createdAt: any;
+  updatedAt?: any;
+}
+
+export interface StoreSettings {
+  storeName?: string;
+  currency?: string;
+  whatsappForOrders?: string;
+  enableDirectCheckout?: boolean;
+  deliveryNotice?: string;
+}
+
 export interface UserProfile {
   id?: string;
   userId: string;
@@ -54,6 +98,8 @@ export interface UserProfile {
   website?: string;
   socialLinks: SocialLink[];
   templateId: string;
+  products?: StoreProduct[];
+  storeSettings?: StoreSettings;
   customTheme?: {
     primaryColor?: string;
     backgroundColor?: string;
@@ -87,7 +133,7 @@ export interface TemplateDefinition {
   isPremium: boolean;
   priceDZD: number;
   originalPriceDZD?: number;
-  category: "minimal" | "developer" | "creative" | "luxury" | "business" | "diamond";
+  category: "minimal" | "developer" | "creative" | "luxury" | "business" | "diamond" | "store";
   thumbnail: string;
   features: string[];
 }

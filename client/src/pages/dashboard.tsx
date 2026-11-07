@@ -35,7 +35,15 @@ import {
   Search,
   Filter,
   Coins,
-  X
+  X,
+  ShoppingBag,
+  Package,
+  Tag,
+  Phone,
+  MapPin,
+  MessageCircle,
+  Truck,
+  Edit2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,9 +60,17 @@ import { TEMPLATES, getTemplateById } from "@/lib/templates-data";
 import { ProfileTemplateRenderer } from "@/components/templates/ProfileTemplateRenderer";
 import { ImageUploadInput } from "@/components/ui/ImageUploadInput";
 import { DashboardHeader } from "@/components/ui/DashboardHeader";
-import { UserProfile, SocialLink, PaymentRecord, TemplateDefinition } from "@shared/saas-schema";
+import { 
+  UserProfile, 
+  SocialLink, 
+  PaymentRecord, 
+  TemplateDefinition,
+  StoreProduct,
+  StoreOrder,
+  OrderStatus
+} from "@shared/saas-schema";
 import { SUPPORTED_PLATFORMS, PlatformIcon } from "@/components/ui/PlatformIcon";
-import { collection, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, Timestamp, query, where, getDocs, onSnapshot, updateDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 
@@ -93,6 +109,26 @@ export default function Dashboard() {
   // User Payment History
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
 
+  // Orders & Store Management State
+  const [orders, setOrders] = useState<StoreOrder[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [orderFilter, setOrderFilter] = useState<"all" | OrderStatus>("all");
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+
+  // Product Add / Edit Modal State
+  const [productModalOpen, setProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<StoreProduct | null>(null);
+  const [productForm, setProductForm] = useState({
+    title: "",
+    description: "",
+    priceDZD: 0,
+    originalPriceDZD: 0,
+    imageUrl: "",
+    category: "",
+    inStock: true,
+  });
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+
   useEffect(() => {
     if (!loading) {
       if (!currentUser) {
@@ -122,6 +158,36 @@ export default function Dashboard() {
       }
     }
     loadPayments();
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    setIsLoadingOrders(true);
+    const q = query(
+      collection(db, "orders"),
+      where("userId", "==", currentUser.uid)
+    );
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as StoreOrder[];
+        list.sort((a, b) => {
+          const tA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0);
+          const tB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0);
+          return tB - tA;
+        });
+        setOrders(list);
+        setIsLoadingOrders(false);
+      },
+      (error) => {
+        console.error("Error listening to orders:", error);
+        setIsLoadingOrders(false);
+      }
+    );
+    return () => unsubscribe();
   }, [currentUser]);
 
   if (loading || !userProfile || !profileForm) {
@@ -274,6 +340,148 @@ export default function Dashboard() {
     }
   };
 
+  // Product Management Handlers
+  const openNewProductModal = () => {
+    setEditingProduct(null);
+    setProductForm({
+      title: "",
+      description: "",
+      priceDZD: 0,
+      originalPriceDZD: 0,
+      imageUrl: "",
+      category: "",
+      inStock: true,
+    });
+    setProductModalOpen(true);
+  };
+
+  const openEditProductModal = (p: StoreProduct) => {
+    setEditingProduct(p);
+    setProductForm({
+      title: p.title || "",
+      description: p.description || "",
+      priceDZD: p.priceDZD || 0,
+      originalPriceDZD: p.originalPriceDZD || 0,
+      imageUrl: p.imageUrl || "",
+      category: p.category || "",
+      inStock: p.inStock ?? true,
+    });
+    setProductModalOpen(true);
+  };
+
+  const handleSaveProduct = async () => {
+    if (!productForm.title.trim()) {
+      toast.error("يرجى إدخال اسم المنتج");
+      return;
+    }
+    const price = Number(productForm.priceDZD);
+    if (!price || price <= 0) {
+      toast.error("يرجى إدخال سعر صحيح للمنتج بالدينار الجزائري");
+      return;
+    }
+
+    try {
+      setIsSavingProduct(true);
+      const currentProducts = profileForm.products || [];
+      let updatedProducts: StoreProduct[];
+
+      if (editingProduct) {
+        updatedProducts = currentProducts.map((p) =>
+          p.id === editingProduct.id
+            ? {
+                ...p,
+                title: productForm.title.trim(),
+                description: productForm.description.trim(),
+                priceDZD: price,
+                originalPriceDZD: productForm.originalPriceDZD ? Number(productForm.originalPriceDZD) : undefined,
+                imageUrl: productForm.imageUrl,
+                category: productForm.category.trim(),
+                inStock: productForm.inStock,
+              }
+            : p
+        );
+      } else {
+        const newProd: StoreProduct = {
+          id: "prod-" + Date.now(),
+          userId: currentUser?.uid,
+          title: productForm.title.trim(),
+          description: productForm.description.trim(),
+          priceDZD: price,
+          originalPriceDZD: productForm.originalPriceDZD ? Number(productForm.originalPriceDZD) : undefined,
+          imageUrl: productForm.imageUrl,
+          category: productForm.category.trim(),
+          inStock: productForm.inStock,
+          order: currentProducts.length,
+          createdAt: Timestamp.now(),
+        };
+        updatedProducts = [...currentProducts, newProd];
+      }
+
+      setProfileForm({ ...profileForm, products: updatedProducts });
+      await updateUserProfileData({ products: updatedProducts });
+      toast.success(editingProduct ? "تم تحديث المنتج بنجاح!" : "تمت إضافة المنتج بنجاح!");
+      setProductModalOpen(false);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("حدث خطأ أثناء حفظ المنتج: " + err.message);
+    } finally {
+      setIsSavingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
+    try {
+      const updated = (profileForm.products || []).filter((p) => p.id !== productId);
+      setProfileForm({ ...profileForm, products: updated });
+      await updateUserProfileData({ products: updated });
+      toast.success("تم حذف المنتج بنجاح");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("فشل حذف المنتج: " + err.message);
+    }
+  };
+
+  const handleToggleProductStock = async (product: StoreProduct) => {
+    try {
+      const updated = (profileForm.products || []).map((p) =>
+        p.id === product.id ? { ...p, inStock: !p.inStock } : p
+      );
+      setProfileForm({ ...profileForm, products: updated });
+      await updateUserProfileData({ products: updated });
+      toast.success(product.inStock ? "تم تحديد المنتج كـ غير متوفر" : "تم تحديد المنتج كـ متوفر في المخزون");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("فشل تحديث حالة التوفر");
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      setUpdatingOrderId(orderId);
+      await updateDoc(doc(db, "orders", orderId), {
+        status: newStatus,
+        updatedAt: Timestamp.now(),
+      });
+      toast.success(`تم تحديث حالة الطلب إلى: ${getOrderStatusLabel(newStatus)}`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("فشل تحديث حالة الطلب: " + err.message);
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const getOrderStatusLabel = (status: OrderStatus) => {
+    switch (status) {
+      case "pending": return "قيد الانتظار";
+      case "confirmed": return "مؤكد";
+      case "shipping": return "قيد التوصيل";
+      case "delivered": return "تم التسليم";
+      case "cancelled": return "ملغي";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#07090e] text-white selection:bg-cyan-500/30 flex flex-col">
       <SEO title={`لوحة التحكم — ${userProfile.fullName}`} />
@@ -423,11 +631,30 @@ export default function Dashboard() {
               </TabsTrigger>
 
               <TabsTrigger
+                value="products"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>المنتجات ({(profileForm.products || []).length})</span>
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="orders"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0 relative"
+              >
+                <Package className="w-4 h-4" />
+                <span>طلبات الزبائن ({orders.length})</span>
+                {orders.filter((o) => o.status === "pending").length > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse ml-0.5" />
+                )}
+              </TabsTrigger>
+
+              <TabsTrigger
                 value="templates"
                 className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
               >
                 <Palette className="w-4 h-4" />
-                <span>القوالب (35)</span>
+                <span>القوالب ({TEMPLATES.length})</span>
               </TabsTrigger>
 
               <TabsTrigger
@@ -776,6 +1003,441 @@ export default function Dashboard() {
             </div>
           </TabsContent>
 
+          {/* TAB: PRODUCTS MANAGEMENT */}
+          <TabsContent value="products" className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-cyan-400" />
+                  <span>إدارة منتجات المتجر</span>
+                  <Badge className="bg-cyan-500/20 text-cyan-400 border-none font-mono text-xs">
+                    {(profileForm.products || []).length} منتج
+                  </Badge>
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  أضف منتجاتك بأسعارها وصورها لتظهر بشكل متناسق في قوالب المتاجر، ويمكن لعملائك طلبها مباشرةً بالدينار الجزائري.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={openNewProductModal}
+                  className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 h-10 px-5 shadow-[0_0_20px_rgba(6,255,240,0.25)] rounded-xl"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>إضافة منتج جديد</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Store Templates Notice */}
+            {!profileForm.templateId.startsWith("store-") ? (
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-black border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">تريد عرض منتجاتك في متجر حقيقي؟</h4>
+                    <p className="text-xs text-gray-300 mt-0.5">
+                      اختر أحد قوالب المتاجر الثلاثة (Minimal Boutique, Cyber Tech, Luxury Brand) لظهور منتجاتك وسلة الطلب الفورية.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    onClick={() => setActiveTab("templates")}
+                    className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs rounded-xl"
+                  >
+                    استعراض قوالب المتاجر
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3.5 px-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-2 text-xs text-emerald-300">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>أنت تستخدم قالب متجر نشط: <strong className="text-white">{getTemplateById(profileForm.templateId)?.name}</strong></span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setPreviewTemplateId(profileForm.templateId);
+                    setPreviewOpen(true);
+                  }}
+                  className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 text-xs h-7 px-2.5 rounded-lg"
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  معاينة المتجر
+                </Button>
+              </div>
+            )}
+
+            {/* Products Grid */}
+            {(!profileForm.products || profileForm.products.length === 0) ? (
+              <div className="text-center py-16 px-4 bg-white/[0.02] border border-white/10 rounded-3xl">
+                <div className="w-14 h-14 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center mx-auto mb-4">
+                  <ShoppingBag className="w-7 h-7" />
+                </div>
+                <h4 className="text-base font-bold text-white mb-1">لم تقم بإضافة أي منتجات بعد</h4>
+                <p className="text-xs text-gray-400 mb-5 max-w-sm mx-auto">
+                  أضف أول منتج لمتجرك الآن مع الصورة، السعر بالدينار، والوصف، وسيتم حفظه فوراً في موقعك.
+                </p>
+                <Button
+                  onClick={openNewProductModal}
+                  className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 h-10 px-5 rounded-xl shadow-[0_0_20px_rgba(6,255,240,0.25)]"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>إضافة أول منتج لمتجرك</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {profileForm.products.map((prod) => (
+                  <div
+                    key={prod.id}
+                    className="p-4 rounded-3xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all flex flex-col justify-between group"
+                  >
+                    <div>
+                      {/* Product Image & Badges */}
+                      <div className="relative h-44 rounded-2xl overflow-hidden bg-black/60 mb-3 border border-white/5">
+                        <img
+                          src={prod.imageUrl || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80"}
+                          alt={prod.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-2.5 right-2.5 flex flex-col gap-1 items-end">
+                          <Badge
+                            className={`border-none text-[10px] font-bold ${
+                              prod.inStock
+                                ? "bg-emerald-500 text-black"
+                                : "bg-red-500/90 text-white"
+                            }`}
+                          >
+                            {prod.inStock ? "متوفر" : "نفذت الكمية"}
+                          </Badge>
+                          {prod.category && (
+                            <Badge className="bg-black/75 text-cyan-300 border border-white/10 text-[10px]">
+                              {prod.category}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Title & Description */}
+                      <h4 className="text-sm font-bold text-white mb-1 line-clamp-1">{prod.title}</h4>
+                      {prod.description && (
+                        <p className="text-xs text-gray-400 line-clamp-2 mb-3 leading-relaxed">
+                          {prod.description}
+                        </p>
+                      )}
+
+                      {/* Price */}
+                      <div className="flex items-baseline gap-2 mb-4">
+                        <span className="text-lg font-black text-cyan-400 font-mono">
+                          {prod.priceDZD} دج
+                        </span>
+                        {prod.originalPriceDZD && prod.originalPriceDZD > prod.priceDZD && (
+                          <span className="text-xs text-gray-500 line-through font-mono">
+                            {prod.originalPriceDZD} دج
+                          </span>
+                        )}
+                        {prod.originalPriceDZD && prod.originalPriceDZD > prod.priceDZD && (
+                          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                            خصم {Math.round((1 - prod.priceDZD / prod.originalPriceDZD) * 100)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleToggleProductStock(prod)}
+                        className={`text-[11px] h-8 px-2.5 border-white/10 ${
+                          prod.inStock ? "text-gray-300 hover:text-white" : "text-emerald-400 border-emerald-500/30"
+                        }`}
+                      >
+                        {prod.inStock ? "إيقاف التوفر" : "تفعيل التوفر"}
+                      </Button>
+
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEditProductModal(prod)}
+                          className="text-[11px] h-8 px-2.5 border-white/10 text-cyan-300 hover:border-cyan-400"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 mr-1" />
+                          <span>تعديل</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteProduct(prod.id)}
+                          className="text-[11px] h-8 px-2.5 border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/40"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* TAB: STORE ORDERS DASHBOARD */}
+          <TabsContent value="orders" className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Package className="w-5 h-5 text-cyan-400" />
+                  <span>لوحة تحكم طلبات المتجر</span>
+                  <Badge className="bg-cyan-500/20 text-cyan-400 border-none font-mono text-xs">
+                    {orders.length} طلب إجمالي
+                  </Badge>
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  تظهر هنا جميع طلبات الزبائن الواردة من موقعك الشخصي مع أرقام هواتفهم، ولاياتهم وتفاصيل المنتج للاتصال بهم أو تأكيد الشحن عبر واتساب.
+                </p>
+              </div>
+
+              {/* Status Filter Pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(
+                  [
+                    { id: "all", label: `الكل (${orders.length})` },
+                    { id: "pending", label: `قيد الانتظار (${orders.filter(o => o.status === "pending").length})` },
+                    { id: "confirmed", label: `مؤكد (${orders.filter(o => o.status === "confirmed").length})` },
+                    { id: "shipping", label: `قيد الشحن (${orders.filter(o => o.status === "shipping").length})` },
+                    { id: "delivered", label: `تم التسليم (${orders.filter(o => o.status === "delivered").length})` },
+                    { id: "cancelled", label: `ملغي (${orders.filter(o => o.status === "cancelled").length})` },
+                  ] as const
+                ).map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setOrderFilter(f.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                      orderFilter === f.id
+                        ? "bg-cyan-400 text-black font-bold shadow-md shadow-cyan-500/20"
+                        : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Orders Feed */}
+            {isLoadingOrders ? (
+              <div className="text-center py-16 bg-white/[0.02] border border-white/10 rounded-3xl">
+                <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mx-auto mb-3" />
+                <p className="text-xs text-gray-400">جاري تحميل طلبات الزبائن...</p>
+              </div>
+            ) : (() => {
+              const filteredOrders = orderFilter === "all" ? orders : orders.filter(o => o.status === orderFilter);
+
+              if (filteredOrders.length === 0) {
+                return (
+                  <div className="text-center py-16 px-4 bg-white/[0.02] border border-white/10 rounded-3xl">
+                    <Package className="w-12 h-12 text-gray-500 mx-auto mb-3 opacity-40" />
+                    <h4 className="text-base font-bold text-white mb-1">
+                      {orderFilter === "all" ? "لا توجد أي طلبات واردة بعد" : `لا توجد طلبات بحالة "${getOrderStatusLabel(orderFilter)}"`}
+                    </h4>
+                    <p className="text-xs text-gray-400 max-w-sm mx-auto">
+                      عندما يقوم زوار موقعك بتأكيد طلب منتج من قوالب المتجر، ستظهر بياناتهم هنا فوراً وبشكل حي.
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  {filteredOrders.map((order) => {
+                    const cleanPhone = (order.customerPhone || "").replace(/[^0-9]/g, "");
+                    const formattedPhone = cleanPhone.startsWith("0") ? cleanPhone.slice(1) : cleanPhone;
+                    const waMessage = encodeURIComponent(
+                      `مرحباً ${order.customerName}، نتواصل معك من متجر ${profileForm.fullName} بخصوص طلبك لمنتج "${order.productTitle}" (الكمية: ${order.quantity} - الإجمالي: ${order.totalPriceDZD} دج). هل تؤكد تفاصيل العنوان للشحن؟`
+                    );
+                    const waUrl = `https://wa.me/213${formattedPhone}?text=${waMessage}`;
+
+                    return (
+                      <div
+                        key={order.id}
+                        className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+                      >
+                        {/* Order Left: Customer & Product Info */}
+                        <div className="space-y-3 flex-1 min-w-0">
+                          {/* Order Header Badge & Date */}
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <span className="font-mono text-xs text-cyan-400 font-bold bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/20" dir="ltr">
+                              #{order.id?.slice(-6).toUpperCase()}
+                            </span>
+                            <span className="text-xs text-gray-400 flex items-center gap-1 font-mono">
+                              <Clock className="w-3.5 h-3.5 text-gray-500" />
+                              {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString("ar-DZ") : "حديثاً"}
+                            </span>
+                            {/* Current Status Badge */}
+                            <Badge
+                              className={`text-[10px] border-none font-bold ${
+                                order.status === "delivered"
+                                  ? "bg-emerald-500/20 text-emerald-400"
+                                  : order.status === "shipping"
+                                  ? "bg-purple-500/20 text-purple-400"
+                                  : order.status === "confirmed"
+                                  ? "bg-blue-500/20 text-blue-400"
+                                  : order.status === "cancelled"
+                                  ? "bg-red-500/20 text-red-400"
+                                  : "bg-amber-500/20 text-amber-300"
+                              }`}
+                            >
+                              {getOrderStatusLabel(order.status)}
+                            </Badge>
+                          </div>
+
+                          {/* Customer Details */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1 text-xs">
+                            <div className="flex items-center gap-2 text-white">
+                              <User className="w-4 h-4 text-cyan-400 shrink-0" />
+                              <span className="font-bold truncate">{order.customerName}</span>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-gray-300" dir="ltr">
+                              <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <a href={`tel:${order.customerPhone}`} className="hover:underline font-mono truncate">
+                                {order.customerPhone}
+                              </a>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-gray-300">
+                              <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+                              <span className="truncate">{order.customerWilaya} {order.customerAddress ? `— ${order.customerAddress}` : ""}</span>
+                            </div>
+                          </div>
+
+                          {/* Ordered Product Details */}
+                          <div className="p-3 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-between gap-3 text-xs">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                                {order.productImageUrl ? (
+                                  <img src={order.productImageUrl} alt={order.productTitle} className="w-full h-full object-cover" />
+                                ) : (
+                                  <ShoppingBag className="w-4 h-4 text-cyan-400" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-white truncate">{order.productTitle}</div>
+                                <div className="text-[11px] text-gray-400">
+                                  الكمية: <span className="text-white font-mono">{order.quantity}</span> × {order.productPriceDZD} دج
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="text-left shrink-0">
+                              <div className="text-xs text-gray-400">الإجمالي</div>
+                              <div className="text-sm font-black text-cyan-400 font-mono">
+                                {order.totalPriceDZD} دج
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Customer Notes */}
+                          {order.customerNotes && (
+                            <div className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-[11px] text-amber-200/90">
+                              <strong>ملاحظة الزبون:</strong> {order.customerNotes}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Order Right: Actions */}
+                        <div className="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0 lg:min-w-[200px] border-t lg:border-t-0 lg:border-r border-white/5 pt-4 lg:pt-0 lg:pr-5">
+                          {/* Direct WhatsApp Action */}
+                          <a href={waUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+                            <Button
+                              size="sm"
+                              className="w-full bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs gap-1.5 h-9 rounded-xl shadow-md"
+                            >
+                              <MessageCircle className="w-4 h-4 fill-black" />
+                              <span>مراسلة عبر واتساب</span>
+                            </Button>
+                          </a>
+
+                          <a href={`tel:${order.customerPhone}`} className="w-full">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full border-white/10 hover:border-emerald-500 text-gray-300 text-xs gap-1.5 h-9 rounded-xl"
+                            >
+                              <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>اتصال مباشر</span>
+                            </Button>
+                          </a>
+
+                          {/* Status Progression Buttons */}
+                          <div className="pt-2 border-t border-white/5 space-y-1">
+                            <span className="text-[10px] text-gray-400 block mb-1">تحديث حالة الطلب:</span>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {order.status !== "confirmed" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updatingOrderId === order.id}
+                                  onClick={() => handleUpdateOrderStatus(order.id!, "confirmed")}
+                                  className="text-[10px] h-7 px-2 border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
+                                >
+                                  تأكيد الطلب
+                                </Button>
+                              )}
+                              {order.status !== "shipping" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updatingOrderId === order.id}
+                                  onClick={() => handleUpdateOrderStatus(order.id!, "shipping")}
+                                  className="text-[10px] h-7 px-2 border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                                >
+                                  قيد التوصيل 🚚
+                                </Button>
+                              )}
+                              {order.status !== "delivered" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updatingOrderId === order.id}
+                                  onClick={() => handleUpdateOrderStatus(order.id!, "delivered")}
+                                  className="text-[10px] h-7 px-2 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
+                                >
+                                  تم التسليم ✓
+                                </Button>
+                              )}
+                              {order.status !== "cancelled" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updatingOrderId === order.id}
+                                  onClick={() => handleUpdateOrderStatus(order.id!, "cancelled")}
+                                  className="text-[10px] h-7 px-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                                >
+                                  إلغاء ✗
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </TabsContent>
+
           {/* TAB 3: TEMPLATES GALLERY */}
           <TabsContent value="templates" className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
@@ -1063,6 +1725,7 @@ export default function Dashboard() {
                   </span>
                   {[
                     { id: "all", label: "جميع التصنيفات" },
+                    { id: "store", label: "🛍️ متاجر وتجارة" },
                     { id: "diamond", label: "💎 الماسية النادرة" },
                     { id: "developer", label: "💻 مطورين وبرمجة" },
                     { id: "creative", label: "🎨 إبداعي وفن" },
@@ -1773,6 +2436,121 @@ export default function Dashboard() {
                 {copiedLink ? "تم النسخ!" : "نسخ الرابط"}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ADD / EDIT PRODUCT MODAL */}
+      <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
+        <DialogContent className="max-w-lg bg-[#0a0d16] border border-cyan-500/30 text-white rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-white">
+              <ShoppingBag className="w-5 h-5 text-cyan-400" />
+              <span>{editingProduct ? "تعديل المنتج" : "إضافة منتج جديد للمتجر"}</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              املأ بيانات المنتج وسعره بالدينار الجزائري ليظهر في متجرك
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            <div>
+              <ImageUploadInput
+                label="صورة المنتج"
+                value={productForm.imageUrl}
+                onChange={(url) => setProductForm({ ...productForm, imageUrl: url })}
+                placeholder="ارفع صورة المنتج..."
+                aspectRatio="square"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-bold">اسم المنتج *</Label>
+              <Input
+                value={productForm.title}
+                onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
+                placeholder="مثال: ساعة يد رجالية فاخرة"
+                className="bg-black/50 border-white/10 text-xs text-white"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-300 font-bold">السعر (دج) *</Label>
+                <Input
+                  type="number"
+                  value={productForm.priceDZD || ""}
+                  onChange={(e) => setProductForm({ ...productForm, priceDZD: Number(e.target.value) })}
+                  placeholder="مثال: 3500"
+                  className="bg-black/50 border-white/10 text-xs text-white font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-300 font-bold">السعر قبل الخصم (اختياري)</Label>
+                <Input
+                  type="number"
+                  value={productForm.originalPriceDZD || ""}
+                  onChange={(e) => setProductForm({ ...productForm, originalPriceDZD: Number(e.target.value) })}
+                  placeholder="مثال: 4500"
+                  className="bg-black/50 border-white/10 text-xs text-white font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-bold">التصنيف (اختياري)</Label>
+              <Input
+                value={productForm.category}
+                onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                placeholder="مثال: ساعات، ملابس، إلكترونيات..."
+                className="bg-black/50 border-white/10 text-xs text-white"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-bold">وصف المنتج</Label>
+              <Textarea
+                rows={3}
+                value={productForm.description}
+                onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                placeholder="مواصفات المنتج، مميزاته، الألوان أو المقاسات المتوفرة..."
+                className="bg-black/50 border-white/10 text-xs text-white resize-none"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/10">
+              <div>
+                <Label className="text-xs text-white font-bold block">حالة التوفر بالمخزون</Label>
+                <span className="text-[11px] text-gray-400">
+                  {productForm.inStock ? "المنتج متوفر وقابل للطلب" : "المنتج غير متوفر حالياً"}
+                </span>
+              </div>
+              <Switch
+                checked={productForm.inStock}
+                onCheckedChange={(checked) => setProductForm({ ...productForm, inStock: checked })}
+              />
+            </div>
+
+            <DialogFooter className="pt-2 flex gap-2">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setProductModalOpen(false)}
+                className="text-xs border-white/10 text-gray-300"
+              >
+                إلغاء
+              </Button>
+              <Button
+                type="button"
+                disabled={isSavingProduct}
+                onClick={handleSaveProduct}
+                className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs gap-1.5 flex-1"
+              >
+                {isSavingProduct ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <span>{editingProduct ? "حفظ التعديلات" : "إضافة المنتج"}</span>
+              </Button>
+            </DialogFooter>
           </div>
         </DialogContent>
       </Dialog>

@@ -20,8 +20,19 @@ import {
   ReactBitsAuroraMesh,
   CyberpunkHologramHUD,
 } from "./DiamondTemplates";
+import { StoreTemplateView } from "./StoreTemplates";
 
 export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
+  // 🛍️ Store Portfolio Templates
+  switch (profile.templateId) {
+    case "store-minimal-boutique":
+      return <StoreTemplateView profile={profile} variant="minimal" />;
+    case "store-cyber-tech":
+      return <StoreTemplateView profile={profile} variant="cyber" />;
+    case "store-luxury-brand":
+      return <StoreTemplateView profile={profile} variant="luxury" />;
+  }
+
   // 💎 5 Diamond tier templates — bespoke innovative renderers
   switch (profile.templateId) {
     case "baryon-anime-live":
