@@ -55,7 +55,6 @@ export const ar = {
   admin_contact_page_info: "معلومات صفحة التواصل", admin_contact_page_desc: "تعديل المعلومات المعروضة في صفحة تواصل معنا",
   admin_save_contact_info: "حفظ معلومات التواصل", admin_security_settings: "إعدادات الأمان", admin_security_desc: "تحديث بيانات الوصول إلى لوحة التحكم",
   admin_new_code: "رمز الأمان الجديد", admin_update_code: "تحديث رمز الأمان",
-  nav_profiles: "Novaweb Profile",
   saas_hero_badge: "الجيل الجديد من الهوية الرقمية",
   saas_hero_title: "أنشئ موقعك الشخصي",
   saas_hero_title_accent: "في دقائق وبدون برمجة",

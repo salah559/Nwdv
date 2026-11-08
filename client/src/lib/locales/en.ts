@@ -55,7 +55,6 @@ export const en = {
   admin_contact_page_info: "Contact Page Info", admin_contact_page_desc: "Edit the information displayed on the Contact Us page",
   admin_save_contact_info: "Save Contact Info", admin_security_settings: "Security Settings", admin_security_desc: "Update your dashboard access credentials",
   admin_new_code: "New Security Code", admin_update_code: "Update Security Code",
-  nav_profiles: "Novaweb Profile",
   saas_hero_badge: "Next-Gen Digital Identity",
   saas_hero_title: "Build Your Personal Website",
   saas_hero_title_accent: "In Minutes with Zero Code",

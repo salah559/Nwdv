@@ -55,7 +55,6 @@ export const fr = {
   admin_contact_page_info: "Infos page de contact", admin_contact_page_desc: "Modifier les informations affichées sur la page de contact",
   admin_save_contact_info: "Enregistrer les infos", admin_security_settings: "Paramètres de sécurité", admin_security_desc: "Mettre à jour vos identifiants d'accès",
   admin_new_code: "Nouveau code de sécurité", admin_update_code: "Mettre à jour le code",
-  nav_profiles: "Novaweb Profile",
   saas_hero_badge: "Identité Numérique Nouvelle Génération",
   saas_hero_title: "Créez Votre Site Personnel",
   saas_hero_title_accent: "En Quelques Minutes Sans Code",

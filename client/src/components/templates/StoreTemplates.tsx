@@ -1198,6 +1198,7 @@ export function StoreTemplateView({
             </div>
           )}
         </div>
+        )
       )}
 
         {/* 7. FAQ ACCORDION SECTION (الأسئلة الشائعة لزيادة ثقة الزبون) */}
