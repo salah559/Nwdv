@@ -93,17 +93,26 @@ export interface StoreOrder {
   updatedAt?: any;
 }
 
-export interface StoreComponent {
-  id: string;
-  type: "text" | "image" | "button" | "gallery" | "html";
-  props: Record<string, any>;
-}
-
-export interface StorePage {
+export interface CustomPage {
   id: string;
   title: string;
   slug: string;
-  components: StoreComponent[];
+  content?: string;
+  icon?: string;
+  enabled?: boolean;
+}
+
+export interface SiteSectionConfig {
+  announcementBar?: boolean;
+  heroBanner?: boolean;
+  trustBadges?: boolean;
+  featuredProducts?: boolean;
+  categoriesFilter?: boolean;
+  aboutStory?: boolean;
+  faqAccordion?: boolean;
+  contactBox?: boolean;
+  reviews?: boolean;
+  footer?: boolean;
 }
 
 export interface StoreSettings {
@@ -127,28 +136,12 @@ export interface StoreSettings {
   showTrustBadges?: boolean;
   showStockCounter?: boolean;
   showDirectWhatsappBtn?: boolean;
-  pages?: StorePage[]; // جديد: صفحات المتجر القابلة للتخصيص
-
-  storeName?: string;
-  currency?: string;
-  whatsappForOrders?: string;
-  enableDirectCheckout?: boolean;
-  deliveryNotice?: string;
-  returnPolicyNotice?: string;
-  thankYouMessage?: string;
-  storeBio?: string;
-  accentColor?: string;
-  allowCashOnDelivery?: boolean;
-  announcementText?: string;
-  announcementBgColor?: string;
-  defaultShippingCostDZD?: number;
-  freeShippingThresholdDZD?: number;
-  promoBannerUrl?: string;
-  promoBannerTitle?: string;
-  promoBannerSubtitle?: string;
-  showTrustBadges?: boolean;
-  showStockCounter?: boolean;
-  showDirectWhatsappBtn?: boolean;
+  // Multi-page & Section content
+  aboutStoryTitle?: string;
+  aboutStoryText?: string;
+  businessHours?: string;
+  addressDetails?: string;
+  faqList?: { q: string; a: string }[];
 }
 
 export interface UserProfile {
@@ -169,6 +162,8 @@ export interface UserProfile {
   templateId: string;
   products?: StoreProduct[];
   storeSettings?: StoreSettings;
+  customPages?: CustomPage[];
+  siteSections?: SiteSectionConfig;
   customTheme?: {
     primaryColor?: string;
     backgroundColor?: string;

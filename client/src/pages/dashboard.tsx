@@ -71,7 +71,8 @@ import {
   TemplateDefinition,
   StoreProduct,
   StoreOrder,
-  OrderStatus
+  OrderStatus,
+  CustomPage
 } from "@shared/saas-schema";
 import { SUPPORTED_PLATFORMS, PlatformIcon } from "@/components/ui/PlatformIcon";
 import { collection, addDoc, Timestamp, query, where, getDocs, onSnapshot, updateDoc, doc, deleteDoc } from "firebase/firestore";
@@ -158,6 +159,48 @@ export default function Dashboard() {
   const [ordersToPrint, setOrdersToPrint] = useState<StoreOrder[] | null>(null);
   const [printSlipLayout, setPrintSlipLayout] = useState<"single" | "double">("single");
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
+
+  // Live Website Studio State
+  const [studioDevice, setStudioDevice] = useState<"mobile" | "desktop">("desktop");
+  const [studioActivePage, setStudioActivePage] = useState<string>("home");
+  const [studioActiveTab, setStudioActiveTab] = useState<"pages" | "sections" | "branding" | "shipping" | "social">("pages");
+  const [newPageModalOpen, setNewPageModalOpen] = useState(false);
+  const [newPageForm, setNewPageForm] = useState({ title: "", slug: "", content: "" });
+
+  const handleAddNewPage = () => {
+    if (!profileForm || !newPageForm.title.trim()) {
+      toast.error("يرجى إدخال عنوان الصفحة");
+      return;
+    }
+    const cleanSlug = (newPageForm.slug.trim() || newPageForm.title.trim())
+      .toLowerCase()
+      .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
+      .replace(/^-+|-+$/g, "") || `page-${Date.now()}`;
+
+    const newPage: CustomPage = {
+      id: `page-${Date.now()}`,
+      title: newPageForm.title.trim(),
+      slug: cleanSlug,
+      content: newPageForm.content.trim(),
+      enabled: true,
+    };
+
+    const currentPages = profileForm.customPages || [];
+    const updatedPages = [...currentPages, newPage];
+    setProfileForm({ ...profileForm, customPages: updatedPages });
+    setStudioActivePage(cleanSlug);
+    setNewPageModalOpen(false);
+    setNewPageForm({ title: "", slug: "", content: "" });
+    toast.success(`تمت إضافة صفحة "${newPage.title}" بنجاح!`);
+  };
+
+  const handleDeletePage = (pageId: string) => {
+    if (!profileForm) return;
+    const updated = (profileForm.customPages || []).filter(p => p.id !== pageId);
+    setProfileForm({ ...profileForm, customPages: updated });
+    setStudioActivePage("home");
+    toast.success("تم حذف الصفحة بنجاح");
+  };
 
   useEffect(() => {
     if (!loading) {
@@ -1040,21 +1083,11 @@ export default function Dashboard() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      if (isStoreTemplate) {
-                        setActiveTab("builder");
-                      } else {
-                        setActiveTab("templates");
-                        setTimeout(() => {
-                          const el = document.querySelector("[data-customizer]");
-                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }, 200);
-                      }
-                    }}
+                    onClick={() => setActiveTab("builder")}
                     className="text-xs w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 gap-1.5"
                   >
-                    {isStoreTemplate ? <Store className="w-3.5 h-3.5" /> : <Palette className="w-3.5 h-3.5" />}
-                    <span>{isStoreTemplate ? "هوية وتخصيص المتجر" : "تخصيص الألوان والخط"}</span>
+                    <Layout className="w-3.5 h-3.5" />
+                    <span>استوديو تخصيص الموقع</span>
                   </Button>
                 </div>
               </div>
@@ -1091,68 +1124,472 @@ export default function Dashboard() {
             </div>
           </TabsContent>
 
-          {/* TAB 2: BUILDER (ADAPTIVE: STORE BUILDER vs PERSONAL BUILDER) */}
-          <TabsContent value="builder" className="space-y-6">
+          {/* TAB 2: LIVE WEBSITE STUDIO (استوديو بناء وتخصيص الموقع الكامل) */}
+          <TabsContent value="builder" className="space-y-5">
             {isStoreTemplate ? (
               /* =========================================================
-                 STORE IDENTITY & BRANDING STUDIO (SHOPIFY-STYLE)
+                 FULL-FLEDGED MULTI-PAGE LIVE STORE STUDIO (SHOPIFY/WIX STYLE)
                  ========================================================= */
-              <div className="space-y-6">
-                {/* Store Top Notice Banner */}
-                <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-cyan-500/15 via-blue-900/15 to-black/60 border border-cyan-500/30 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-cyan-400 text-black flex items-center justify-center font-bold shrink-0 shadow-[0_0_20px_rgba(6,255,240,0.35)]">
-                      <Store className="w-6 h-6" />
+              <div className="space-y-5">
+                {/* STUDIO HEADER CONTROL BAR */}
+                <div className="p-4 rounded-3xl bg-gradient-to-r from-cyan-950/40 via-blue-950/20 to-black/80 border border-cyan-500/30 backdrop-blur-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-cyan-400 text-black flex items-center justify-center font-bold shrink-0 shadow-[0_0_20px_rgba(6,255,240,0.35)]">
+                      <Layout className="w-5 h-5" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base font-bold text-white">هوية وتخصيص المتجر الإلكتروني</h3>
-                        <Badge className="bg-cyan-400 text-black font-extrabold text-[10px] px-2 py-0.5">Shopify Style</Badge>
+                        <h3 className="text-sm sm:text-base font-bold text-white">استوديو تصميم وبناء المتجر الكامل</h3>
+                        <Badge className="bg-cyan-400 text-black font-extrabold text-[10px] px-2 py-0.5">Live Studio</Badge>
                         <Badge variant="outline" className="border-cyan-500/40 text-cyan-300 text-[10px]">{currentTemplate.name}</Badge>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        تحكم مباشر وشامل في شعار متجرك، الغلاف، شريط الإعلانات، تكاليف التوصيل لـ 58 ولاية، وأزرار الشراء الفوري
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        تعديل مرئي مباشر كستوديو احترافي • إنشاء صفحات متعددة وتخصيص الأقسام والهوية لـ 58 ولاية
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                  {/* Top Studio Actions */}
+                  <div className="flex items-center gap-2 flex-wrap self-end md:self-auto">
+                    {/* Device View Mode Switcher */}
+                    <div className="flex bg-black/60 p-1 rounded-xl border border-white/10 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setStudioDevice("mobile")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                          studioDevice === "mobile"
+                            ? "bg-cyan-400 text-black shadow-md"
+                            : "text-gray-400 hover:text-white"
+                        }`}
+                        title="معاينة شاشة الهاتف"
+                      >
+                        <Smartphone className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">هاتف</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStudioDevice("desktop")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                          studioDevice === "desktop"
+                            ? "bg-cyan-400 text-black shadow-md"
+                            : "text-gray-400 hover:text-white"
+                        }`}
+                        title="معاينة شاشة الكمبيوتر"
+                      >
+                        <Monitor className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">كمبيوتر</span>
+                      </button>
+                    </div>
+
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setActiveTab("products")}
-                      className="text-xs border-white/20 hover:border-cyan-400 text-gray-200 gap-1.5 h-9 rounded-xl"
+                      onClick={() => {
+                        setPreviewTemplateId(profileForm.templateId);
+                        setPreviewOpen(true);
+                      }}
+                      className="border-white/20 text-xs gap-1.5 h-9 rounded-xl text-gray-200 hover:border-cyan-400"
+                      title="فتح المعاينة بملء الشاشة"
                     >
-                      <ShoppingBag className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>إدارة المنتجات ({profileForm.products?.length || 0})</span>
+                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                      <span className="hidden sm:inline">ملء الشاشة</span>
                     </Button>
+
                     <Button
                       size="sm"
-                      variant="outline"
-                      onClick={() => setActiveTab("templates")}
-                      className="text-xs border-white/20 hover:border-purple-400 text-gray-200 gap-1.5 h-9 rounded-xl"
+                      disabled={isSaving}
+                      onClick={handleSaveProfile}
+                      className="bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs h-9 px-4 rounded-xl gap-1.5 shadow-[0_0_20px_rgba(6,255,240,0.35)]"
                     >
-                      <Palette className="w-3.5 h-3.5 text-purple-400" />
-                      <span>تغيير القالب</span>
+                      {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      <span>حفظ ونشر الموقع</span>
                     </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Left Column: Form Cards */}
-                  <div className="lg:col-span-2 space-y-6">
+                {/* STUDIO PAGES NAVIGATION TOOLBAR (شريط التنقل بين صفحات الموقع في الاستوديو) */}
+                <div className="p-2.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-3 overflow-x-auto scrollbar-none">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[11px] font-bold text-gray-400 ml-1 flex items-center gap-1">
+                      <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>صفحات الموقع:</span>
+                    </span>
 
-                    {/* CARD 1: STORE BRANDING & LOGO */}
-                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <h4 className="text-base font-bold text-white flex items-center gap-2">
-                          <Store className="w-4 h-4 text-cyan-400" />
-                          <span>1. هوية المتجر والعلامة التجارية (Store Branding)</span>
-                        </h4>
-                        <span className="text-[11px] text-gray-400">تظهر في الترويسة والفاتورة</span>
+                    <button
+                      type="button"
+                      onClick={() => setStudioActivePage("home")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        studioActivePage === "home"
+                          ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span>🏠 الرئيسية</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStudioActivePage("shop")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        studioActivePage === "shop"
+                          ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span>🛍️ المتجر ({profileForm.products?.length || 0})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStudioActivePage("about")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        studioActivePage === "about"
+                          ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span>ℹ️ من نحن</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStudioActivePage("shipping")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        studioActivePage === "shipping"
+                          ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span>🚚 الشحن والضمان</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStudioActivePage("contact")}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        studioActivePage === "contact"
+                          ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                          : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span>📞 اتصل بنا</span>
+                    </button>
+
+                    {/* Custom Pages Added by User */}
+                    {profileForm.customPages?.map((cp) => (
+                      <button
+                        key={cp.id}
+                        type="button"
+                        onClick={() => setStudioActivePage(cp.slug)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                          studioActivePage === cp.slug
+                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                            : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        <span>📄 {cp.title}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Add New Page Button */}
+                  <Button
+                    size="sm"
+                    onClick={() => setNewPageModalOpen(true)}
+                    className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5 h-8 px-3 rounded-xl shrink-0 border border-white/10"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>إضافة صفحة جديدة</span>
+                  </Button>
+                </div>
+
+                {/* STUDIO SPLIT WORKSPACE: INSPECTOR (LEFT/TOOLS) & LIVE CANVAS (CENTER/RIGHT) */}
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
+                  {/* STUDIO INSPECTOR TOOLKIT (5-TAB QUICK CONTROLLER) */}
+                  <div className="xl:col-span-5 space-y-4">
+                    {/* Tool Switcher Tabs */}
+                    <div className="flex bg-black/50 p-1.5 rounded-2xl border border-white/10 overflow-x-auto scrollbar-none gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setStudioActiveTab("pages")}
+                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          studioActiveTab === "pages"
+                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>الصفحات</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStudioActiveTab("sections")}
+                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          studioActiveTab === "sections"
+                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>الأقسام</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStudioActiveTab("branding")}
+                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          studioActiveTab === "branding"
+                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Palette className="w-3.5 h-3.5" />
+                        <span>الهوية</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStudioActiveTab("shipping")}
+                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          studioActiveTab === "shipping"
+                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Truck className="w-3.5 h-3.5" />
+                        <span>الشحن</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStudioActiveTab("social")}
+                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          studioActiveTab === "social"
+                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span>التواصل</span>
+                      </button>
+                    </div>
+
+                    {/* TAB CONTENT 1: PAGES MANAGER */}
+                    {studioActiveTab === "pages" && (
+                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                          <div>
+                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-cyan-400" />
+                              <span>إدارة صفحات الموقع وتعديلها</span>
+                            </h4>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              توسيع موقعك بإنشاء صفحات جديدة غير محدودة
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => setNewPageModalOpen(true)}
+                            className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs h-8 px-3 rounded-xl gap-1 shadow-md"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>صفحة جديدة</span>
+                          </Button>
+                        </div>
+
+                        {/* Standard System Pages */}
+                        <div className="space-y-2">
+                          <div className="text-[11px] font-bold text-gray-400">الصفحات الأساسية التلقائية:</div>
+                          {[
+                            { id: "home", title: "الرئيسية (Home)", desc: "واجهة الموقع، البانر، المزايا، وأبرز المنتجات", icon: "🏠" },
+                            { id: "shop", title: "المتجر والكتالوج (Shop)", desc: "جميع المنتجات، فلاتر الفئات، والبحث الفوري", icon: "🛍️" },
+                            { id: "about", title: "من نحن وقصة المتجر (About)", desc: "التعريف بالبراند، رسالتنا، وشارات الجودة", icon: "ℹ️" },
+                            { id: "shipping", title: "الشحن والاسترجاع والضمان", desc: "سياسة التوصيل لـ 58 ولاية، الاسترجاع 48 ساعة", icon: "🚚" },
+                            { id: "contact", title: "اتصل بنا وخدمة العملاء", desc: "أرقام الهاتف، واتساب مباشر، وساعات العمل", icon: "📞" },
+                          ].map((p) => (
+                            <div
+                              key={p.id}
+                              onClick={() => setStudioActivePage(p.id)}
+                              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                                studioActivePage === p.id
+                                  ? "bg-cyan-500/15 border-cyan-400/50 shadow-md"
+                                  : "bg-black/30 border-white/5 hover:border-white/20"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-base">{p.icon}</span>
+                                <div>
+                                  <div className="text-xs font-bold text-white">{p.title}</div>
+                                  <div className="text-[10px] text-gray-400">{p.desc}</div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className={`text-[10px] ${studioActivePage === p.id ? "border-cyan-400 text-cyan-300" : "border-white/10 text-gray-400"}`}>
+                                {studioActivePage === p.id ? "محددة في المعاينة" : "عرض"}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Custom User Pages */}
+                        {profileForm.customPages && profileForm.customPages.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-white/10">
+                            <div className="text-[11px] font-bold text-cyan-400">الصفحات المخصصة الإضافية:</div>
+                            {profileForm.customPages.map((cp) => (
+                              <div
+                                key={cp.id}
+                                className={`p-3 rounded-2xl border transition-all flex items-center justify-between ${
+                                  studioActivePage === cp.slug
+                                    ? "bg-cyan-500/15 border-cyan-400/50 shadow-md"
+                                    : "bg-black/30 border-white/5 hover:border-white/20"
+                                }`}
+                              >
+                                <div
+                                  onClick={() => setStudioActivePage(cp.slug)}
+                                  className="flex items-center gap-2.5 cursor-pointer flex-1"
+                                >
+                                  <span className="text-base">📄</span>
+                                  <div>
+                                    <div className="text-xs font-bold text-white">{cp.title}</div>
+                                    <div className="text-[10px] text-gray-400 font-mono">/{cp.slug}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setStudioActivePage(cp.slug)}
+                                    className="text-[11px] text-cyan-400 h-7 px-2"
+                                  >
+                                    معاينة
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDeletePage(cp.id)}
+                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 w-7 p-0"
+                                    title="حذف هذه الصفحة"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
+                    )}
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* TAB CONTENT 2: SECTIONS & CONTENT */}
+                    {studioActiveTab === "sections" && (
+                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <Layers className="w-4 h-4 text-cyan-400" />
+                            <span>تخصيص نصوص وأقسام الموقع</span>
+                          </h4>
+                          <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[10px]">مباشر</Badge>
+                        </div>
+
+                        {/* Announcement Bar */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold flex items-center gap-1.5">
+                            <Truck className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>شريط الإعلانات أعلى الموقع</span>
+                          </Label>
+                          <Input
+                            value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
+                            })}
+                            placeholder="🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"
+                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                          />
+                        </div>
+
+                        {/* Brand Slogan */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">الشعار الترويجي الفرعي (Slogan)</Label>
+                          <Input
+                            value={profileForm.jobTitle || ""}
+                            onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
+                            placeholder="مثال: أفضل الإلكترونيات الأصلية بأحسن الأسعار"
+                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                          />
+                        </div>
+
+                        {/* About Story */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">قصة ونبذة عن المتجر (صفحة من نحن)</Label>
+                          <Textarea
+                            rows={3}
+                            value={profileForm.storeSettings?.aboutStoryText ?? (profileForm.bio || "")}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setProfileForm({
+                                ...profileForm,
+                                bio: val,
+                                storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryText: val }
+                              });
+                            }}
+                            placeholder="اكتب نبذة عن متجرك، التزامكم بالجودة، ومصداقيتكم في التوصيل لـ 58 ولاية..."
+                            className="bg-black/40 border-white/10 text-xs rounded-xl resize-none text-white"
+                          />
+                        </div>
+
+                        {/* Delivery & Inspection Notice */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">شرط المعاينة والتوصيل للزبون</Label>
+                          <Input
+                            value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
+                            })}
+                            placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
+                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                          />
+                        </div>
+
+                        {/* Return Policy Notice */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">سياسة الضمان والاسترجاع</Label>
+                          <Input
+                            value={profileForm.storeSettings?.returnPolicyNotice ?? "إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
+                            })}
+                            placeholder="إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"
+                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                          />
+                        </div>
+
+                        {/* Thank You Message */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-gray-300 font-bold">رسالة الشكر بعد إتمام الطلب</Label>
+                          <Input
+                            value={profileForm.storeSettings?.thankYouMessage ?? "شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."}
+                            onChange={(e) => setProfileForm({
+                              ...profileForm,
+                              storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
+                            })}
+                            placeholder="شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."
+                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB CONTENT 3: BRANDING & THEME */}
+                    {studioActiveTab === "branding" && (
+                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <Palette className="w-4 h-4 text-purple-400" />
+                            <span>الهوية البصرية والألوان والشعار</span>
+                          </h4>
+                          <Badge className="bg-purple-500/20 text-purple-300 border-none text-[10px]">ImgBB</Badge>
+                        </div>
+
                         <div className="space-y-1.5">
                           <Label className="text-xs text-gray-300 font-bold">اسم المتجر أو البراند التجاري</Label>
                           <Input
@@ -1165,450 +1602,256 @@ export default function Dashboard() {
                                 storeSettings: { ...(profileForm.storeSettings || {}), storeName: val }
                               });
                             }}
-                            placeholder="مثال: متجر الأناقة / TechStore DZ"
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl focus:border-cyan-400 text-white"
+                            placeholder="مثال: متجر الأناقة / NovaStore"
+                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white font-bold"
                           />
                         </div>
 
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">شعار أو مسمى المتجر الفرعي (Slogan)</Label>
-                          <Input
-                            value={profileForm.jobTitle || ""}
-                            onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
-                            placeholder="مثال: أفضل الإلكترونيات الأصلية بضمان"
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
+                        {/* Logo & Cover Inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                          <ImageUploadInput
+                            label="شعار المتجر (Store Logo)"
+                            value={profileForm.avatarUrl || ""}
+                            onChange={(url) => setProfileForm({ ...profileForm, avatarUrl: url })}
+                            placeholder="https://i.ibb.co/..."
+                            aspectRatio="square"
+                          />
+
+                          <ImageUploadInput
+                            label="بانر أو صورة الغلاف"
+                            value={profileForm.coverUrl || ""}
+                            onChange={(url) => setProfileForm({ ...profileForm, coverUrl: url })}
+                            placeholder="https://i.ibb.co/..."
+                            aspectRatio="cover"
                           />
                         </div>
+
+                        {/* Accent Color Palette */}
+                        <div className="space-y-2 pt-2">
+                          <Label className="text-xs text-gray-300 font-bold">اللون المميز للمتجر والأزرار</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { color: "#06fff0", label: "سيان نيون" },
+                              { color: "#10b981", label: "زمردي" },
+                              { color: "#f59e0b", label: "ذهبي" },
+                              { color: "#ec4899", label: "وردي" },
+                              { color: "#3b82f6", label: "أزرق" },
+                              { color: "#ef4444", label: "أحمر" },
+                              { color: "#a855f7", label: "بنفسجي" },
+                              { color: "#ffffff", label: "أبيض" },
+                            ].map(({ color, label }) => (
+                              <button
+                                key={color}
+                                type="button"
+                                title={label}
+                                onClick={() => setProfileForm({
+                                  ...profileForm,
+                                  customTheme: { ...(profileForm.customTheme || {}), primaryColor: color }
+                                })}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                                  (profileForm.customTheme?.primaryColor || "#06fff0") === color
+                                    ? "border-white bg-white/15 text-white scale-105 shadow-md"
+                                    : "border-white/10 bg-black/30 text-gray-400 hover:text-white"
+                                }`}
+                              >
+                                <span className="w-3 h-3 rounded-full border border-black/40" style={{ backgroundColor: color }} />
+                                <span>{label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
+                    )}
 
-                      {/* IMGBB LOGO & COVER BANNER */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-1">
-                        <ImageUploadInput
-                          label="شعار المتجر (Store Logo)"
-                          value={profileForm.avatarUrl || ""}
-                          onChange={(url) => setProfileForm({ ...profileForm, avatarUrl: url })}
-                          placeholder="https://i.ibb.co/..."
-                          aspectRatio="square"
-                        />
+                    {/* TAB CONTENT 4: SHIPPING & COMMERCE */}
+                    {studioActiveTab === "shipping" && (
+                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <Truck className="w-4 h-4 text-amber-400" />
+                            <span>إعدادات الشحن لـ 58 ولاية والدفع عند الاستلام</span>
+                          </h4>
+                          <Badge className="bg-amber-500/20 text-amber-300 border-none text-[10px]">COD DZ</Badge>
+                        </div>
 
-                        <ImageUploadInput
-                          label="بانر أو صورة غلاف المتجر (Cover Banner)"
-                          value={profileForm.coverUrl || ""}
-                          onChange={(url) => setProfileForm({ ...profileForm, coverUrl: url })}
-                          placeholder="https://i.ibb.co/..."
-                          aspectRatio="cover"
-                        />
-                      </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">سعر التوصيل الافتراضي (DZD)</Label>
+                            <Input
+                              type="number"
+                              value={profileForm.storeSettings?.defaultShippingCostDZD ?? 0}
+                              onChange={(e) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), defaultShippingCostDZD: Number(e.target.value) }
+                              })}
+                              placeholder="0 = توصيل مجاني"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl font-mono text-white"
+                            />
+                            <p className="text-[10px] text-cyan-400">
+                              💡 0 = يظهر لزبائنك "توصيل مجاني 🎁" تلقائياً.
+                            </p>
+                          </div>
 
-                      <div className="space-y-1.5 pt-1">
-                        <Label className="text-xs text-gray-300 font-bold">نبذة عن المتجر وسياسته (About Store)</Label>
-                        <Textarea
-                          rows={3}
-                          value={profileForm.bio || ""}
-                          onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                          placeholder="اكتب نبذة مختصرة لزبائنك: الجودة العالية، مصدر السلع، الالتزام بالمواعيد..."
-                          className="bg-black/40 border-white/10 text-sm rounded-xl resize-none text-white"
-                        />
-                      </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">عتبة الشحن المجاني التلقائي (DZD)</Label>
+                            <Input
+                              type="number"
+                              value={profileForm.storeSettings?.freeShippingThresholdDZD ?? 0}
+                              onChange={(e) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), freeShippingThresholdDZD: Number(e.target.value) }
+                              })}
+                              placeholder="مثال: 5000 (0 = بدون عتبة)"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl font-mono text-white"
+                            />
+                            <p className="text-[10px] text-gray-400">
+                              شحن مجاني للطلبات التي تتجاوز هذا المبلغ.
+                            </p>
+                          </div>
+                        </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5 pt-1">
                           <Label className="text-xs text-gray-300 font-bold">مقر المتجر / الولاية</Label>
                           <Input
                             value={profileForm.location || ""}
                             onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
-                            placeholder="الجزائر العاصمة / وهران..."
-                            className="bg-black/40 border-white/10 text-sm h-10 rounded-xl text-white"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">رقم الهاتف للاتصال المباشر</Label>
-                          <Input
-                            value={profileForm.phone || ""}
-                            onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                            placeholder="05XXXXXXXX / 06XXXXXXXX"
-                            className="bg-black/40 border-white/10 text-sm h-10 rounded-xl font-mono text-white"
-                            dir="ltr"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold flex items-center gap-1">
-                            <span>رقم واتساب الطلبات</span>
-                            <span className="text-[10px] text-emerald-400 font-normal">(مباشر)</span>
-                          </Label>
-                          <Input
-                            value={profileForm.storeSettings?.whatsappForOrders ?? profileForm.whatsapp ?? ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setProfileForm({
-                                ...profileForm,
-                                whatsapp: val,
-                                storeSettings: { ...(profileForm.storeSettings || {}), whatsappForOrders: val }
-                              });
-                            }}
-                            placeholder="213660000000 أو 0660000000"
-                            className="bg-black/40 border-white/10 text-sm h-10 rounded-xl font-mono text-white"
-                            dir="ltr"
+                            placeholder="الجزائر العاصمة / وهران / سطيف..."
+                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
                           />
                         </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* CARD 2: ALGERIAN SHIPPING & COD */}
-                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <h4 className="text-base font-bold text-white flex items-center gap-2">
-                          <Truck className="w-4 h-4 text-amber-400" />
-                          <span>2. إعدادات الشحن والدفع عند الاستلام (COD - 58 ولاية)</span>
-                        </h4>
-                        <Badge className="bg-amber-500/20 text-amber-300 border-none text-[10px]">الدفع عند الاستلام</Badge>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">سعر التوصيل الافتراضي (DZD)</Label>
-                          <Input
-                            type="number"
-                            value={profileForm.storeSettings?.defaultShippingCostDZD ?? 0}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), defaultShippingCostDZD: Number(e.target.value) }
-                            })}
-                            placeholder="0 = توصيل مجاني"
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl font-mono text-white"
-                          />
-                          <p className="text-[11px] text-cyan-400">
-                            💡 إذا كتبت 0، سيظهر لزبائنك "توصيل مجاني 🎁" تلقائياً في المتجر ونموذج الطلب.
-                          </p>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">عتبة الشحن المجاني التلقائي (DZD)</Label>
-                          <Input
-                            type="number"
-                            value={profileForm.storeSettings?.freeShippingThresholdDZD ?? 0}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), freeShippingThresholdDZD: Number(e.target.value) }
-                            })}
-                            placeholder="مثال: 5000 (0 = بدون عتبة)"
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl font-mono text-white"
-                          />
-                          <p className="text-[11px] text-gray-400">
-                            يصبح الشحن مجانياً للطلبات الأكبر من هذا المبلغ لزيادة سلة المشتريات.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">شريط الإعلانات أعلى المتجر</Label>
-                          <Input
-                            value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
-                            })}
-                            placeholder="🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
-                          />
-                          <p className="text-[11px] text-gray-400">
-                            يظهر كشريط متحرك أو شريط بارز أعلى صفحة المتجر لجذب الانتباه.
-                          </p>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">ملاحظة التوصيل وشروط الاستلام للزبون</Label>
-                          <Input
-                            value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
-                            })}
-                            placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
-                          />
-                          <p className="text-[11px] text-gray-400">
-                            تظهر في نافذة الطلب وتطمئن الزبون قبل تأكيد طلبه.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">سياسة الضمان والاسترجاع</Label>
-                          <Input
-                            value={profileForm.storeSettings?.returnPolicyNotice ?? "إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
-                            })}
-                            placeholder="إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">رسالة الشكر بعد إتمام الطلب</Label>
-                          <Input
-                            value={profileForm.storeSettings?.thankYouMessage ?? "شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
-                            })}
-                            placeholder="شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."
-                            className="bg-black/40 border-white/10 text-sm h-11 rounded-xl text-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* CARD 3: CONVERSION BOOSTERS */}
-                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <h4 className="text-base font-bold text-white flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-emerald-400" />
-                          <span>3. ميزات تحفيز الشراء وزيادة المبيعات (Conversion Boosters)</span>
-                        </h4>
-                        <Badge className="bg-emerald-500/20 text-emerald-300 border-none text-[10px]">مبيعات</Badge>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between gap-3">
-                          <div>
-                            <div className="text-xs font-bold text-white mb-1">شارات الأمان والضمان</div>
-                            <div className="text-[11px] text-gray-400">توصيل 58 ولاية + فحص قبل الدفع + ضمان الجودة</div>
-                          </div>
-                          <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                            <span className="text-[10px] text-gray-400">تفعيل الشارات</span>
-                            <Switch
-                              checked={profileForm.storeSettings?.showTrustBadges !== false}
-                              onCheckedChange={(checked) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), showTrustBadges: checked }
-                              })}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between gap-3">
-                          <div>
-                            <div className="text-xs font-bold text-white mb-1">طلب سريع بنقرة واتساب</div>
-                            <div className="text-[11px] text-gray-400">زر شراء فوري في بطاقة المنتج يفتح محادثة جاهزة</div>
-                          </div>
-                          <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                            <span className="text-[10px] text-gray-400">تفعيل الزر</span>
-                            <Switch
-                              checked={profileForm.storeSettings?.showDirectWhatsappBtn !== false}
-                              onCheckedChange={(checked) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), showDirectWhatsappBtn: checked }
-                              })}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between gap-3">
-                          <div>
-                            <div className="text-xs font-bold text-white mb-1">مؤشر نفاذ المخزون 🔥</div>
-                            <div className="text-[11px] text-gray-400">عرض شارة "بقي عدد محدود من القطع" للتحفيز</div>
-                          </div>
-                          <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                            <span className="text-[10px] text-gray-400">تفعيل المؤشر</span>
-                            <Switch
-                              checked={profileForm.storeSettings?.showStockCounter !== false}
-                              onCheckedChange={(checked) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), showStockCounter: checked }
-                              })}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* CARD 4: STORE ACCENT COLOR */}
-                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <h4 className="text-base font-bold text-white flex items-center gap-2">
-                          <Palette className="w-4 h-4 text-purple-400" />
-                          <span>4. تخصيص أزرار ومظهر المتجر (Store Accent Color)</span>
-                        </h4>
-                        <span className="text-[11px] text-gray-400">اللون المميز للأزرار والشارات</span>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-3">
-                        {[
-                          { color: "#06fff0", label: "سيان نيون" },
-                          { color: "#10b981", label: "زمردي فاخر" },
-                          { color: "#f59e0b", label: "ذهبي ملكي" },
-                          { color: "#ec4899", label: "وردي بوتيك" },
-                          { color: "#3b82f6", label: "أزرق تجاري" },
-                          { color: "#ef4444", label: "أحمر تخفيضات" },
-                          { color: "#ffffff", label: "أبيض ناصع" },
-                          { color: "#a855f7", label: "بنفسجي أنيق" },
-                        ].map(({ color, label }) => (
-                          <button
-                            key={color}
-                            type="button"
-                            title={label}
-                            onClick={() => setProfileForm({
-                              ...profileForm,
-                              customTheme: { ...(profileForm.customTheme || {}), primaryColor: color }
-                            })}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-                              (profileForm.customTheme?.primaryColor || "#06fff0") === color
-                                ? "border-white bg-white/15 text-white scale-105 shadow-lg"
-                                : "border-white/10 bg-black/30 text-gray-400 hover:text-white hover:border-white/20"
-                            }`}
+                    {/* TAB CONTENT 5: SOCIAL CHANNELS */}
+                    {studioActiveTab === "social" && (
+                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <Share2 className="w-4 h-4 text-cyan-400" />
+                            <span>حسابات التواصل وصفحات المتجر</span>
+                          </h4>
+                          <Button
+                            size="sm"
+                            onClick={addSocialLink}
+                            className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5 h-8 px-3 rounded-xl"
                           >
-                            <span className="w-3.5 h-3.5 rounded-full border border-black/40 shadow-sm" style={{ backgroundColor: color }} />
-                            <span>{label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>إضافة رابط</span>
+                          </Button>
+                        </div>
 
-                    {/* CARD 5: STORE SOCIAL CHANNELS */}
-                    <div className="p-6 sm:p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-5">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <h4 className="text-base font-bold text-white flex items-center gap-2">
-                          <Share2 className="w-4 h-4 text-cyan-400" />
-                          <span>5. حسابات التواصل وصفحات المتجر (Social Channels)</span>
-                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">رقم واتساب الطلبات المباشر</Label>
+                            <Input
+                              value={profileForm.storeSettings?.whatsappForOrders ?? profileForm.whatsapp ?? ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setProfileForm({
+                                  ...profileForm,
+                                  whatsapp: val,
+                                  storeSettings: { ...(profileForm.storeSettings || {}), whatsappForOrders: val }
+                                });
+                              }}
+                              placeholder="213660000000 أو 0660000000"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl font-mono text-white"
+                              dir="ltr"
+                            />
+                          </div>
 
-                        <Button
-                          size="sm"
-                          onClick={addSocialLink}
-                          className="bg-white/10 hover:bg-white/20 text-white text-xs gap-1.5 h-8 px-3 rounded-xl"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>إضافة صفحة</span>
-                        </Button>
-                      </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">رقم الهاتف للاتصال المباشر</Label>
+                            <Input
+                              value={profileForm.phone || ""}
+                              onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                              placeholder="05XXXXXXXX / 06XXXXXXXX"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl font-mono text-white"
+                              dir="ltr"
+                            />
+                          </div>
+                        </div>
 
-                      <div className="space-y-3">
-                        {profileForm.socialLinks.map((link, idx) => (
-                          <div
-                            key={link.id || idx}
-                            className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col sm:flex-row items-center gap-3"
-                          >
-                            <div className="flex items-center gap-2 w-full sm:w-auto">
-                              <div className="w-9 h-9 rounded-xl bg-[#0d1117] border border-white/10 flex items-center justify-center p-2 shrink-0">
-                                <PlatformIcon platform={link.platform} className="w-5 h-5" colored={true} />
+                        {/* Social Links List */}
+                        <div className="space-y-2.5 pt-2">
+                          {profileForm.socialLinks.map((link, idx) => (
+                            <div
+                              key={link.id || idx}
+                              className="p-3 rounded-2xl bg-black/40 border border-white/5 flex items-center gap-2"
+                            >
+                              <div className="w-8 h-8 rounded-xl bg-[#0d1117] border border-white/10 flex items-center justify-center p-1.5 shrink-0">
+                                <PlatformIcon platform={link.platform} className="w-4 h-4" colored={true} />
                               </div>
-                              <select
-                                value={link.platform}
-                                onChange={(e) => updateSocialLink(idx, "platform", e.target.value)}
-                                className="w-full sm:w-40 bg-[#0d1117] border border-white/10 text-xs rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-400"
-                              >
-                                {Object.values(SUPPORTED_PLATFORMS).map((p) => (
-                                  <option key={p.id} value={p.id}>
-                                    {p.name}
-                                  </option>
-                                ))}
-                                <option value="other">أخرى / Custom</option>
-                              </select>
-                            </div>
-
-                            <div className="w-full sm:w-40">
                               <Input
                                 value={link.title}
                                 onChange={(e) => updateSocialLink(idx, "title", e.target.value)}
-                                placeholder="اسم الصفحة / الحساب"
-                                className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl text-white"
+                                placeholder="العنوان"
+                                className="bg-[#0d1117] border-white/10 text-xs h-8 rounded-lg text-white w-28"
                               />
-                            </div>
-
-                            <div className="w-full sm:flex-1">
                               <Input
                                 value={link.url}
                                 onChange={(e) => updateSocialLink(idx, "url", e.target.value)}
-                                placeholder="https://instagram.com/..."
-                                className="bg-[#0d1117] border-white/10 text-xs h-9 rounded-xl font-mono text-white"
+                                placeholder="https://..."
+                                className="bg-[#0d1117] border-white/10 text-xs h-8 rounded-lg font-mono text-white flex-1"
                                 dir="ltr"
-                              />
-                            </div>
-
-                            <div className="flex items-center gap-2 self-end sm:self-center">
-                              <Switch
-                                checked={link.enabled}
-                                onCheckedChange={(checked) => updateSocialLink(idx, "enabled", checked)}
                               />
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeSocialLink(idx)}
-                                className="text-gray-400 hover:text-red-400 h-8 w-8 p-0"
+                                className="text-gray-400 hover:text-red-400 h-8 w-8 p-0 shrink-0"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </Button>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Floating Save Bar */}
-                    <div className="sticky bottom-4 z-20 p-2 sm:p-0 rounded-2xl bg-[#07090e]/80 sm:bg-transparent backdrop-blur-lg sm:backdrop-blur-none border border-white/10 sm:border-none flex items-center justify-between sm:justify-end gap-3 shadow-2xl sm:shadow-none">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setPreviewTemplateId(profileForm.templateId);
-                          setPreviewOpen(true);
-                        }}
-                        className="sm:hidden border-white/20 text-xs gap-1.5 h-11 px-4 flex-1"
-                      >
-                        <Eye className="w-4 h-4 text-cyan-400" />
-                        <span>معاينة المتجر</span>
-                      </Button>
-
-                      <Button
-                        size="lg"
-                        disabled={isSaving}
-                        onClick={handleSaveProfile}
-                        className="bg-cyan-400 hover:bg-cyan-300 text-black font-ui font-extrabold uppercase tracking-wider px-6 sm:px-8 h-11 sm:h-12 rounded-xl shadow-[0_0_25px_rgba(6,255,240,0.4)] gap-2 flex-[2] sm:flex-initial"
-                      >
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        <span>حفظ هوية وإعدادات المتجر</span>
-                      </Button>
-                    </div>
-
+                    )}
                   </div>
 
-                  {/* Right Live Mini Preview (Sticky) */}
-                  <div className="hidden lg:block">
-                    <div className="sticky top-24 rounded-3xl bg-black border border-white/10 p-4 shadow-2xl space-y-3">
-                      <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                        <span className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                          <Smartphone className="w-4 h-4 text-cyan-400" />
-                          <span>معاينة المتجر المباشرة</span>
+                  {/* LIVE INTERACTIVE STUDIO CANVAS (CENTER/RIGHT) */}
+                  <div className="xl:col-span-7 space-y-3">
+                    {/* Browser Canvas Header Simulation */}
+                    <div className="p-3 rounded-2xl bg-[#0a0d16] border border-white/10 shadow-2xl flex items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1.5">
+                          <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                          <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                          <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                        </div>
+                        <span className="text-[11px] font-mono text-gray-400 bg-black/60 px-3 py-1 rounded-lg border border-white/5 flex items-center gap-1.5" dir="ltr">
+                          <Lock className="w-3 h-3 text-emerald-400" />
+                          <span>{userProfile.username}.novawebdv.com/{studioActivePage !== "home" ? studioActivePage : ""}</span>
                         </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setPreviewTemplateId(profileForm.templateId);
-                            setPreviewOpen(true);
-                          }}
-                          className="text-xs text-cyan-400 hover:text-cyan-300 p-0 h-auto"
-                        >
-                          شاشة كاملة
-                        </Button>
                       </div>
 
-                      <div className="w-full h-[620px] rounded-2xl overflow-y-auto border border-white/10 bg-black flex flex-col relative shadow-inner">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] border-cyan-500/40 text-cyan-300">
+                          معاينة حية تفاعلية
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Interactive Canvas Viewport */}
+                    <div className="w-full flex justify-center bg-black/80 rounded-3xl p-2 sm:p-4 border border-white/10 shadow-2xl overflow-hidden min-h-[680px]">
+                      <div
+                        className={`transition-all duration-300 rounded-2xl overflow-y-auto border border-white/10 bg-black shadow-2xl relative ${
+                          studioDevice === "mobile"
+                            ? "w-[390px] h-[720px] max-w-full ring-4 ring-white/10 rounded-[38px] p-1"
+                            : "w-full h-[720px]"
+                        }`}
+                      >
                         <ProfileTemplateRenderer
                           profile={profileForm}
                           templateId={profileForm.templateId}
+                          activeStudioPage={studioActivePage}
+                          onPageChange={(page) => setStudioActivePage(page)}
                           isOwnerPreview={true}
                         />
                       </div>
                     </div>
                   </div>
+
                 </div>
               </div>
             ) : (
@@ -2545,221 +2788,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* ═══════════════════════════════════════════════════════
-                🎨 QUICK CUSTOMIZATION PANEL
-            ═══════════════════════════════════════════════════════ */}
-            <div data-customizer className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-purple-900/20 via-cyan-900/10 to-black border border-purple-500/20 backdrop-blur-xl space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-purple-400" />
-                  <h4 className="text-sm font-bold text-white">تخصيص سريع للقالب</h4>
-                  <Badge className="bg-purple-500/20 text-purple-300 border-none text-[10px]">مباشر</Badge>
-                </div>
-                <Button
-                  size="sm"
-                  disabled={isSaving}
-                  onClick={handleSaveProfile}
-                  className="bg-purple-500 hover:bg-purple-400 text-white font-bold text-xs gap-1.5 h-8 px-4 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
-                >
-                  {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                  <span>حفظ التخصيص</span>
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-
-                {/* Primary Color Picker */}
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" />
-                    اللون الرئيسي
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { color: "#06fff0", label: "سيان" },
-                      { color: "#a855f7", label: "بنفسجي" },
-                      { color: "#f59e0b", label: "ذهبي" },
-                      { color: "#ec4899", label: "وردي" },
-                      { color: "#10b981", label: "أخضر" },
-                      { color: "#3b82f6", label: "أزرق" },
-                      { color: "#f97316", label: "برتقالي" },
-                      { color: "#ef4444", label: "أحمر" },
-                    ].map(({ color, label }) => (
-                      <button
-                        key={color}
-                        title={label}
-                        onClick={() =>
-                          setProfileForm({
-                            ...profileForm,
-                            customTheme: { ...(profileForm.customTheme || {}), primaryColor: color },
-                          })
-                        }
-                        className={`w-7 h-7 rounded-full border-2 transition-all hover:scale-110 ${
-                          (profileForm.customTheme?.primaryColor || "#06fff0") === color
-                            ? "border-white scale-110 shadow-lg"
-                            : "border-transparent opacity-70 hover:opacity-100"
-                        }`}
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                    {/* Custom color input */}
-                    <div className="relative">
-                      <input
-                        type="color"
-                        value={profileForm.customTheme?.primaryColor || "#06fff0"}
-                        onChange={(e) =>
-                          setProfileForm({
-                            ...profileForm,
-                            customTheme: { ...(profileForm.customTheme || {}), primaryColor: e.target.value },
-                          })
-                        }
-                        className="w-7 h-7 rounded-full cursor-pointer border-2 border-dashed border-white/30 hover:border-white/60 bg-transparent p-0 overflow-hidden"
-                        title="لون مخصص"
-                      />
-                    </div>
-                  </div>
-                  <div
-                    className="h-1.5 rounded-full"
-                    style={{
-                      background: `linear-gradient(90deg, ${profileForm.customTheme?.primaryColor || "#06fff0"}44, ${profileForm.customTheme?.primaryColor || "#06fff0"})`,
-                    }}
-                  />
-                </div>
-
-                {/* Background Style */}
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
-                    نمط الخلفية
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { id: "solid", icon: "■", label: "صلبة" },
-                      { id: "gradient", icon: "◑", label: "متدرجة" },
-                      { id: "mesh", icon: "⬡", label: "شبكية" },
-                      { id: "particles", icon: "✦", label: "جسيمات" },
-                    ].map((style) => (
-                      <button
-                        key={style.id}
-                        onClick={() =>
-                          setProfileForm({
-                            ...profileForm,
-                            customTheme: {
-                              ...(profileForm.customTheme || {}),
-                              backgroundStyle: style.id as "solid" | "gradient" | "mesh" | "particles",
-                            },
-                          })
-                        }
-                        className={`p-2 rounded-xl border text-center transition-all text-xs ${
-                          (profileForm.customTheme?.backgroundStyle || "solid") === style.id
-                            ? "border-purple-400 bg-purple-500/20 text-white font-bold shadow-md"
-                            : "border-white/10 bg-black/30 text-gray-400 hover:border-white/30 hover:text-white"
-                        }`}
-                      >
-                        <div className="text-lg mb-0.5">{style.icon}</div>
-                        <div>{style.label}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Font Family */}
-                <div className="space-y-3">
-                  <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-                    نوع الخط
-                  </label>
-                  <div className="space-y-1.5">
-                    {[
-                      { id: "inter", label: "Inter", preview: "Modern" },
-                      { id: "space-grotesk", label: "Space Grotesk", preview: "Creative" },
-                      { id: "poppins", label: "Poppins", preview: "Friendly" },
-                      { id: "mono", label: "JetBrains Mono", preview: "Developer" },
-                      { id: "playfair", label: "Playfair Display", preview: "Elegant" },
-                    ].map((font) => (
-                      <button
-                        key={font.id}
-                        onClick={() =>
-                          setProfileForm({
-                            ...profileForm,
-                            customTheme: { ...(profileForm.customTheme || {}), fontFamily: font.id },
-                          })
-                        }
-                        className={`w-full px-3 py-2 rounded-xl border text-left transition-all flex items-center justify-between ${
-                          (profileForm.customTheme?.fontFamily || "inter") === font.id
-                            ? "border-amber-400 bg-amber-500/10 text-white"
-                            : "border-white/10 bg-black/30 text-gray-400 hover:border-white/20 hover:text-white"
-                        }`}
-                      >
-                        <span className="text-xs font-semibold">{font.label}</span>
-                        <span className="text-[10px] text-gray-500">{font.preview}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Background Color Row */}
-              <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="text-xs font-bold text-gray-300 shrink-0 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />
-                  لون الخلفية الأساسي:
-                </label>
-                <div className="flex flex-wrap gap-2 items-center">
-                  {[
-                    { color: "#07090e", label: "أسود داكن" },
-                    { color: "#0a0a0a", label: "أسود نقي" },
-                    { color: "#0d1117", label: "رمادي GitHub" },
-                    { color: "#1a0533", label: "بنفسجي داكن" },
-                    { color: "#001a1a", label: "فيروزي داكن" },
-                    { color: "#0a0a1a", label: "أزرق داكن" },
-                    { color: "#1a0a00", label: "بني داكن" },
-                    { color: "#ffffff", label: "أبيض" },
-                  ].map(({ color, label }) => (
-                    <button
-                      key={color}
-                      title={label}
-                      onClick={() =>
-                        setProfileForm({
-                          ...profileForm,
-                          customTheme: { ...(profileForm.customTheme || {}), backgroundColor: color },
-                        })
-                      }
-                      className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 ${
-                        (profileForm.customTheme?.backgroundColor || "#07090e") === color
-                          ? "border-white scale-110 shadow-lg ring-2 ring-white/20"
-                          : "border-white/10 opacity-80 hover:opacity-100"
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    value={profileForm.customTheme?.backgroundColor || "#07090e"}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        customTheme: { ...(profileForm.customTheme || {}), backgroundColor: e.target.value },
-                      })
-                    }
-                    className="w-7 h-7 rounded-lg cursor-pointer border-2 border-dashed border-white/30 hover:border-white/60 bg-transparent p-0"
-                    title="لون مخصص"
-                  />
-                  <span className="text-[11px] text-gray-500 font-mono">
-                    {profileForm.customTheme?.backgroundColor || "#07090e"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Live preview color bar */}
-              <div
-                className="h-2 rounded-full overflow-hidden opacity-60"
-                style={{
-                  background: `linear-gradient(135deg, ${profileForm.customTheme?.backgroundColor || "#07090e"} 0%, ${profileForm.customTheme?.primaryColor || "#06fff0"}66 50%, ${profileForm.customTheme?.primaryColor || "#06fff0"} 100%)`,
-                }}
-              />
-            </div>
-
             {/* Segmented Switch: Store Templates vs Personal/Portfolio */}
             <div className="flex bg-white/[0.04] p-1.5 rounded-2xl border border-white/10 max-w-xl mx-auto mb-4 gap-1.5 shadow-xl">
               <button
@@ -3059,16 +3087,11 @@ export default function Dashboard() {
                               </Button>
                               <Button
                                 size="sm"
-                                onClick={() => {
-                                  window.scrollTo({ top: 0, behavior: "smooth" });
-                                  setTimeout(() => {
-                                    const el = document.querySelector("[data-customizer]");
-                                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                                  }, 100);
-                                }}
-                                className="text-xs h-9 px-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30"
+                                onClick={() => setActiveTab("builder")}
+                                className="text-xs h-9 px-3 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30"
+                                title="تخصيص الموقع في الاستوديو"
                               >
-                                <Palette className="w-3.5 h-3.5" />
+                                <Layout className="w-3.5 h-3.5" />
                               </Button>
                             </div>
                           ) : isUnlocked ? (
@@ -4081,6 +4104,72 @@ export default function Dashboard() {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ADD NEW CUSTOM PAGE MODAL */}
+      <Dialog open={newPageModalOpen} onOpenChange={setNewPageModalOpen}>
+        <DialogContent className="max-w-md bg-[#0d111a] border border-cyan-500/30 text-white rounded-3xl p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <Plus className="w-5 h-5 text-cyan-400" />
+              <span>إضافة صفحة جديدة لموقعك</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              أنشئ صفحة إضافية مثل: العروض الخاصة، دليل المقاسات، فروعنا، أو أي محتوى تريده
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-bold">عنوان الصفحة *</Label>
+              <Input
+                value={newPageForm.title}
+                onChange={(e) => setNewPageForm({ ...newPageForm, title: e.target.value })}
+                placeholder="مثال: العروض الخاصة / دليل القياسات / فروعنا"
+                className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-bold">مسار الرابط (Slug اختياري)</Label>
+              <Input
+                value={newPageForm.slug}
+                onChange={(e) => setNewPageForm({ ...newPageForm, slug: e.target.value })}
+                placeholder="offers أو branches..."
+                className="bg-black/40 border-white/10 text-xs h-10 rounded-xl font-mono text-white"
+                dir="ltr"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-300 font-bold">محتوى الصفحة</Label>
+              <Textarea
+                rows={5}
+                value={newPageForm.content}
+                onChange={(e) => setNewPageForm({ ...newPageForm, content: e.target.value })}
+                placeholder="اكتب هنا تفاصيل ومحتوى هذه الصفحة للزوار..."
+                className="bg-black/40 border-white/10 text-xs rounded-xl text-white"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setNewPageModalOpen(false)}
+              className="border-white/10 text-xs"
+            >
+              إلغاء
+            </Button>
+            <Button
+              onClick={handleAddNewPage}
+              className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs flex-1 gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>إنشاء الصفحة وإضافتها للموقع</span>
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       </main>

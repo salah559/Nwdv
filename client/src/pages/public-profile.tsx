@@ -183,13 +183,16 @@ export default function PublicProfile({ usernameParam }: { usernameParam?: strin
     );
   }
 
+  // Detect deep-linked page via query parameter (e.g. /p/username?page=about or ?page=shop)
+  const queryPage = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("page") || undefined : undefined;
+
   return (
     <>
       <SEO 
         title={`${profile.fullName} — (@${profile.username})`}
         description={profile.bio || `${profile.fullName}'s official personal profile on Novaweb Profile.`}
       />
-      <ProfileTemplateRenderer profile={profile} />
+      <ProfileTemplateRenderer profile={profile} activeStudioPage={queryPage} />
     </>
   );
 }

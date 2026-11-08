@@ -22,21 +22,31 @@ import {
 } from "./DiamondTemplates";
 import { StoreTemplateView } from "./StoreTemplates";
 
-export function ProfileTemplateRenderer({ profile }: { profile: UserProfile }) {
+export function ProfileTemplateRenderer({ 
+  profile,
+  activeStudioPage,
+  onPageChange,
+  isOwnerPreview = false
+}: { 
+  profile: UserProfile;
+  activeStudioPage?: string;
+  onPageChange?: (page: string) => void;
+  isOwnerPreview?: boolean;
+}) {
   // 🛍️ Store Portfolio Templates
   switch (profile.templateId) {
     case "store-minimal-boutique":
-      return <StoreTemplateView profile={profile} variant="minimal" />;
+      return <StoreTemplateView profile={profile} variant="minimal" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
     case "store-cyber-tech":
-      return <StoreTemplateView profile={profile} variant="cyber" />;
+      return <StoreTemplateView profile={profile} variant="cyber" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
     case "store-luxury-brand":
-      return <StoreTemplateView profile={profile} variant="luxury" />;
+      return <StoreTemplateView profile={profile} variant="luxury" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
     case "store-organic-nature":
-      return <StoreTemplateView profile={profile} variant="organic" />;
+      return <StoreTemplateView profile={profile} variant="organic" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
     case "store-streetwear-bold":
-      return <StoreTemplateView profile={profile} variant="streetwear" />;
+      return <StoreTemplateView profile={profile} variant="streetwear" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
     case "store-instant-catalog":
-      return <StoreTemplateView profile={profile} variant="catalog" />;
+      return <StoreTemplateView profile={profile} variant="catalog" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
   }
 
   // 💎 5 Diamond tier templates — bespoke innovative renderers
