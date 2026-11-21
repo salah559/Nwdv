@@ -277,49 +277,49 @@ export default function Dashboard() {
       id: "gold",
       name: "فخامة ملكية ذهبية",
       color: "#f59e0b",
-      templateId: "store_modern",
+      templateId: "store-luxury-brand",
       desc: "للعطور والساعات والمنتجات الفاخرة",
     },
     {
       id: "cyber",
       name: "سايبر نيون احترافي",
       color: "#06fff0",
-      templateId: "store_modern",
+      templateId: "store-cyber-tech",
       desc: "للإلكترونيات والهواتف والمعدات الحديثة",
     },
     {
       id: "nature",
       name: "طبيعي وزمردي هادئ",
       color: "#10b981",
-      templateId: "store_minimal",
+      templateId: "store-organic-nature",
       desc: "لمنتجات العناية بالبشرة والأعشاب والصحة",
     },
     {
       id: "boutique",
       name: "بوتيك ووردي أنيق",
       color: "#ec4899",
-      templateId: "store_modern",
+      templateId: "store-minimal-boutique",
       desc: "للملابس النسائية والمكياج والأكسسوارات",
     },
     {
       id: "street",
       name: "ستريت وير ورياضة",
       color: "#ef4444",
-      templateId: "store_modern",
+      templateId: "store-streetwear-bold",
       desc: "للأحذية والملابس الشبابية والرياضية",
     },
     {
       id: "corporate",
-      name: "أزرق أعمال ملكي",
+      name: "كتالوج سريع وأعمال",
       color: "#3b82f6",
-      templateId: "store_minimal",
-      desc: "للمتاجر العامة والأجهزة المنزلية والمكتبية",
+      templateId: "store-instant-catalog",
+      desc: "للمتاجر العامة وتجار الجملة والأجهزة",
     },
     {
       id: "royal_purple",
       name: "بنفسجي ديب راقي",
       color: "#a855f7",
-      templateId: "store_modern",
+      templateId: "store-luxury-brand",
       desc: "للهدايا الحصرية والمنتجات الراقية المميزة",
     },
   ];
@@ -547,7 +547,7 @@ export default function Dashboard() {
     try {
       await updateUserProfileData({ templateId });
       if (isStore) {
-        toast.success("تم تطبيق قالب المتجر بنجاح! تم فتح قسم 'هوية وتخصيص المتجر'");
+        toast.success("تم تطبيق قالب المتجر بنجاح! جاري الانتقال إلى الاستوديو المباشر (Studio)");
         setActiveTab("builder");
       } else {
         toast.success("تم تغيير القالب بنجاح!");
@@ -1057,6 +1057,15 @@ export default function Dashboard() {
           {/* Action Buttons Grid on Mobile, Flex on Desktop */}
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pt-2 border-t border-white/5 md:pt-0 md:border-none">
             <Button
+              size="sm"
+              onClick={() => setActiveTab("builder")}
+              className="bg-gradient-to-r from-cyan-400 via-cyan-300 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black font-black text-xs gap-1.5 h-9 justify-center shadow-[0_0_18px_rgba(6,255,240,0.35)] transition-all hover:scale-105"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>الاستوديو (Studio)</span>
+            </Button>
+
+            <Button
               variant="outline"
               size="sm"
               onClick={copyProfileLink}
@@ -1114,15 +1123,13 @@ export default function Dashboard() {
 
               <TabsTrigger
                 value="builder"
-                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 rounded-xl px-4 sm:px-5 py-2.5 text-xs font-bold font-ui gap-2 shrink-0 border border-cyan-500/20 shadow-sm"
               >
-                {isStoreTemplate ? <Store className="w-4 h-4 text-cyan-400" /> : <User className="w-4 h-4" />}
-                <span>{isStoreTemplate ? "هوية وتخصيص المتجر" : "منشئ الموقع"}</span>
-                {isStoreTemplate && (
-                  <Badge className="bg-cyan-500/25 text-cyan-300 border-none text-[9px] px-1.5 py-0 h-4">
-                    متجر
-                  </Badge>
-                )}
+                <Sparkles className="w-4 h-4 text-cyan-400" />
+                <span>الاستوديو (Studio)</span>
+                <Badge className="bg-cyan-400 text-black font-black text-[9px] px-1.5 py-0 h-4">
+                  Live
+                </Badge>
               </TabsTrigger>
 
               <TabsTrigger
@@ -1250,8 +1257,9 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <div className="mt-6 pt-4 border-t border-white/5">
-                  <Button size="sm" variant="outline" onClick={() => setActiveTab("builder")} className="text-xs w-full">
-                    {isStoreTemplate ? "هوية وإعدادات المتجر" : "تعديل المحتوى والروابط"}
+                  <Button size="sm" onClick={() => setActiveTab("builder")} className="text-xs w-full bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold gap-2 h-9 rounded-xl shadow-md">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>🎨 فتح الاستوديو المباشر (Live Studio)</span>
                   </Button>
                 </div>
               </div>
@@ -2066,32 +2074,32 @@ export default function Dashboard() {
                           <div className="grid grid-cols-2 gap-2">
                             <button
                               type="button"
-                              onClick={() => setProfileForm({ ...profileForm, templateId: "store_modern" })}
+                              onClick={() => setProfileForm({ ...profileForm, templateId: "store-cyber-tech" })}
                               className={`p-3 rounded-2xl border text-right transition-all ${
-                                profileForm.templateId === "store_modern"
+                                profileForm.templateId === "store-cyber-tech"
                                   ? "border-cyan-400 bg-cyan-500/15 text-white shadow-md"
                                   : "border-white/10 bg-black/30 text-gray-400 hover:text-white"
                               }`}
                             >
                               <div className="text-xs font-bold text-white flex items-center justify-between">
-                                <span>المتجر الحديث</span>
-                                {profileForm.templateId === "store_modern" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                                <span>المتجر الحديث الغامر</span>
+                                {profileForm.templateId === "store-cyber-tech" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
                               </div>
                               <div className="text-[10px] text-gray-400 mt-1">تأثيرات غامرة، بطاقات عصرية وشارات بارزة</div>
                             </button>
 
                             <button
                               type="button"
-                              onClick={() => setProfileForm({ ...profileForm, templateId: "store_minimal" })}
+                              onClick={() => setProfileForm({ ...profileForm, templateId: "store-minimal-boutique" })}
                               className={`p-3 rounded-2xl border text-right transition-all ${
-                                profileForm.templateId === "store_minimal"
+                                profileForm.templateId === "store-minimal-boutique"
                                   ? "border-cyan-400 bg-cyan-500/15 text-white shadow-md"
                                   : "border-white/10 bg-black/30 text-gray-400 hover:text-white"
                               }`}
                             >
                               <div className="text-xs font-bold text-white flex items-center justify-between">
-                                <span>المتجر النظيف</span>
-                                {profileForm.templateId === "store_minimal" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                                <span>المتجر النظيف الأنيق</span>
+                                {profileForm.templateId === "store-minimal-boutique" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
                               </div>
                               <div className="text-[10px] text-gray-400 mt-1">تصميم مينيمل، فائق السرعة، ومريح للعين</div>
                             </button>
@@ -2367,7 +2375,37 @@ export default function Dashboard() {
               /* =========================================================
                  STANDARD PERSONAL / PORTFOLIO BUILDER
                  ========================================================= */
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="space-y-6">
+                {/* PROMINENT STUDIO SWITCH BANNER */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-cyan-950/60 via-purple-950/40 to-black border-2 border-cyan-400/40 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-5">
+                  <div className="flex items-center gap-4 text-right">
+                    <div className="w-14 h-14 rounded-2xl bg-cyan-400 text-black flex items-center justify-center font-black text-2xl shrink-0 shadow-[0_0_25px_rgba(6,255,240,0.4)]">
+                      🛍️
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-base sm:text-lg font-black text-white">تريد فتح استوديو المتجر الكامل (Shopify Style)؟</h4>
+                        <Badge className="bg-cyan-400 text-black font-extrabold text-[10px] px-2 py-0.5">موصى به</Badge>
+                      </div>
+                      <p className="text-xs text-gray-300 mt-1 leading-relaxed max-w-2xl">
+                        أنت حالياً على قالب صفحة شخصية. انقر على الزر لتفعيل استوديو المتجر المتكامل متعدد الصفحات، السلة الفورية، والتوصيل لـ 58 ولاية بنقرة واحدة!
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setProfileForm({ ...profileForm, templateId: "store-minimal-boutique" });
+                      toast.success("تم تفعيل استوديو المتجر الإلكتروني بنجاح!");
+                    }}
+                    className="bg-cyan-400 hover:bg-cyan-300 text-black font-black text-xs h-11 px-6 rounded-xl shrink-0 gap-2 shadow-[0_0_20px_rgba(6,255,240,0.4)] transition-all hover:scale-105 w-full md:w-auto"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>تفعيل استوديو المتجر الآن</span>
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Form: Info & Social Links */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Basic Info Card */}
@@ -2596,6 +2634,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             )}
           </TabsContent>

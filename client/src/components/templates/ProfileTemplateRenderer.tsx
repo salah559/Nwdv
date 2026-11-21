@@ -34,19 +34,29 @@ export function ProfileTemplateRenderer({
   isOwnerPreview?: boolean;
 }) {
   // 🛍️ Store Portfolio Templates
-  switch (profile.templateId) {
-    case "store-minimal-boutique":
-      return <StoreTemplateView profile={profile} variant="minimal" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
-    case "store-cyber-tech":
-      return <StoreTemplateView profile={profile} variant="cyber" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
-    case "store-luxury-brand":
-      return <StoreTemplateView profile={profile} variant="luxury" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
-    case "store-organic-nature":
-      return <StoreTemplateView profile={profile} variant="organic" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
-    case "store-streetwear-bold":
-      return <StoreTemplateView profile={profile} variant="streetwear" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
-    case "store-instant-catalog":
-      return <StoreTemplateView profile={profile} variant="catalog" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+  if (profile.templateId?.startsWith("store")) {
+    switch (profile.templateId) {
+      case "store-minimal-boutique":
+      case "store_minimal":
+        return <StoreTemplateView profile={profile} variant="minimal" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+      case "store-cyber-tech":
+      case "store_cyber":
+        return <StoreTemplateView profile={profile} variant="cyber" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+      case "store-luxury-brand":
+      case "store_luxury":
+        return <StoreTemplateView profile={profile} variant="luxury" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+      case "store-organic-nature":
+      case "store_organic":
+        return <StoreTemplateView profile={profile} variant="organic" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+      case "store-streetwear-bold":
+      case "store_streetwear":
+        return <StoreTemplateView profile={profile} variant="streetwear" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+      case "store-instant-catalog":
+      case "store_catalog":
+        return <StoreTemplateView profile={profile} variant="catalog" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+      default:
+        return <StoreTemplateView profile={profile} variant="minimal" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+    }
   }
 
   // 💎 5 Diamond tier templates — bespoke innovative renderers
