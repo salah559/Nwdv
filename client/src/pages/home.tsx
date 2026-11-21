@@ -131,11 +131,14 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 font-ui font-bold uppercase tracking-widest px-10 h-16 rounded-xl transition-all duration-300 hover:border-cyan-400 hover:scale-105"
+                className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 font-ui font-bold uppercase tracking-widest px-8 h-16 rounded-xl transition-all duration-300 hover:border-cyan-400 hover:scale-105 flex items-center gap-2"
                 onClick={() => setLocation("/profiles")}
               >
-                <Sparkles className="mr-2 w-5 h-5" />
-                Novaweb Profile
+                <Sparkles className="w-5 h-5 text-cyan-400" />
+                <span>Novaweb Profile</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold tracking-normal normal-case">
+                  قيد التطوير
+                </span>
               </Button>
             </div>
           </motion.div>
@@ -297,11 +300,14 @@ export default function Home() {
               </Button>
               <Button
                 size="lg"
-                className="border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10 bg-transparent font-ui font-bold uppercase tracking-widest px-10 h-14 rounded-lg transition-all duration-300 hover:scale-105"
+                className="border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10 bg-transparent font-ui font-bold uppercase tracking-widest px-8 h-14 rounded-lg transition-all duration-300 hover:scale-105 flex items-center gap-2"
                 onClick={() => setLocation("/profiles")}
               >
-                <Sparkles className="mr-2 w-4 h-4" />
-                Novaweb Profile
+                <Sparkles className="w-4 h-4 text-cyan-400" />
+                <span>Novaweb Profile</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold tracking-normal normal-case">
+                  قيد التطوير
+                </span>
               </Button>
             </div>
           </div>

@@ -79,8 +79,13 @@ export function Navbar() {
                 key={link.key}
                 href={link.href}
               >
-                <span className={`text-[11px] font-semibold transition-all duration-300 font-ui tracking-[0.2em] uppercase relative group cursor-pointer ${location === link.href ? "text-primary" : "text-gray-400 hover:text-white"}`}>
-                  {t(link.key)}
+                <span className={`text-[11px] font-semibold transition-all duration-300 font-ui tracking-[0.2em] uppercase relative group cursor-pointer inline-flex items-center gap-1.5 ${location === link.href ? "text-primary" : "text-gray-400 hover:text-white"}`}>
+                  <span>{t(link.key)}</span>
+                  {link.key === "nav_profiles" && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 font-bold tracking-normal normal-case">
+                      قيد التطوير
+                    </span>
+                  )}
                   <span className={`absolute -bottom-1 left-0 h-[2px] bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300 ${location === link.href ? "w-full" : "w-0 group-hover:w-full"}`} />
                 </span>
               </Link>

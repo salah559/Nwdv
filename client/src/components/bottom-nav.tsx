@@ -110,6 +110,9 @@ export function BottomNav() {
                       }}
                     >
                       {item.label}
+                      {item.id === "profiles" && (
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 mr-1 align-middle animate-pulse" title="قيد التطوير" />
+                      )}
                     </motion.span>
                   </div>
                 </motion.button>

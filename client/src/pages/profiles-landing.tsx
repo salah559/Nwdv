@@ -13,8 +13,12 @@ import {
   ExternalLink, 
   Star,
   Layers,
-  Crown
+  Crown,
+  Construction,
+  AlertTriangle,
+  Clock
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -99,6 +103,13 @@ export default function ProfilesLanding() {
     }
 
     loadRealAccounts();
+
+    // Notify user on entry that Novaweb Profile is under development
+    toast.info("🚧 تنبيه: منصة Novaweb Profile قيد التطوير حالياً", {
+      description: "نعمل حالياً على تطوير وتحديث المنصة لإطلاقها قريباً بأحدث المزايا!",
+      duration: 6000,
+    });
+
     return () => {
       isMounted = false;
     };
@@ -107,28 +118,94 @@ export default function ProfilesLanding() {
   return (
     <div className="min-h-screen bg-[#07090e] text-white selection:bg-cyan-500/30 overflow-hidden relative">
       <SEO 
-        title="Novaweb Profile — هويتك الرقمية في رابط واحد" 
-        description="أنشئ موقعك الشخصي بنطاق فرعي مخصص username.novawebdv.com وقوالب عصرية فائقة السرعة."
+        title="Novaweb Profile — قيد التطوير (Under Development)" 
+        description="منصة Novaweb Profile قيد التطوير والتحديث حالياً — نعمل على إطلاقها بأحدث المزايا قريباً!"
       />
+
+      {/* Top Banner: Under Development */}
+      <div className="pt-20 md:pt-24 px-4 relative z-20">
+        <div className="container mx-auto max-w-5xl">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/15 border border-amber-400/50 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_0_30px_rgba(245,158,11,0.25)]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-400 text-black flex items-center justify-center shrink-0 font-bold shadow-md">
+                <Construction className="w-5 h-5 animate-pulse" />
+              </div>
+              <div className="text-right">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-black text-white">
+                    منصة Novaweb Profile قيد التطوير
+                  </span>
+                  <Badge className="bg-amber-400 text-black font-extrabold text-[10px] px-2 py-0.5">
+                    Under Development 🚧
+                  </Badge>
+                </div>
+                <p className="text-xs text-amber-200/90 mt-0.5">
+                  هذه المنصة والخدمة قيد التطوير والتحسين حالياً، نعمل على إطلاقها بأحدث المزايا قريباً إن شاء الله.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setLocation("/")}
+              className="border-amber-400/40 text-amber-300 hover:bg-amber-400/20 text-xs h-8 rounded-xl self-end sm:self-auto shrink-0"
+            >
+              العودة للرئيسية
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Background Glows */}
       <div className="fixed top-[-10%] left-[20%] w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none -z-10" />
       <div className="fixed bottom-[10%] right-[10%] w-[600px] h-[600px] bg-purple-600/15 rounded-full blur-[160px] pointer-events-none -z-10" />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-28 px-4 relative z-10">
+      <section className="pt-10 pb-20 md:pt-16 md:pb-28 px-4 relative z-10">
         <div className="container mx-auto max-w-5xl text-center">
           <motion.div
             variants={fadeInUp}
             initial="hidden"
             animate="visible"
-            className="flex justify-center mb-6"
+            className="flex justify-center mb-6 gap-2 flex-wrap"
           >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-400/50 bg-amber-500/15 backdrop-blur-md">
+              <Construction className="w-4 h-4 text-amber-400 animate-pulse" />
+              <span className="text-xs font-ui font-extrabold tracking-widest text-amber-300 uppercase">
+                قيد التطوير • UNDER DEVELOPMENT
+              </span>
+            </div>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md">
               <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
               <span className="text-xs font-ui font-bold tracking-widest text-cyan-300 uppercase">
                 {t("saas_hero_badge")}
               </span>
+            </div>
+          </motion.div>
+
+          {/* Prominent Under Development Notification Card */}
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            transition={{ delay: 0.1 }}
+            className="max-w-2xl mx-auto mb-8 p-4 sm:p-5 rounded-3xl bg-black/60 border border-amber-400/50 backdrop-blur-xl flex items-center gap-3.5 text-right shadow-[0_0_30px_rgba(245,158,11,0.2)]"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.4)]">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h3 className="text-sm sm:text-base font-extrabold text-white">
+                  تنبيه: منصة Novaweb Profile قيد التطوير والتحديث
+                </h3>
+                <span className="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  تحديثات جارية
+                </span>
+              </div>
+              <p className="text-xs text-gray-300 leading-relaxed font-medium">
+                أهلاً بك! يجري حالياً العمل على تطوير وبرمجة المنصة وإضافة خيارات متقدمة لإنشاء المواقع الشخصية وتخصيص القوالب. يمكنك استعراض النماذج والقوالب بالأسفل، والخدمة ستكون متاحة بالكامل قريباً إن شاء الله.
+              </p>
             </div>
           </motion.div>
 
