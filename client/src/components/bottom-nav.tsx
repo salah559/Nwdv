@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Home, Share2, Info, Mail, Layers } from "lucide-react";
+import { Home, Share2, Info, Mail } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 
 export function BottomNav() {
@@ -11,14 +11,12 @@ export function BottomNav() {
   const NAV_ITEMS = [
     { id: "home", label: t("nav_home"), icon: Home, path: "/" },
     { id: "projects", label: t("nav_projects"), icon: Share2, path: "/projects" },
-    { id: "profiles", label: t("nav_profiles") || "Profiles", icon: Layers, path: "/profiles" },
     { id: "about", label: t("nav_about"), icon: Info, path: "/about" },
     { id: "contact", label: t("nav_contact"), icon: Mail, path: "/contact" },
   ];
 
   const getMatchedId = (loc: string) => {
     if (loc === "/") return "home";
-    if (loc.startsWith("/profiles")) return "profiles";
     if (loc.startsWith("/projects")) return "projects";
     if (loc.startsWith("/about")) return "about";
     if (loc.startsWith("/contact")) return "contact";
@@ -110,9 +108,6 @@ export function BottomNav() {
                       }}
                     >
                       {item.label}
-                      {item.id === "profiles" && (
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 mr-1 align-middle animate-pulse" title="قيد التطوير" />
-                      )}
                     </motion.span>
                   </div>
                 </motion.button>
