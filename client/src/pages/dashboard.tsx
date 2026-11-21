@@ -46,7 +46,10 @@ import {
   Edit2,
   Store,
   Printer,
-  FileSpreadsheet
+  FileSpreadsheet,
+  HelpCircle,
+  Sliders,
+  Flame
 } from "lucide-react";
 import { ALGERIA_WILAYAS } from "@/lib/algeria-wilayas";
 import { Button } from "@/components/ui/button";
@@ -72,7 +75,8 @@ import {
   StoreProduct,
   StoreOrder,
   OrderStatus,
-  CustomPage
+  CustomPage,
+  SiteSectionConfig
 } from "@shared/saas-schema";
 import { SUPPORTED_PLATFORMS, PlatformIcon } from "@/components/ui/PlatformIcon";
 import { collection, addDoc, Timestamp, query, where, getDocs, onSnapshot, updateDoc, doc, deleteDoc } from "firebase/firestore";
@@ -200,6 +204,136 @@ export default function Dashboard() {
     setProfileForm({ ...profileForm, customPages: updated });
     setStudioActivePage("home");
     toast.success("تم حذف الصفحة بنجاح");
+  };
+
+  // Studio Dynamic FAQ Builder State
+  const [newFaqQ, setNewFaqQ] = useState("");
+  const [newFaqA, setNewFaqA] = useState("");
+
+  const handleAddFaqItem = () => {
+    if (!newFaqQ.trim() || !newFaqA.trim()) {
+      toast.error("يرجى كتابة نص السؤال والإجابة");
+      return;
+    }
+    const currentFaqs = profileForm.storeSettings?.faqList || [];
+    const updatedFaqs = [...currentFaqs, { q: newFaqQ.trim(), a: newFaqA.trim() }];
+    setProfileForm({
+      ...profileForm,
+      storeSettings: {
+        ...(profileForm.storeSettings || {}),
+        faqList: updatedFaqs,
+      },
+    });
+    setNewFaqQ("");
+    setNewFaqA("");
+    toast.success("تمت إضافة السؤال بنجاح");
+  };
+
+  const handleRemoveFaqItem = (index: number) => {
+    const currentFaqs = profileForm.storeSettings?.faqList || [];
+    const updatedFaqs = currentFaqs.filter((_, i) => i !== index);
+    setProfileForm({
+      ...profileForm,
+      storeSettings: {
+        ...(profileForm.storeSettings || {}),
+        faqList: updatedFaqs,
+      },
+    });
+    toast.success("تم حذف السؤال");
+  };
+
+  const handleLoadDefaultFaqs = () => {
+    const defaultFaqs = [
+      {
+        q: "كم يستغرق وصول الطلب؟",
+        a: "يتم توصيل الطلبات خلال 24 إلى 48 ساعة كحد أقصى لجميع ولايات الوطن الـ 58، وتصلك مكالمة هاتفية لتأكيد موعد الاستلام."
+      },
+      {
+        q: "كيف تتم عملية الدفع؟",
+        a: "الدفع يتم نقداً عند الاستلام (COD) فقط بعد أن يصلك المنتج وتعاينه بنفسك أمام موزع شركة التوصيل."
+      },
+      {
+        q: "هل يمكنني فحص ومعاينة المنتج قبل الدفع؟",
+        a: "نعم بالتأكيد! يحق لك فتح الطرد ومعاينة المنتج والتأكد من مطابقته للجودة والمواصفات المعروضة قبل تسليم المبلغ."
+      },
+      {
+        q: "ماذا لو وجدت أي مشكلة أو عيب مصنعي في المنتج؟",
+        a: "نحن نضمن لك حق الاستبدال أو الاسترجاع بكل سلاسة خلال 48 ساعة؛ كل ما عليك هو مراسلتنا عبر الواتساب وسنتكفل بالأمر فوراً."
+      }
+    ];
+    setProfileForm({
+      ...profileForm,
+      storeSettings: {
+        ...(profileForm.storeSettings || {}),
+        faqList: defaultFaqs,
+      },
+    });
+    toast.success("تم تحميل الأسئلة الشائعة الافتراضية بنجاح");
+  };
+
+  // Studio 1-Click Theme Style Presets
+  const THEME_PRESETS = [
+    {
+      id: "gold",
+      name: "فخامة ملكية ذهبية",
+      color: "#f59e0b",
+      templateId: "store_modern",
+      desc: "للعطور والساعات والمنتجات الفاخرة",
+    },
+    {
+      id: "cyber",
+      name: "سايبر نيون احترافي",
+      color: "#06fff0",
+      templateId: "store_modern",
+      desc: "للإلكترونيات والهواتف والمعدات الحديثة",
+    },
+    {
+      id: "nature",
+      name: "طبيعي وزمردي هادئ",
+      color: "#10b981",
+      templateId: "store_minimal",
+      desc: "لمنتجات العناية بالبشرة والأعشاب والصحة",
+    },
+    {
+      id: "boutique",
+      name: "بوتيك ووردي أنيق",
+      color: "#ec4899",
+      templateId: "store_modern",
+      desc: "للملابس النسائية والمكياج والأكسسوارات",
+    },
+    {
+      id: "street",
+      name: "ستريت وير ورياضة",
+      color: "#ef4444",
+      templateId: "store_modern",
+      desc: "للأحذية والملابس الشبابية والرياضية",
+    },
+    {
+      id: "corporate",
+      name: "أزرق أعمال ملكي",
+      color: "#3b82f6",
+      templateId: "store_minimal",
+      desc: "للمتاجر العامة والأجهزة المنزلية والمكتبية",
+    },
+    {
+      id: "royal_purple",
+      name: "بنفسجي ديب راقي",
+      color: "#a855f7",
+      templateId: "store_modern",
+      desc: "للهدايا الحصرية والمنتجات الراقية المميزة",
+    },
+  ];
+
+  const applyThemePreset = (preset: typeof THEME_PRESETS[0]) => {
+    setProfileForm({
+      ...profileForm,
+      templateId: preset.templateId,
+      customTheme: {
+        ...(profileForm.customTheme || {}),
+        primaryColor: preset.color,
+      },
+    });
+    toast.success(`تم تطبيق نمط "${preset.name}" بنجاح!`);
   };
 
   useEffect(() => {
@@ -1197,6 +1331,16 @@ export default function Dashboard() {
 
                     <Button
                       size="sm"
+                      onClick={openNewProductModal}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs h-9 px-3.5 rounded-xl gap-1.5 shadow-md transition-all hover:scale-105"
+                      title="إضافة منتج جديد للمتجر مباشرة دون مغادرة الاستوديو"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>إضافة منتج</span>
+                    </Button>
+
+                    <Button
+                      size="sm"
                       disabled={isSaving}
                       onClick={handleSaveProfile}
                       className="bg-cyan-400 hover:bg-cyan-300 text-black font-extrabold text-xs h-9 px-4 rounded-xl gap-1.5 shadow-[0_0_20px_rgba(6,255,240,0.35)]"
@@ -1479,118 +1623,483 @@ export default function Dashboard() {
 
                     {/* TAB CONTENT 2: SECTIONS & CONTENT */}
                     {studioActiveTab === "sections" && (
-                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
+                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-6">
                         <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                            <Layers className="w-4 h-4 text-cyan-400" />
-                            <span>تخصيص نصوص وأقسام الموقع</span>
-                          </h4>
+                          <div>
+                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                              <Layers className="w-4 h-4 text-cyan-400" />
+                              <span>التحكم في الأقسام والمحتوى</span>
+                            </h4>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              إظهار/إخفاء الأقسام، العروض الترويجية، والأسئلة الشائعة
+                            </p>
+                          </div>
                           <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[10px]">مباشر</Badge>
                         </div>
 
-                        {/* Announcement Bar */}
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold flex items-center gap-1.5">
-                            <Truck className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>شريط الإعلانات أعلى الموقع</span>
-                          </Label>
-                          <Input
-                            value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
-                            })}
-                            placeholder="🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"
-                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                          />
+                        {/* 1. SECTION VISIBILITY SWITCHES (مفاتيح تشغيل وإخفاء الأقسام) */}
+                        <div className="space-y-2.5 p-4 rounded-2xl bg-black/40 border border-white/5">
+                          <div className="text-xs font-bold text-white flex items-center gap-2 mb-2">
+                            <Sliders className="w-4 h-4 text-cyan-400" />
+                            <span>مفاتيح إظهار وإخفاء أقسام الموقع:</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {/* Announcement Bar */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">شريط الإعلانات العلوي</span>
+                              <Switch
+                                checked={profileForm.siteSections?.announcementBar !== false}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    siteSections: { ...(profileForm.siteSections || {}), announcementBar: val }
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* Hero Header */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">هيدر المتجر واللوغو</span>
+                              <Switch
+                                checked={profileForm.siteSections?.heroBanner !== false}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    siteSections: { ...(profileForm.siteSections || {}), heroBanner: val }
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* Trust Badges */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">مزايا التوصيل لـ 58 ولاية</span>
+                              <Switch
+                                checked={(profileForm.storeSettings?.showTrustBadges !== false) && (profileForm.siteSections?.trustBadges !== false)}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    storeSettings: { ...(profileForm.storeSettings || {}), showTrustBadges: val },
+                                    siteSections: { ...(profileForm.siteSections || {}), trustBadges: val }
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* Categories Filter */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">فلاتر وتصنيفات المنتجات</span>
+                              <Switch
+                                checked={profileForm.siteSections?.categoriesFilter !== false}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    siteSections: { ...(profileForm.siteSections || {}), categoriesFilter: val }
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* Direct WhatsApp Order Button */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">زر شراء واتساب بالبطاقة</span>
+                              <Switch
+                                checked={profileForm.storeSettings?.showDirectWhatsappBtn !== false}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    storeSettings: { ...(profileForm.storeSettings || {}), showDirectWhatsappBtn: val }
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* Stock Counter Badge */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">مؤشر نفاذ المخزون والطلب</span>
+                              <Switch
+                                checked={profileForm.storeSettings?.showStockCounter !== false}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    storeSettings: { ...(profileForm.storeSettings || {}), showStockCounter: val }
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* FAQ Section */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">قسم الأسئلة الشائعة (FAQ)</span>
+                              <Switch
+                                checked={profileForm.siteSections?.faqAccordion !== false}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    siteSections: { ...(profileForm.siteSections || {}), faqAccordion: val }
+                                  });
+                                }}
+                              />
+                            </div>
+
+                            {/* Footer */}
+                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                              <span className="text-xs text-gray-200">الفوتر السفلي للموقع</span>
+                              <Switch
+                                checked={profileForm.siteSections?.footer !== false}
+                                onCheckedChange={(val) => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    siteSections: { ...(profileForm.siteSections || {}), footer: val }
+                                  });
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Brand Slogan */}
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">الشعار الترويجي الفرعي (Slogan)</Label>
-                          <Input
-                            value={profileForm.jobTitle || ""}
-                            onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
-                            placeholder="مثال: أفضل الإلكترونيات الأصلية بأحسن الأسعار"
-                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                          />
-                        </div>
+                        {/* 2. PROMO / SALE BANNER (بانر العروض الترويجية) */}
+                        <div className="space-y-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                              <Flame className="w-4 h-4 text-amber-400" />
+                              <span>بانر العروض والتخفيضات (يظهر بالصفحة الرئيسية)</span>
+                            </Label>
+                            {(profileForm.storeSettings?.promoBannerTitle || profileForm.storeSettings?.promoBannerSubtitle) && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    storeSettings: {
+                                      ...(profileForm.storeSettings || {}),
+                                      promoBannerTitle: "",
+                                      promoBannerSubtitle: ""
+                                    }
+                                  });
+                                  toast.info("تم تعطيل بانر العروض");
+                                }}
+                                className="text-[10px] text-gray-400 hover:text-red-400 h-6 px-2"
+                              >
+                                إزالة البانر
+                              </Button>
+                            )}
+                          </div>
 
-                        {/* About Story */}
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">قصة ونبذة عن المتجر (صفحة من نحن)</Label>
-                          <Textarea
-                            rows={3}
-                            value={profileForm.storeSettings?.aboutStoryText ?? (profileForm.bio || "")}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setProfileForm({
+                          <div className="space-y-2">
+                            <Input
+                              value={profileForm.storeSettings?.promoBannerTitle ?? ""}
+                              onChange={(e) => setProfileForm({
                                 ...profileForm,
-                                bio: val,
-                                storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryText: val }
-                              });
-                            }}
-                            placeholder="اكتب نبذة عن متجرك، التزامكم بالجودة، ومصداقيتكم في التوصيل لـ 58 ولاية..."
-                            className="bg-black/40 border-white/10 text-xs rounded-xl resize-none text-white"
-                          />
+                                storeSettings: { ...(profileForm.storeSettings || {}), promoBannerTitle: e.target.value }
+                              })}
+                              placeholder="عنوان العرض (مثال: 🔥 تخفيضات الموسم - وفر حتى 40% على جميع المنتجات)"
+                              className="bg-black/50 border-white/10 text-xs h-9 rounded-xl text-white"
+                            />
+                            <Input
+                              value={profileForm.storeSettings?.promoBannerSubtitle ?? ""}
+                              onChange={(e) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), promoBannerSubtitle: e.target.value }
+                              })}
+                              placeholder="تفاصيل العرض أو كود الخصم (مثال: الشحن مجاني عند طلب قطعتين أو أكثر - الكمية محدودة)"
+                              className="bg-black/50 border-white/10 text-xs h-9 rounded-xl text-white"
+                            />
+                          </div>
                         </div>
 
-                        {/* Delivery & Inspection Notice */}
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">شرط المعاينة والتوصيل للزبون</Label>
-                          <Input
-                            value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
-                            })}
-                            placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
-                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                          />
+                        {/* 3. CORE TEXTS & NOTICES */}
+                        <div className="space-y-4 pt-2 border-t border-white/10">
+                          <div className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>نصوص وسياسات المتجر:</span>
+                          </div>
+
+                          {/* Announcement Bar */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold flex items-center gap-1.5">
+                              <Truck className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>نص شريط الإعلانات أعلى الموقع</span>
+                            </Label>
+                            <Input
+                              value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"}
+                              onChange={(e) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
+                              })}
+                              placeholder="🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                            />
+                          </div>
+
+                          {/* Brand Slogan */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">الشعار الترويجي الفرعي (Slogan)</Label>
+                            <Input
+                              value={profileForm.jobTitle || ""}
+                              onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
+                              placeholder="مثال: أفضل المنتجات الأصلية بأحسن الأسعار"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                            />
+                          </div>
+
+                          {/* About Story */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">قصة ونبذة عن المتجر (صفحة من نحن)</Label>
+                            <Textarea
+                              rows={3}
+                              value={profileForm.storeSettings?.aboutStoryText ?? (profileForm.bio || "")}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setProfileForm({
+                                  ...profileForm,
+                                  bio: val,
+                                  storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryText: val }
+                                });
+                              }}
+                              placeholder="اكتب نبذة عن متجرك، التزامكم بالجودة، ومصداقيتكم في التوصيل لـ 58 ولاية..."
+                              className="bg-black/40 border-white/10 text-xs rounded-xl resize-none text-white"
+                            />
+                          </div>
+
+                          {/* Delivery & Inspection Notice */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">شرط المعاينة والتوصيل للزبون</Label>
+                            <Input
+                              value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
+                              onChange={(e) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
+                              })}
+                              placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                            />
+                          </div>
+
+                          {/* Return Policy Notice */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">سياسة الضمان والاسترجاع</Label>
+                            <Input
+                              value={profileForm.storeSettings?.returnPolicyNotice ?? "إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"}
+                              onChange={(e) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
+                              })}
+                              placeholder="إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                            />
+                          </div>
+
+                          {/* Thank You Message */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-300 font-bold">رسالة الشكر بعد إتمام الطلب</Label>
+                            <Input
+                              value={profileForm.storeSettings?.thankYouMessage ?? "شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."}
+                              onChange={(e) => setProfileForm({
+                                ...profileForm,
+                                storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
+                              })}
+                              placeholder="شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."
+                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
+                            />
+                          </div>
                         </div>
 
-                        {/* Return Policy Notice */}
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">سياسة الضمان والاسترجاع</Label>
-                          <Input
-                            value={profileForm.storeSettings?.returnPolicyNotice ?? "إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
-                            })}
-                            placeholder="إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"
-                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                          />
+                        {/* 4. DYNAMIC FAQ BUILDER (الأسئلة الشائعة القابلة للتخصيص الكامل) */}
+                        <div className="space-y-3 pt-3 border-t border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-xs font-bold text-white flex items-center gap-1.5">
+                                <HelpCircle className="w-4 h-4 text-cyan-400" />
+                                <span>الأسئلة الشائعة (FAQ) القابلة للتعديل</span>
+                              </Label>
+                              <p className="text-[10px] text-gray-400 mt-0.5">
+                                أضف الأسئلة الشائعة التي تطمئن الزبون وتزيد المبيعات
+                              </p>
+                            </div>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleLoadDefaultFaqs}
+                              className="text-[10px] h-7 px-2.5 rounded-lg border-white/10 text-cyan-400 hover:bg-cyan-500/10"
+                            >
+                              الأسئلة الافتراضية
+                            </Button>
+                          </div>
+
+                          {/* Existing FAQ items list */}
+                          <div className="space-y-2">
+                            {(profileForm.storeSettings?.faqList || []).map((faq, idx) => (
+                              <div
+                                key={idx}
+                                className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                                    <span className="w-4 h-4 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] flex items-center justify-center font-bold">
+                                      {idx + 1}
+                                    </span>
+                                    <span>{faq.q}</span>
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleRemoveFaqItem(idx)}
+                                    className="text-gray-400 hover:text-red-400 h-6 w-6 p-0"
+                                    title="حذف هذا السؤال"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                </div>
+                                <p className="text-[11px] text-gray-300 leading-relaxed pr-5">
+                                  {faq.a}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Add New FAQ Form */}
+                          <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2 pt-3">
+                            <div className="text-[11px] font-bold text-cyan-400">إضافة سؤال وإجابة جديدة:</div>
+                            <Input
+                              value={newFaqQ}
+                              onChange={(e) => setNewFaqQ(e.target.value)}
+                              placeholder="نص السؤال (مثال: هل يتوفر الدفع عند الاستلام؟)"
+                              className="bg-black/50 border-white/10 text-xs h-9 rounded-xl text-white"
+                            />
+                            <Textarea
+                              rows={2}
+                              value={newFaqA}
+                              onChange={(e) => setNewFaqA(e.target.value)}
+                              placeholder="نص الإجابة (مثال: نعم، الدفع يتم نقداً بعد فحص المنتج...)"
+                              className="bg-black/50 border-white/10 text-xs rounded-xl resize-none text-white"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={handleAddFaqItem}
+                              className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs h-8 px-4 rounded-xl gap-1.5 w-full shadow-md"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>إضافة هذا السؤال للـ FAQ</span>
+                            </Button>
+                          </div>
                         </div>
 
-                        {/* Thank You Message */}
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-gray-300 font-bold">رسالة الشكر بعد إتمام الطلب</Label>
-                          <Input
-                            value={profileForm.storeSettings?.thankYouMessage ?? "شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
-                            })}
-                            placeholder="شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."
-                            className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                          />
-                        </div>
                       </div>
                     )}
 
                     {/* TAB CONTENT 3: BRANDING & THEME */}
                     {studioActiveTab === "branding" && (
-                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
+                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-6">
                         <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                            <Palette className="w-4 h-4 text-purple-400" />
-                            <span>الهوية البصرية والألوان والشعار</span>
-                          </h4>
-                          <Badge className="bg-purple-500/20 text-purple-300 border-none text-[10px]">ImgBB</Badge>
+                          <div>
+                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                              <Palette className="w-4 h-4 text-purple-400" />
+                              <span>الهوية البصرية والألوان والأنماط</span>
+                            </h4>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              تغيير مظهر المتجر كلياً بنقرة واحدة أو تخصيص الألوان يدوياً
+                            </p>
+                          </div>
+                          <Badge className="bg-purple-500/20 text-purple-300 border-none text-[10px]">1-Click</Badge>
                         </div>
 
-                        <div className="space-y-1.5">
+                        {/* 1-CLICK THEME PRESETS */}
+                        <div className="space-y-3">
+                          <Label className="text-xs text-white font-bold flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                            <span>أنماط ومظاهر جاهزة بنقرة واحدة (Style Presets):</span>
+                          </Label>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {THEME_PRESETS.map((preset) => {
+                              const isSelected =
+                                (profileForm.customTheme?.primaryColor === preset.color) &&
+                                (profileForm.templateId === preset.templateId);
+                              return (
+                                <div
+                                  key={preset.id}
+                                  onClick={() => applyThemePreset(preset)}
+                                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                                    isSelected
+                                      ? "bg-white/15 border-white shadow-lg scale-[1.02]"
+                                      : "bg-black/30 border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <span
+                                      className="w-4 h-4 rounded-full border-2 border-black/50 shrink-0 shadow-md"
+                                      style={{ backgroundColor: preset.color }}
+                                    />
+                                    <div>
+                                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                                        <span>{preset.name}</span>
+                                        {isSelected && (
+                                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                        )}
+                                      </div>
+                                      <div className="text-[10px] text-gray-400">{preset.desc}</div>
+                                    </div>
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-[9px] ${
+                                      isSelected
+                                        ? "bg-white text-black font-extrabold border-white"
+                                        : "border-white/10 text-gray-400"
+                                    }`}
+                                  >
+                                    {isSelected ? "مطبق حالياً" : "تطبيق"}
+                                  </Badge>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* STORE TEMPLATE MODE */}
+                        <div className="space-y-2 pt-2 border-t border-white/10">
+                          <Label className="text-xs text-gray-300 font-bold">نمط قالب المتجر (Store Template Mode)</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setProfileForm({ ...profileForm, templateId: "store_modern" })}
+                              className={`p-3 rounded-2xl border text-right transition-all ${
+                                profileForm.templateId === "store_modern"
+                                  ? "border-cyan-400 bg-cyan-500/15 text-white shadow-md"
+                                  : "border-white/10 bg-black/30 text-gray-400 hover:text-white"
+                              }`}
+                            >
+                              <div className="text-xs font-bold text-white flex items-center justify-between">
+                                <span>المتجر الحديث</span>
+                                {profileForm.templateId === "store_modern" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                              </div>
+                              <div className="text-[10px] text-gray-400 mt-1">تأثيرات غامرة، بطاقات عصرية وشارات بارزة</div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setProfileForm({ ...profileForm, templateId: "store_minimal" })}
+                              className={`p-3 rounded-2xl border text-right transition-all ${
+                                profileForm.templateId === "store_minimal"
+                                  ? "border-cyan-400 bg-cyan-500/15 text-white shadow-md"
+                                  : "border-white/10 bg-black/30 text-gray-400 hover:text-white"
+                              }`}
+                            >
+                              <div className="text-xs font-bold text-white flex items-center justify-between">
+                                <span>المتجر النظيف</span>
+                                {profileForm.templateId === "store_minimal" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                              </div>
+                              <div className="text-[10px] text-gray-400 mt-1">تصميم مينيمل، فائق السرعة، ومريح للعين</div>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Store Name Input */}
+                        <div className="space-y-1.5 pt-2 border-t border-white/10">
                           <Label className="text-xs text-gray-300 font-bold">اسم المتجر أو البراند التجاري</Label>
                           <Input
                             value={profileForm.storeSettings?.storeName ?? profileForm.fullName}
@@ -1626,8 +2135,8 @@ export default function Dashboard() {
                           />
                         </div>
 
-                        {/* Accent Color Palette */}
-                        <div className="space-y-2 pt-2">
+                        {/* Custom Accent Color Palette */}
+                        <div className="space-y-2 pt-2 border-t border-white/10">
                           <Label className="text-xs text-gray-300 font-bold">اللون المميز للمتجر والأزرار</Label>
                           <div className="flex flex-wrap gap-2">
                             {[

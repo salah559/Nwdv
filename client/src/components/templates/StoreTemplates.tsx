@@ -159,13 +159,42 @@ export function StoreTemplateView({
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const settings = profile.storeSettings || {};
+  const siteSections = profile.siteSections || {};
   const storeTitle = settings.storeName || profile.fullName || "متجري الإلكتروني";
   const storeNotice = settings.announcementText || settings.deliveryNotice || "🚚 توصيل متوفر لجميع ولايات الوطن (58 ولاية) - الدفع عند الاستلام";
   const sellerWhatsapp = settings.whatsappForOrders || profile.whatsapp || profile.phone || "213550000000";
   const shippingCost = settings.defaultShippingCostDZD !== undefined ? settings.defaultShippingCostDZD : 0;
-  const showTrustBadges = settings.showTrustBadges !== false;
+
+  const showAnnouncementBar = siteSections.announcementBar !== false;
+  const showHeroBanner = siteSections.heroBanner !== false;
+  const showTrustBadges = (settings.showTrustBadges !== false) && (siteSections.trustBadges !== false);
+  const showFaqSection = siteSections.faqAccordion !== false;
+  const showCategoriesFilter = siteSections.categoriesFilter !== false;
+  const showFooter = siteSections.footer !== false;
   const showDirectWhatsappBtn = settings.showDirectWhatsappBtn !== false;
   const showStockCounter = settings.showStockCounter !== false;
+
+  // Dynamic FAQ list (custom or default Algeria COD FAQs)
+  const displayFaqList = (settings.faqList && settings.faqList.length > 0)
+    ? settings.faqList
+    : [
+        {
+          q: "كم يستغرق وصول الطلب؟",
+          a: "يتم توصيل الطلبات خلال 24 إلى 48 ساعة كحد أقصى لجميع ولايات الوطن الـ 58، وتصلك رسالة أو اتصال لتأكيد موعد الاستلام."
+        },
+        {
+          q: "كيف تتم عملية الدفع؟",
+          a: "الدفع يتم نقداً عند الاستلام (COD) فقط بعد أن يصلك المنتج وتعاينه بنفسك أمام موزع شركة التوصيل."
+        },
+        {
+          q: "هل يمكنني فحص المنتج قبل الدفع؟",
+          a: "نعم بالتأكيد! يحق لك فتح الطرد ومعاينة المنتج للتأكد من مطابقته للجودة والمواصفات المعروضة."
+        },
+        {
+          q: "ماذا لو وجدت مشكلة في المنتج؟",
+          a: "نحن نضمن لك حق الاستبدال أو الاسترجاع بكل سهولة؛ كل ما عليك هو التواصل مع خدمة الزبائن عبر الواتساب وسنتكفل بالأمر فوراً."
+        }
+      ];
 
   const rawProducts = (profile.products && profile.products.length > 0)
     ? profile.products
@@ -472,41 +501,43 @@ export function StoreTemplateView({
     <div className={`min-h-screen ${theme.bg} selection:bg-cyan-500/30 pb-32 sm:pb-28`} dir="rtl">
       
       {/* 1. TOP SHOPIFY-STYLE ANNOUNCEMENT TICKER */}
-      <div 
-        className="w-full border-b border-white/10 py-2 px-4 text-center text-xs backdrop-blur-md sticky top-0 z-40"
-        style={{
-          backgroundColor: settings.announcementBgColor || "rgba(8, 10, 16, 0.95)"
-        }}
-      >
-        <div className="max-w-6xl mx-auto flex items-center justify-between font-medium gap-2">
-          <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
-            <Truck className="w-4 h-4 shrink-0 text-cyan-400 animate-pulse" />
-            <span className="truncate">{storeNotice}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Header Cart Toggle Button */}
-            <button
-              onClick={() => {
-                setOrderSuccess(null);
-                setIsCartOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs transition-all shadow-sm"
-            >
-              <ShoppingCart className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">السلة</span>
-              {cartItemCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-cyan-400 text-black font-mono text-[11px] flex items-center justify-center font-black">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
+      {showAnnouncementBar && (
+        <div 
+          className="w-full border-b border-white/10 py-2 px-4 text-center text-xs backdrop-blur-md sticky top-0 z-40"
+          style={{
+            backgroundColor: settings.announcementBgColor || "rgba(8, 10, 16, 0.95)"
+          }}
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between font-medium gap-2">
+            <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
+              <Truck className="w-4 h-4 shrink-0 text-cyan-400 animate-pulse" />
+              <span className="truncate">{storeNotice}</span>
+            </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Header Cart Toggle Button */}
+              <button
+                onClick={() => {
+                  setOrderSuccess(null);
+                  setIsCartOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs transition-all shadow-sm"
+              >
+                <ShoppingCart className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden sm:inline">السلة</span>
+                {cartItemCount > 0 && (
+                  <span className="w-5 h-5 rounded-full bg-cyan-400 text-black font-mono text-[11px] flex items-center justify-center font-black">
+                    {cartItemCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 1.5 MULTI-PAGE STORE NAVBAR (نظام الموقع متعدد الصفحات) */}
-      <nav className="border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-[33px] z-30 shadow-lg">
+      <nav className={`border-b border-white/10 bg-black/60 backdrop-blur-md sticky ${showAnnouncementBar ? "top-[33px]" : "top-0"} z-30 shadow-lg`}>
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
           {/* Logo & Store Title */}
           <div 
@@ -650,134 +681,164 @@ export function StoreTemplateView({
       <div className="max-w-6xl mx-auto px-4 pt-6 sm:pt-8">
         
         {/* 2. STORE MEGA HEADER & BRANDING */}
-        <div className="relative rounded-3xl overflow-hidden mb-6 border border-white/10 bg-white/[0.02] p-5 sm:p-7 backdrop-blur-xl">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
-            <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
-              {/* Avatar / Brand Logo */}
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/20 p-1 bg-black/60 shadow-2xl shrink-0">
-                <img
-                  src={profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"}
-                  alt={storeTitle}
-                  className="w-full h-full object-cover rounded-2xl"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5 flex-wrap">
-                  <Badge variant="outline" className={`${theme.badge} text-[10px] font-mono uppercase tracking-wider`}>
-                    {theme.tagline}
-                  </Badge>
-                  <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px]">
-                    <ShieldCheck className="w-3 h-3 mr-1" />
-                    متجر موثوق ومعتمد
-                  </Badge>
+        {showHeroBanner && (
+          <div className="relative rounded-3xl overflow-hidden mb-6 border border-white/10 bg-white/[0.02] p-5 sm:p-7 backdrop-blur-xl">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
+                {/* Avatar / Brand Logo */}
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl overflow-hidden border-2 border-white/20 p-1 bg-black/60 shadow-2xl shrink-0">
+                  <img
+                    src={profile.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"}
+                    alt={storeTitle}
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-display">
-                  {storeTitle}
-                </h1>
+                <div>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5 flex-wrap">
+                    <Badge variant="outline" className={`${theme.badge} text-[10px] font-mono uppercase tracking-wider`}>
+                      {theme.tagline}
+                    </Badge>
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px]">
+                      <ShieldCheck className="w-3 h-3 mr-1" />
+                      متجر موثوق ومعتمد
+                    </Badge>
+                  </div>
 
-                {profile.bio && (
-                  <p className="text-xs text-gray-300 mt-2 max-w-xl leading-relaxed">
-                    {profile.bio}
-                  </p>
-                )}
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-display">
+                    {storeTitle}
+                  </h1>
 
-                {/* Seller Quick Info */}
-                <div className="flex items-center justify-center sm:justify-start gap-4 mt-3 text-xs text-gray-400 flex-wrap">
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-rose-400" />
-                    <span>{profile.location || "توصيل سريع لـ 58 ولاية"}</span>
-                  </span>
-                  {profile.phone && (
-                    <a href={`tel:${profile.phone}`} className="flex items-center gap-1.5 hover:text-white dir-ltr font-mono">
-                      <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>{profile.phone}</span>
-                    </a>
+                  {profile.bio && (
+                    <p className="text-xs text-gray-300 mt-2 max-w-xl leading-relaxed">
+                      {profile.bio}
+                    </p>
                   )}
+
+                  {/* Seller Quick Info */}
+                  <div className="flex items-center justify-center sm:justify-start gap-4 mt-3 text-xs text-gray-400 flex-wrap">
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                      <span>{profile.location || "توصيل سريع لـ 58 ولاية"}</span>
+                    </span>
+                    {profile.phone && (
+                      <a href={`tel:${profile.phone}`} className="flex items-center gap-1.5 hover:text-white dir-ltr font-mono">
+                        <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{profile.phone}</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Actions: Share & WhatsApp */}
-            <div className="flex sm:flex-col items-center gap-2 w-full sm:w-auto">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCopyLink}
-                className="flex-1 sm:flex-initial border-white/10 hover:border-white/30 text-xs gap-1.5 rounded-xl h-9 px-3.5 bg-black/40"
-              >
-                {copiedLink ? <Check className="w-3.5 h-3.5 text-cyan-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedLink ? "تم النسخ" : "مشاركة المتجر"}</span>
-              </Button>
-
-              <a
-                href={`https://wa.me/${sellerWhatsapp.replace(/[^0-9]/g, "")}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 sm:flex-initial w-full"
-              >
+              {/* Actions: Share & WhatsApp */}
+              <div className="flex sm:flex-col items-center gap-2 w-full sm:w-auto">
                 <Button
                   size="sm"
-                  className="w-full bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs gap-1.5 rounded-xl h-9 shadow-md"
+                  variant="outline"
+                  onClick={handleCopyLink}
+                  className="flex-1 sm:flex-initial border-white/10 hover:border-white/30 text-xs gap-1.5 rounded-xl h-9 px-3.5 bg-black/40"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 fill-black" />
-                  <span>تواصل عبر واتساب</span>
+                  {copiedLink ? <Check className="w-3.5 h-3.5 text-cyan-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedLink ? "تم النسخ" : "مشاركة المتجر"}</span>
                 </Button>
-              </a>
-            </div>
-          </div>
 
-          {/* Social Links if any */}
-          {activeLinks.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-              {activeLinks.map((link) => (
                 <a
-                  key={link.id}
-                  href={link.url}
+                  href={`https://wa.me/${sellerWhatsapp.replace(/[^0-9]/g, "")}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all text-xs flex items-center gap-1.5"
+                  className="flex-1 sm:flex-initial w-full"
                 >
-                  <PlatformIcon platform={link.platform} className="w-3.5 h-3.5" />
-                  <span>{link.title}</span>
+                  <Button
+                    size="sm"
+                    className="w-full bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs gap-1.5 rounded-xl h-9 shadow-md"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 fill-black" />
+                    <span>تواصل عبر واتساب</span>
+                  </Button>
                 </a>
-              ))}
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Social Links if any */}
+            {activeLinks.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                {activeLinks.map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all text-xs flex items-center gap-1.5"
+                  >
+                    <PlatformIcon platform={link.platform} className="w-3.5 h-3.5" />
+                    <span>{link.title}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 3. VALUE PROPOSITION BAR (مزايا التسوق) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-6">
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-            <Truck className="w-5 h-5 text-cyan-400 shrink-0" />
-            <div className="text-right">
-              <div className="text-xs font-bold text-white">توصيل 58 ولاية</div>
-              <div className="text-[10px] text-gray-400">سريع لباب المنزل</div>
+        {showTrustBadges && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-6">
+            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <Truck className="w-5 h-5 text-cyan-400 shrink-0" />
+              <div className="text-right">
+                <div className="text-xs font-bold text-white">توصيل 58 ولاية</div>
+                <div className="text-[10px] text-gray-400">سريع لباب المنزل</div>
+              </div>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+              <div className="text-right">
+                <div className="text-xs font-bold text-white">الدفع عند الاستلام</div>
+                <div className="text-[10px] text-gray-400">عاين المنتج ثم ادفع</div>
+              </div>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <RotateCcw className="w-5 h-5 text-amber-400 shrink-0" />
+              <div className="text-right">
+                <div className="text-xs font-bold text-white">استبدال واسترجاع</div>
+                <div className="text-[10px] text-gray-400">ضمان الرضا التام</div>
+              </div>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+              <Headphones className="w-5 h-5 text-purple-400 shrink-0" />
+              <div className="text-right">
+                <div className="text-xs font-bold text-white">خدمة الزبائن</div>
+                <div className="text-[10px] text-gray-400">تواصل مباشر عبر واتساب</div>
+              </div>
             </div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-            <div className="text-right">
-              <div className="text-xs font-bold text-white">الدفع عند الاستلام</div>
-              <div className="text-[10px] text-gray-400">عاين المنتج ثم ادفع</div>
+        )}
+
+        {/* 4. PROMO / SPECIAL OFFER BANNER (بانر العروض الترويجية) */}
+        {currentPage === "home" && (settings.promoBannerTitle || settings.promoBannerUrl) && (
+          <div className="relative rounded-3xl overflow-hidden mb-6 p-6 sm:p-8 bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-purple-500/20 border border-amber-500/30 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center sm:text-right">
+              <Badge className="bg-amber-400 text-black font-extrabold text-[11px] px-3 py-1">
+                🔥 عرض خاص وتخفيض حصري
+              </Badge>
+              <h3 className="text-xl sm:text-2xl font-black text-white">
+                {settings.promoBannerTitle || "تخفيضات استثنائية لفترة محدودة!"}
+              </h3>
+              {settings.promoBannerSubtitle && (
+                <p className="text-xs sm:text-sm text-gray-200 leading-relaxed max-w-xl">
+                  {settings.promoBannerSubtitle}
+                </p>
+              )}
             </div>
+            <Button
+              onClick={() => navigateToPage("shop")}
+              className="bg-amber-400 hover:bg-amber-300 text-black font-black text-xs h-11 px-6 rounded-xl shadow-lg shrink-0 gap-2 hover:scale-105 transition-all"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>استفد من العرض الآن</span>
+            </Button>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-            <RotateCcw className="w-5 h-5 text-amber-400 shrink-0" />
-            <div className="text-right">
-              <div className="text-xs font-bold text-white">استبدال واسترجاع</div>
-              <div className="text-[10px] text-gray-400">ضمان الرضا التام</div>
-            </div>
-          </div>
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-            <Headphones className="w-5 h-5 text-purple-400 shrink-0" />
-            <div className="text-right">
-              <div className="text-xs font-bold text-white">خدمة الزبائن</div>
-              <div className="text-[10px] text-gray-400">تواصل مباشر عبر واتساب</div>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* ═══════════════════════════════════════════════════════
             PAGE CONTENT ROUTING (نظام الصفحات المتعددة)
@@ -993,7 +1054,7 @@ export function StoreTemplateView({
               )}
             </div>
 
-            {categories.length > 1 && (
+            {showCategoriesFilter && categories.length > 1 && (
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                 <span className="text-[11px] text-gray-400 font-bold ml-1 shrink-0 flex items-center gap-1">
                   <Filter className="w-3 h-3" />
@@ -1202,99 +1263,86 @@ export function StoreTemplateView({
       )}
 
         {/* 7. FAQ ACCORDION SECTION (الأسئلة الشائعة لزيادة ثقة الزبون) */}
-        <div className="mt-14 p-6 sm:p-8 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
-          <div className="text-center max-w-lg mx-auto mb-6">
-            <h4 className="text-lg font-black text-white flex items-center justify-center gap-2">
-              <HelpCircle className="w-5 h-5 text-cyan-400" />
-              <span>الأسئلة الشائعة حول التوصيل والطلب</span>
-            </h4>
-            <p className="text-xs text-gray-400 mt-1">كل ما تحتاج معرفته قبل إتمام طلبك من متجرنا</p>
-          </div>
+        {showFaqSection && displayFaqList.length > 0 && (
+          <div className="mt-14 p-6 sm:p-8 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
+            <div className="text-center max-w-lg mx-auto mb-6">
+              <h4 className="text-lg font-black text-white flex items-center justify-center gap-2">
+                <HelpCircle className="w-5 h-5 text-cyan-400" />
+                <span>الأسئلة الشائعة حول التوصيل والطلب</span>
+              </h4>
+              <p className="text-xs text-gray-400 mt-1">كل ما تحتاج معرفته قبل إتمام طلبك من متجرنا</p>
+            </div>
 
-          <div className="space-y-2.5 max-w-3xl mx-auto">
-            {[
-              {
-                q: "كم يستغرق وصول الطلب؟",
-                a: "يتم توصيل الطلبات خلال 24 إلى 48 ساعة كحد أقصى لجميع ولايات الوطن الـ 58، وتصلك رسالة أو اتصال لتأكيد موعد الاستلام."
-              },
-              {
-                q: "كيف تتم عملية الدفع؟",
-                a: "الدفع يتم نقداً عند الاستلام (COD) فقط بعد أن يصلك المنتج وتعاينه بنفسك أمام موزع شركة التوصيل."
-              },
-              {
-                q: "هل يمكنني فحص المنتج قبل الدفع؟",
-                a: "نعم بالتأكيد! يحق لك فتح الطرد ومعاينة المنتج للتأكد من مطابقته للجودة والمواصفات المعروضة."
-              },
-              {
-                q: "ماذا لو وجدت مشكلة في المنتج؟",
-                a: "نحن نضمن لك حق الاستبدال أو الاسترجاع بكل سهولة؛ كل ما عليك هو التواصل مع خدمة الزبائن عبر الواتساب وسنتكفل بالأمر فوراً."
-              }
-            ].map((faq, idx) => (
-              <div 
-                key={idx}
-                className="rounded-2xl border border-white/10 bg-black/40 overflow-hidden transition-all"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full p-4 text-right flex items-center justify-between text-xs sm:text-sm font-bold text-white hover:text-cyan-400 transition-colors"
+            <div className="space-y-2.5 max-w-3xl mx-auto">
+              {displayFaqList.map((faq, idx) => (
+                <div 
+                  key={idx}
+                  className="rounded-2xl border border-white/10 bg-black/40 overflow-hidden transition-all"
                 >
-                  <span>{faq.q}</span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${openFaq === idx ? "rotate-180 text-cyan-400" : ""}`} />
-                </button>
-                {openFaq === idx && (
-                  <div className="px-4 pb-4 pt-1 text-xs text-gray-300 leading-relaxed border-t border-white/5">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                    className="w-full p-4 text-right flex items-center justify-between text-xs sm:text-sm font-bold text-white hover:text-cyan-400 transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${openFaq === idx ? "rotate-180 text-cyan-400" : ""}`} />
+                  </button>
+                  {openFaq === idx && (
+                    <div className="px-4 pb-4 pt-1 text-xs text-gray-300 leading-relaxed border-t border-white/5">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 8. PROFESSIONAL E-COMMERCE FOOTER */}
-        <div className="mt-14 pt-8 border-t border-white/10 text-center text-xs text-gray-400 space-y-4">
-          {/* Quick Page Links in Footer */}
-          <div className="flex items-center justify-center gap-4 text-xs font-bold text-gray-300 flex-wrap pb-2 border-b border-white/5">
-            <button type="button" onClick={() => navigateToPage("home")} className="hover:text-cyan-400 transition-colors">
-              الرئيسية
-            </button>
-            <button type="button" onClick={() => navigateToPage("shop")} className="hover:text-cyan-400 transition-colors">
-              المتجر ({rawProducts.length})
-            </button>
-            <button type="button" onClick={() => navigateToPage("about")} className="hover:text-cyan-400 transition-colors">
-              من نحن
-            </button>
-            <button type="button" onClick={() => navigateToPage("shipping")} className="hover:text-cyan-400 transition-colors">
-              الشحن والاسترجاع
-            </button>
-            <button type="button" onClick={() => navigateToPage("contact")} className="hover:text-cyan-400 transition-colors">
-              اتصل بنا
-            </button>
-            {profile.customPages?.filter(p => p.enabled !== false).map(cp => (
-              <button key={cp.id} type="button" onClick={() => navigateToPage(cp.slug)} className="hover:text-cyan-400 transition-colors">
-                {cp.title}
+        {showFooter && (
+          <div className="mt-14 pt-8 border-t border-white/10 text-center text-xs text-gray-400 space-y-4">
+            {/* Quick Page Links in Footer */}
+            <div className="flex items-center justify-center gap-4 text-xs font-bold text-gray-300 flex-wrap pb-2 border-b border-white/5">
+              <button type="button" onClick={() => navigateToPage("home")} className="hover:text-cyan-400 transition-colors">
+                الرئيسية
               </button>
-            ))}
-          </div>
+              <button type="button" onClick={() => navigateToPage("shop")} className="hover:text-cyan-400 transition-colors">
+                المتجر ({rawProducts.length})
+              </button>
+              <button type="button" onClick={() => navigateToPage("about")} className="hover:text-cyan-400 transition-colors">
+                من نحن
+              </button>
+              <button type="button" onClick={() => navigateToPage("shipping")} className="hover:text-cyan-400 transition-colors">
+                الشحن والاسترجاع
+              </button>
+              <button type="button" onClick={() => navigateToPage("contact")} className="hover:text-cyan-400 transition-colors">
+                اتصل بنا
+              </button>
+              {profile.customPages?.filter(p => p.enabled !== false).map(cp => (
+                <button key={cp.id} type="button" onClick={() => navigateToPage(cp.slug)} className="hover:text-cyan-400 transition-colors">
+                  {cp.title}
+                </button>
+              ))}
+            </div>
 
-          <div className="flex items-center justify-center gap-6 text-gray-400 flex-wrap">
-            <span>🚚 توصيل سريع لـ 58 ولاية</span>
-            <span>💵 الدفع عند الاستلام</span>
-            <span>🔒 تسوق آمن ومحمي 100%</span>
+            <div className="flex items-center justify-center gap-6 text-gray-400 flex-wrap">
+              <span>🚚 توصيل سريع لـ 58 ولاية</span>
+              <span>💵 الدفع عند الاستلام</span>
+              <span>🔒 تسوق آمن ومحمي 100%</span>
+            </div>
+            <p>
+              جميع الحقوق محفوظة © {new Date().getFullYear()} • متجر {storeTitle} • تم الإنشاء بواسطة{" "}
+              <a
+                href="https://www.novawebdv.com"
+                target="_blank"
+                rel="noreferrer"
+                className="text-cyan-400 font-bold hover:underline"
+              >
+                Novaweb Profiles
+              </a>
+            </p>
           </div>
-          <p>
-            جميع الحقوق محفوظة © {new Date().getFullYear()} • متجر {storeTitle} • تم الإنشاء بواسطة{" "}
-            <a
-              href="https://www.novawebdv.com"
-              target="_blank"
-              rel="noreferrer"
-              className="text-cyan-400 font-bold hover:underline"
-            >
-              Novaweb Profiles
-            </a>
-          </p>
-        </div>
+        )}
       </div>
 
       {/* 9. MOBILE-FIRST STICKY BOTTOM BAR (Always available on phones) */}
