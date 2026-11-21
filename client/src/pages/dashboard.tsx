@@ -168,7 +168,117 @@ export default function Dashboard() {
   // Live Website Studio State
   const [studioDevice, setStudioDevice] = useState<"mobile" | "desktop">("desktop");
   const [studioActivePage, setStudioActivePage] = useState<string>("home");
-  const [studioActiveTab, setStudioActiveTab] = useState<"pages" | "texts" | "sections" | "branding" | "shipping" | "social">("texts");
+  const [studioActiveTab, setStudioActiveTab] = useState<"sections" | "branding" | "pages" | "shipping" | "social">("sections");
+  const [selectedStudioSection, setSelectedStudioSection] = useState<string | null>(null);
+
+  // 1-Click Pro Copywriting Packs for Algerian Stores (باقات نصوص بيعية جاهزة بنقرة واحدة)
+  const PRO_COPY_PRESETS = [
+    {
+      id: "general_cod",
+      name: "📦 متجر عام (COD 58 ولاية)",
+      badge: "الأكثر مبيعاً",
+      desc: "أقوى صياغة لزيادة الطلبات والدفع عند الاستلام",
+      announcement: "🚚 توصيل متوفر لجميع ولايات الوطن (58 ولاية) • الدفع عند الاستلام بعد المعاينة",
+      heroBadge: "متجر موثوق ومعتمد 100%",
+      heroBtn: "تواصل معنا عبر واتساب",
+      orderBtn: "اطلب الآن والدفع عند الاستلام",
+      whatsappBtn: "طلب سريع عبر واتساب",
+      badge1T: "توصيل 58 ولاية",
+      badge1D: "سريع ومضمون لباب منزلك",
+      badge2T: "الدفع عند الاستلام",
+      badge2D: "عاين المنتج وتأكد منه ثم ادفع",
+      badge3T: "استبدال واسترجاع",
+      badge3D: "ضمان الرضا التام خلال 48 ساعة",
+      badge4T: "خدمة الزبائن",
+      badge4D: "تواصل مباشر وسريع عبر واتساب",
+      thankYou: "شكراً لطلبك! تم تسجيل طلبك بنجاح وسيتصل بك فريقنا لتأكيد الشحن فوراً.",
+    },
+    {
+      id: "fashion",
+      name: "👗 أزياء، ملابس وأحذية",
+      badge: "أناقة وموضة",
+      desc: "صياغة أنيقة تركز على الخامات والقياس والمقاسات",
+      announcement: "✨ تشكيلة الموسم الحصرية • خامات أصلية عالية الجودة مع إمكانية القياس عند الاستلام",
+      heroBadge: "ماركة أصلية وجودة مضمونة",
+      heroBtn: "استفسار حول المقاسات عبر واتساب",
+      orderBtn: "احجز قطعتك الآن قبل نفاذ الكمية",
+      whatsappBtn: "طلب المقاس عبر واتساب",
+      badge1T: "شحن سريع لـ 58 ولاية",
+      badge1D: "تغليف أنيق ومحمي لباب المنزل",
+      badge2T: "معاينة وقياس قبل الدفع",
+      badge2D: "حق فتح الطرد والتأكد من المقاس",
+      badge3T: "تبديل المقاس مجاناً",
+      badge3D: "تبديل فوري وسلس للمقاسات",
+      badge4T: "مستشار الأناقة والمقاس",
+      badge4D: "نساعدك في اختيار مقاسك المثالي",
+      thankYou: "ألف مبروك اختيارك الأنيق! سنتصل بك لتأكيد تفاصيل المقاس والعنوان.",
+    },
+    {
+      id: "tech",
+      name: "📱 إلكترونيات وهواتف",
+      badge: "تكنولوجيا وضمان",
+      desc: "صياغة تركز على الضمان الأصلي والمواصفات العالية",
+      announcement: "⚡ منتجات أصلية 100% مع ضمان معتمد وتوصيل فوري لـ 58 ولاية",
+      heroBadge: "أصلي 100% وضمان رسمي",
+      heroBtn: "استشارة تقنية عبر واتساب",
+      orderBtn: "شراء الآن مع الضمان",
+      whatsappBtn: "طلب عبر واتساب مع الضمان",
+      badge1T: "توصيل مؤمن 58 ولاية",
+      badge1D: "شحن سريع في علبة محكمة الإغلاق",
+      badge2T: "فحص وتشغيل قبل الدفع",
+      badge2D: "جرّب المنتج أمام عون التوصيل",
+      badge3T: "ضمان الاستبدال الفوري",
+      badge3D: "ضمان رسمي ضد أي عيب مصنعي",
+      badge4T: "دعم فني متخصص",
+      badge4D: "مساعدة تقنية متواصلة عبر واتساب",
+      thankYou: "شكراً لاختيارك الجودة العالية! تم تأكيد طلبك وسيتصل بك قسم الشحن والضمان.",
+    },
+    {
+      id: "beauty",
+      name: "🧴 عناية وتجميل وعطور",
+      badge: "فخامة وثبات",
+      desc: "صياغة راقية تركز على المكونات الطبيعية والثبات",
+      announcement: "🌸 روائح وأسرار جمال استثنائية • منتجات طبيعية وأصلية مع ثبات يدوم طويلاً",
+      heroBadge: "طبيعي وأصلي 100%",
+      heroBtn: "استفسار واستشارة تجميلية",
+      orderBtn: "اطلب مجموعتك الآن",
+      whatsappBtn: "طلب سريع عبر واتساب",
+      badge1T: "توصيل لـ 58 ولاية",
+      badge1D: "تغليف هدايا راقي ومحمي",
+      badge2T: "معاينة الرائحة قبل الدفع",
+      badge2D: "تأكد من أصالة المنتج أولاً",
+      badge3T: "ضمان الثبات والجودة",
+      badge3D: "مطابقة تامة للمواصفات الطبيعية",
+      badge4T: "استشارات تجميل خاصة",
+      badge4D: "نصائح مخصصة لنوع بشرتك",
+      thankYou: "شكراً لاهتمامك بجمالك وأناقتك! سنتصل بك لتأكيد الشحن وإرسال هديتك.",
+    }
+  ];
+
+  const applyProCopyPreset = (preset: typeof PRO_COPY_PRESETS[0]) => {
+    if (!profileForm) return;
+    setProfileForm({
+      ...profileForm,
+      storeSettings: {
+        ...(profileForm.storeSettings || {}),
+        announcementText: preset.announcement,
+        heroBadgeText: preset.heroBadge,
+        heroWhatsappBtnText: preset.heroBtn,
+        orderButtonText: preset.orderBtn,
+        whatsappOrderButtonText: preset.whatsappBtn,
+        trustBadge1Title: preset.badge1T,
+        trustBadge1Desc: preset.badge1D,
+        trustBadge2Title: preset.badge2T,
+        trustBadge2Desc: preset.badge2D,
+        trustBadge3Title: preset.badge3T,
+        trustBadge3Desc: preset.badge3D,
+        trustBadge4Title: preset.badge4T,
+        trustBadge4Desc: preset.badge4D,
+        thankYouMessage: preset.thankYou,
+      }
+    });
+    toast.success(`تم تطبيق باقة "${preset.name}" بنجاح! 🚀`);
+  };
   const [newPageModalOpen, setNewPageModalOpen] = useState(false);
   const [newPageForm, setNewPageForm] = useState({ title: "", slug: "", content: "" });
 
@@ -1465,16 +1575,33 @@ export default function Dashboard() {
                     <div className="flex bg-black/50 p-1.5 rounded-2xl border border-white/10 overflow-x-auto scrollbar-none gap-1">
                       <button
                         type="button"
-                        onClick={() => setStudioActiveTab("texts")}
+                        onClick={() => {
+                          setStudioActiveTab("sections");
+                          setSelectedStudioSection(null);
+                        }}
                         className={`flex-1 min-w-[75px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                          studioActiveTab === "texts"
+                          studioActiveTab === "sections"
                             ? "bg-cyan-400 text-black shadow-md font-extrabold"
                             : "text-gray-400 hover:text-white hover:bg-white/5"
                         }`}
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        <span>النصوص</span>
+                        <Layers className="w-3.5 h-3.5" />
+                        <span>الأقسام والمحتوى</span>
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setStudioActiveTab("branding")}
+                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          studioActiveTab === "branding"
+                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Palette className="w-3.5 h-3.5" />
+                        <span>الألوان والنمط</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => setStudioActiveTab("pages")}
@@ -1487,30 +1614,7 @@ export default function Dashboard() {
                         <FileText className="w-3.5 h-3.5" />
                         <span>الصفحات</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setStudioActiveTab("sections")}
-                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                          studioActiveTab === "sections"
-                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
-                            : "text-gray-400 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        <Layers className="w-3.5 h-3.5" />
-                        <span>الأقسام</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setStudioActiveTab("branding")}
-                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                          studioActiveTab === "branding"
-                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
-                            : "text-gray-400 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        <Palette className="w-3.5 h-3.5" />
-                        <span>الهوية</span>
-                      </button>
+
                       <button
                         type="button"
                         onClick={() => setStudioActiveTab("shipping")}
@@ -1521,842 +1625,805 @@ export default function Dashboard() {
                         }`}
                       >
                         <Truck className="w-3.5 h-3.5" />
-                        <span>الشحن</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setStudioActiveTab("social")}
-                        className={`flex-1 min-w-[70px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                          studioActiveTab === "social"
-                            ? "bg-cyan-400 text-black shadow-md font-extrabold"
-                            : "text-gray-400 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        <Share2 className="w-3.5 h-3.5" />
-                        <span>التواصل</span>
+                        <span>الشحن والتوصيل</span>
                       </button>
                     </div>
 
-                    {/* TAB CONTENT: STORE TEXTS & FREEDOM COPYWRITER (الحرية التامة في كتابات ونصوص المتجر) */}
-                    {studioActiveTab === "texts" && (
-                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
-                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                          <div>
-                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                              <Edit2 className="w-4 h-4 text-cyan-400" />
-                              <span>محرر النصوص والعبارات الشامل</span>
-                            </h4>
-                            <p className="text-[11px] text-gray-400 mt-0.5">
-                              حرية مطلقة في تعديل كل كلمة وجملة وزر تظهر في متجرك
-                            </p>
-                          </div>
-                          <Badge className="bg-cyan-400 text-black font-extrabold text-[10px]">حرية تامة</Badge>
-                        </div>
-
-                        {/* SECTION 1: HEADER & HERO TEXTS */}
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
-                          <div className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
-                            <Store className="w-3.5 h-3.5" />
-                            <span>1. واجهة المتجر والهيدر الرئيسي:</span>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-[11px] text-gray-300 font-bold">اسم المتجر / العلامة التجارية</Label>
-                            <Input
-                              value={profileForm.storeSettings?.storeName ?? profileForm.fullName ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                fullName: e.target.value,
-                                storeSettings: { ...(profileForm.storeSettings || {}), storeName: e.target.value }
-                              })}
-                              placeholder="مثال: متجر الأناقة الجزائري"
-                              className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-[11px] text-gray-300 font-bold">الوصف التعريفي والسلوغان (Bio)</Label>
-                            <Textarea
-                              value={profileForm.bio || profileForm.storeSettings?.storeBio || ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                bio: e.target.value,
-                                storeSettings: { ...(profileForm.storeSettings || {}), storeBio: e.target.value }
-                              })}
-                              placeholder="اكتب نبذة أو جملة ترويجية للمتجر تظهر تحت الاسم مباشرة..."
-                              rows={2}
-                              className="bg-black/60 border-white/10 text-xs rounded-xl text-white"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            <div className="space-y-1">
-                              <Label className="text-[11px] text-gray-300 font-bold">شارة الثقة بالهيدر</Label>
-                              <Input
-                                value={profileForm.storeSettings?.heroBadgeText ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), heroBadgeText: e.target.value }
-                                })}
-                                placeholder="افتراضي: متجر موثوق ومعتمد"
-                                className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <Label className="text-[11px] text-gray-300 font-bold">نص زر واتساب في الهيدر</Label>
-                              <Input
-                                value={profileForm.storeSettings?.heroWhatsappBtnText ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), heroWhatsappBtnText: e.target.value }
-                                })}
-                                placeholder="افتراضي: تواصل عبر واتساب"
-                                className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* SECTION 2: ANNOUNCEMENT BAR TEXT */}
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2">
-                          <div className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>2. نص شريط الإعلانات أعلى المتجر:</span>
-                          </div>
-                          <Input
-                            value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لجميع ولايات الوطن (58 ولاية) - الدفع عند الاستلام"}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
-                            })}
-                            placeholder="اكتب أي إعلان تريده في الشريط العلوي..."
-                            className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                          />
-                        </div>
-
-                        {/* SECTION 3: TRUST BADGES (4 BADGES) */}
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
-                          <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>3. بطاقات المزايا الأربعة (تعديل كامل للعناوين والأوصاف):</span>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            {/* Badge 1 */}
-                            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
-                              <span className="text-[10px] font-bold text-cyan-300">الميزة 1 (افتراضي: التوصيل)</span>
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge1Title ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge1Title: e.target.value }
-                                })}
-                                placeholder="العنوان (توصيل 58 ولاية)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge1Desc ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge1Desc: e.target.value }
-                                })}
-                                placeholder="الوصف (سريع لباب المنزل)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                            </div>
-
-                            {/* Badge 2 */}
-                            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
-                              <span className="text-[10px] font-bold text-emerald-300">الميزة 2 (افتراضي: الدفع)</span>
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge2Title ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge2Title: e.target.value }
-                                })}
-                                placeholder="العنوان (الدفع عند الاستلام)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge2Desc ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge2Desc: e.target.value }
-                                })}
-                                placeholder="الوصف (عاين المنتج ثم ادفع)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                            </div>
-
-                            {/* Badge 3 */}
-                            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
-                              <span className="text-[10px] font-bold text-amber-300">الميزة 3 (افتراضي: الضمان)</span>
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge3Title ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge3Title: e.target.value }
-                                })}
-                                placeholder="العنوان (استبدال واسترجاع)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge3Desc ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge3Desc: e.target.value }
-                                })}
-                                placeholder="الوصف (ضمان الرضا التام)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                            </div>
-
-                            {/* Badge 4 */}
-                            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
-                              <span className="text-[10px] font-bold text-purple-300">الميزة 4 (افتراضي: الدعم)</span>
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge4Title ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge4Title: e.target.value }
-                                })}
-                                placeholder="العنوان (خدمة الزبائن)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                              <Input
-                                value={profileForm.storeSettings?.trustBadge4Desc ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), trustBadge4Desc: e.target.value }
-                                })}
-                                placeholder="الوصف (تواصل مباشر عبر واتساب)"
-                                className="bg-black/60 border-white/10 text-xs h-8 rounded-lg text-white"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* SECTION 4: CALL TO ACTION & BUY BUTTONS */}
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
-                          <div className="text-xs font-bold text-purple-400 flex items-center gap-1.5">
-                            <Tag className="w-3.5 h-3.5" />
-                            <span>4. نصوص أزرار الشراء واستمارة الطلب:</span>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            <div className="space-y-1">
-                              <Label className="text-[11px] text-gray-300 font-bold">نص زر الشراء السريع</Label>
-                              <Input
-                                value={profileForm.storeSettings?.orderButtonText ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), orderButtonText: e.target.value }
-                                })}
-                                placeholder="افتراضي: شراء الآن (أو: اطلب الآن)"
-                                className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <Label className="text-[11px] text-gray-300 font-bold">نص زر الشراء عبر واتساب</Label>
-                              <Input
-                                value={profileForm.storeSettings?.whatsappOrderButtonText ?? ""}
-                                onChange={(e) => setProfileForm({
-                                  ...profileForm,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), whatsappOrderButtonText: e.target.value }
-                                })}
-                                placeholder="افتراضي: طلب عبر واتساب"
-                                className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-[11px] text-gray-300 font-bold">رسالة شكر الزبون بعد نجاح الطلب</Label>
-                            <Input
-                              value={profileForm.storeSettings?.thankYouMessage ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
-                              })}
-                              placeholder="مثال: شكراً لطلبكم! سنتصل بكم لتأكيد موعد الشحن والتوصيل."
-                              className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                          </div>
-                        </div>
-
-                        {/* SECTION 5: ABOUT US STORY */}
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2.5">
-                          <div className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>5. نصوص صفحة "من نحن" (About Us):</span>
-                          </div>
-                          <Input
-                            value={profileForm.storeSettings?.aboutStoryTitle ?? ""}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryTitle: e.target.value }
-                            })}
-                            placeholder="عنوان القصة (مثال: قصة نجاحنا وشغفنا بالتميز)"
-                            className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                          />
-                          <Textarea
-                            value={profileForm.storeSettings?.aboutStoryText ?? ""}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryText: e.target.value }
-                            })}
-                            placeholder="اكتب بالتفصيل قصة متجرك ورسالتك لزبائنك وما يميز منتجاتك..."
-                            rows={3}
-                            className="bg-black/60 border-white/10 text-xs rounded-xl text-white"
-                          />
-                        </div>
-
-                        {/* SECTION 6: SHIPPING & GUARANTEES */}
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2.5">
-                          <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>6. نصوص سياسة الشحن والضمان والاسترجاع:</span>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-[11px] text-gray-300 font-bold">سياسة الفحص والمعاينة قبل الدفع</Label>
-                            <Input
-                              value={profileForm.storeSettings?.deliveryNotice ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
-                              })}
-                              placeholder="مثال: يحق لك فتح ومعاينة الطرد والتأكد من مطابقة المنتج قبل تسليم المبلغ للموزع."
-                              className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-[11px] text-gray-300 font-bold">شروط وسياسة الاستبدال والاسترجاع</Label>
-                            <Input
-                              value={profileForm.storeSettings?.returnPolicyNotice ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
-                              })}
-                              placeholder="مثال: نضمن استبدال المنتج في حال وجود أي عيب خلال 48 ساعة بكل سهولة."
-                              className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                          </div>
-                        </div>
-
-                        {/* SECTION 7: CONTACT US PAGE & BUSINESS HOURS */}
-                        <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2.5">
-                          <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                            <Phone className="w-3.5 h-3.5" />
-                            <span>7. نصوص صفحة "اتصل بنا" ومواعيد العمل:</span>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            <Input
-                              value={profileForm.storeSettings?.contactTitle ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), contactTitle: e.target.value }
-                              })}
-                              placeholder="عنوان التواصل (نحن هنا لمساعدتك)"
-                              className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                            <Input
-                              value={profileForm.storeSettings?.businessHours ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), businessHours: e.target.value }
-                              })}
-                              placeholder="ساعات العمل (مثال: يومياً 9:00 ص - 10:00 م)"
-                              className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                          </div>
-                          <Input
-                            value={profileForm.storeSettings?.addressDetails ?? profileForm.location ?? ""}
-                            onChange={(e) => setProfileForm({
-                              ...profileForm,
-                              location: e.target.value,
-                              storeSettings: { ...(profileForm.storeSettings || {}), addressDetails: e.target.value }
-                            })}
-                            placeholder="العنوان أو المقر (مثال: الجزائر العاصمة أو وهران أو تلمسان...)"
-                            className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB CONTENT 1: PAGES MANAGER */}
-                    {studioActiveTab === "pages" && (
-                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
-                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                          <div>
-                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-cyan-400" />
-                              <span>إدارة صفحات الموقع وتعديلها</span>
-                            </h4>
-                            <p className="text-[11px] text-gray-400 mt-0.5">
-                              توسيع موقعك بإنشاء صفحات جديدة غير محدودة
-                            </p>
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={() => setNewPageModalOpen(true)}
-                            className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs h-8 px-3 rounded-xl gap-1 shadow-md"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>صفحة جديدة</span>
-                          </Button>
-                        </div>
-
-                        {/* Standard System Pages */}
-                        <div className="space-y-2">
-                          <div className="text-[11px] font-bold text-gray-400">الصفحات الأساسية التلقائية:</div>
-                          {[
-                            { id: "home", title: "الرئيسية (Home)", desc: "واجهة الموقع، البانر، المزايا، وأبرز المنتجات", icon: "🏠" },
-                            { id: "shop", title: "المتجر والكتالوج (Shop)", desc: "جميع المنتجات، فلاتر الفئات، والبحث الفوري", icon: "🛍️" },
-                            { id: "about", title: "من نحن وقصة المتجر (About)", desc: "التعريف بالبراند، رسالتنا، وشارات الجودة", icon: "ℹ️" },
-                            { id: "shipping", title: "الشحن والاسترجاع والضمان", desc: "سياسة التوصيل لـ 58 ولاية، الاسترجاع 48 ساعة", icon: "🚚" },
-                            { id: "contact", title: "اتصل بنا وخدمة العملاء", desc: "أرقام الهاتف، واتساب مباشر، وساعات العمل", icon: "📞" },
-                          ].map((p) => (
-                            <div
-                              key={p.id}
-                              onClick={() => setStudioActivePage(p.id)}
-                              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                                studioActivePage === p.id
-                                  ? "bg-cyan-500/15 border-cyan-400/50 shadow-md"
-                                  : "bg-black/30 border-white/5 hover:border-white/20"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <span className="text-base">{p.icon}</span>
-                                <div>
-                                  <div className="text-xs font-bold text-white">{p.title}</div>
-                                  <div className="text-[10px] text-gray-400">{p.desc}</div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className={`text-[10px] ${studioActivePage === p.id ? "border-cyan-400 text-cyan-300" : "border-white/10 text-gray-400"}`}>
-                                {studioActivePage === p.id ? "محددة في المعاينة" : "عرض"}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Custom User Pages */}
-                        {profileForm.customPages && profileForm.customPages.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-white/10">
-                            <div className="text-[11px] font-bold text-cyan-400">الصفحات المخصصة الإضافية:</div>
-                            {profileForm.customPages.map((cp) => (
-                              <div
-                                key={cp.id}
-                                className={`p-3 rounded-2xl border transition-all flex items-center justify-between ${
-                                  studioActivePage === cp.slug
-                                    ? "bg-cyan-500/15 border-cyan-400/50 shadow-md"
-                                    : "bg-black/30 border-white/5 hover:border-white/20"
-                                }`}
-                              >
-                                <div
-                                  onClick={() => setStudioActivePage(cp.slug)}
-                                  className="flex items-center gap-2.5 cursor-pointer flex-1"
-                                >
-                                  <span className="text-base">📄</span>
-                                  <div>
-                                    <div className="text-xs font-bold text-white">{cp.title}</div>
-                                    <div className="text-[10px] text-gray-400 font-mono">/{cp.slug}</div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setStudioActivePage(cp.slug)}
-                                    className="text-[11px] text-cyan-400 h-7 px-2"
-                                  >
-                                    معاينة
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleDeletePage(cp.id)}
-                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 w-7 p-0"
-                                    title="حذف هذه الصفحة"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* TAB CONTENT 2: SECTIONS & CONTENT */}
+                    {/* TAB CONTENT: SECTIONS & VISUAL EDITING (WIX & SHOPIFY 2.0 STYLE) */}
                     {studioActiveTab === "sections" && (
-                      <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-6">
-                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                          <div>
-                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                              <Layers className="w-4 h-4 text-cyan-400" />
-                              <span>التحكم في الأقسام والمحتوى</span>
-                            </h4>
-                            <p className="text-[11px] text-gray-400 mt-0.5">
-                              إظهار/إخفاء الأقسام، العروض الترويجية، والأسئلة الشائعة
-                            </p>
-                          </div>
-                          <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[10px]">مباشر</Badge>
-                        </div>
-
-                        {/* 1. SECTION VISIBILITY SWITCHES (مفاتيح تشغيل وإخفاء الأقسام) */}
-                        <div className="space-y-2.5 p-4 rounded-2xl bg-black/40 border border-white/5">
-                          <div className="text-xs font-bold text-white flex items-center gap-2 mb-2">
-                            <Sliders className="w-4 h-4 text-cyan-400" />
-                            <span>مفاتيح إظهار وإخفاء أقسام الموقع:</span>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            {/* Announcement Bar */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">شريط الإعلانات العلوي</span>
-                              <Switch
-                                checked={profileForm.siteSections?.announcementBar !== false}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    siteSections: { ...(profileForm.siteSections || {}), announcementBar: val }
-                                  });
-                                }}
-                              />
-                            </div>
-
-                            {/* Hero Header */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">هيدر المتجر واللوغو</span>
-                              <Switch
-                                checked={profileForm.siteSections?.heroBanner !== false}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    siteSections: { ...(profileForm.siteSections || {}), heroBanner: val }
-                                  });
-                                }}
-                              />
-                            </div>
-
-                            {/* Trust Badges */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">مزايا التوصيل لـ 58 ولاية</span>
-                              <Switch
-                                checked={(profileForm.storeSettings?.showTrustBadges !== false) && (profileForm.siteSections?.trustBadges !== false)}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    storeSettings: { ...(profileForm.storeSettings || {}), showTrustBadges: val },
-                                    siteSections: { ...(profileForm.siteSections || {}), trustBadges: val }
-                                  });
-                                }}
-                              />
-                            </div>
-
-                            {/* Categories Filter */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">فلاتر وتصنيفات المنتجات</span>
-                              <Switch
-                                checked={profileForm.siteSections?.categoriesFilter !== false}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    siteSections: { ...(profileForm.siteSections || {}), categoriesFilter: val }
-                                  });
-                                }}
-                              />
-                            </div>
-
-                            {/* Direct WhatsApp Order Button */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">زر شراء واتساب بالبطاقة</span>
-                              <Switch
-                                checked={profileForm.storeSettings?.showDirectWhatsappBtn !== false}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    storeSettings: { ...(profileForm.storeSettings || {}), showDirectWhatsappBtn: val }
-                                  });
-                                }}
-                              />
-                            </div>
-
-                            {/* Stock Counter Badge */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">مؤشر نفاذ المخزون والطلب</span>
-                              <Switch
-                                checked={profileForm.storeSettings?.showStockCounter !== false}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    storeSettings: { ...(profileForm.storeSettings || {}), showStockCounter: val }
-                                  });
-                                }}
-                              />
-                            </div>
-
-                            {/* FAQ Section */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">قسم الأسئلة الشائعة (FAQ)</span>
-                              <Switch
-                                checked={profileForm.siteSections?.faqAccordion !== false}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    siteSections: { ...(profileForm.siteSections || {}), faqAccordion: val }
-                                  });
-                                }}
-                              />
-                            </div>
-
-                            {/* Footer */}
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                              <span className="text-xs text-gray-200">الفوتر السفلي للموقع</span>
-                              <Switch
-                                checked={profileForm.siteSections?.footer !== false}
-                                onCheckedChange={(val) => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    siteSections: { ...(profileForm.siteSections || {}), footer: val }
-                                  });
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 2. PROMO / SALE BANNER (بانر العروض الترويجية) */}
-                        <div className="space-y-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                              <Flame className="w-4 h-4 text-amber-400" />
-                              <span>بانر العروض والتخفيضات (يظهر بالصفحة الرئيسية)</span>
-                            </Label>
-                            {(profileForm.storeSettings?.promoBannerTitle || profileForm.storeSettings?.promoBannerSubtitle) && (
+                      <div className="space-y-4">
+                        {/* CASE 1: SECTION DETAIL FOCUSED VIEW (عند النقر على قسم لتعديله) */}
+                        {selectedStudioSection ? (
+                          <div className="p-5 sm:p-6 rounded-3xl bg-white/[0.03] border border-cyan-500/30 space-y-4 backdrop-blur-xl shadow-2xl">
+                            {/* Back Button & Section Title */}
+                            <div className="flex items-center justify-between pb-3 border-b border-white/10">
                               <Button
                                 size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setProfileForm({
-                                    ...profileForm,
-                                    storeSettings: {
-                                      ...(profileForm.storeSettings || {}),
-                                      promoBannerTitle: "",
-                                      promoBannerSubtitle: ""
-                                    }
-                                  });
-                                  toast.info("تم تعطيل بانر العروض");
-                                }}
-                                className="text-[10px] text-gray-400 hover:text-red-400 h-6 px-2"
+                                variant="outline"
+                                onClick={() => setSelectedStudioSection(null)}
+                                className="border-white/15 text-xs h-8 px-3 rounded-xl gap-1.5 hover:border-cyan-400 text-white"
                               >
-                                إزالة البانر
+                                <ArrowRight className="w-3.5 h-3.5" />
+                                <span>← عودة لجميع الأقسام</span>
                               </Button>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Input
-                              value={profileForm.storeSettings?.promoBannerTitle ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), promoBannerTitle: e.target.value }
-                              })}
-                              placeholder="عنوان العرض (مثال: 🔥 تخفيضات الموسم - وفر حتى 40% على جميع المنتجات)"
-                              className="bg-black/50 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                            <Input
-                              value={profileForm.storeSettings?.promoBannerSubtitle ?? ""}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), promoBannerSubtitle: e.target.value }
-                              })}
-                              placeholder="تفاصيل العرض أو كود الخصم (مثال: الشحن مجاني عند طلب قطعتين أو أكثر - الكمية محدودة)"
-                              className="bg-black/50 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                          </div>
-                        </div>
-
-                        {/* 3. CORE TEXTS & NOTICES */}
-                        <div className="space-y-4 pt-2 border-t border-white/10">
-                          <div className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                            <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>نصوص وسياسات المتجر:</span>
-                          </div>
-
-                          {/* Announcement Bar */}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-300 font-bold flex items-center gap-1.5">
-                              <Truck className="w-3.5 h-3.5 text-cyan-400" />
-                              <span>نص شريط الإعلانات أعلى الموقع</span>
-                            </Label>
-                            <Input
-                              value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
-                              })}
-                              placeholder="🚚 توصيل متوفر لـ 58 ولاية - الدفع عند الاستلام"
-                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                            />
-                          </div>
-
-                          {/* Brand Slogan */}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-300 font-bold">الشعار الترويجي الفرعي (Slogan)</Label>
-                            <Input
-                              value={profileForm.jobTitle || ""}
-                              onChange={(e) => setProfileForm({ ...profileForm, jobTitle: e.target.value })}
-                              placeholder="مثال: أفضل المنتجات الأصلية بأحسن الأسعار"
-                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                            />
-                          </div>
-
-                          {/* About Story */}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-300 font-bold">قصة ونبذة عن المتجر (صفحة من نحن)</Label>
-                            <Textarea
-                              rows={3}
-                              value={profileForm.storeSettings?.aboutStoryText ?? (profileForm.bio || "")}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setProfileForm({
-                                  ...profileForm,
-                                  bio: val,
-                                  storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryText: val }
-                                });
-                              }}
-                              placeholder="اكتب نبذة عن متجرك، التزامكم بالجودة، ومصداقيتكم في التوصيل لـ 58 ولاية..."
-                              className="bg-black/40 border-white/10 text-xs rounded-xl resize-none text-white"
-                            />
-                          </div>
-
-                          {/* Delivery & Inspection Notice */}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-300 font-bold">شرط المعاينة والتوصيل للزبون</Label>
-                            <Input
-                              value={profileForm.storeSettings?.deliveryNotice ?? "عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
-                              })}
-                              placeholder="عاين طلبك وتأكد منه قبل الدفع لموزع التوصيل"
-                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                            />
-                          </div>
-
-                          {/* Return Policy Notice */}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-300 font-bold">سياسة الضمان والاسترجاع</Label>
-                            <Input
-                              value={profileForm.storeSettings?.returnPolicyNotice ?? "إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
-                              })}
-                              placeholder="إمكانية الاستبدال أو الاسترجاع خلال 48 ساعة من الاستلام"
-                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                            />
-                          </div>
-
-                          {/* Thank You Message */}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-300 font-bold">رسالة الشكر بعد إتمام الطلب</Label>
-                            <Input
-                              value={profileForm.storeSettings?.thankYouMessage ?? "شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."}
-                              onChange={(e) => setProfileForm({
-                                ...profileForm,
-                                storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
-                              })}
-                              placeholder="شكراً لطلبك! سيتصل بك فريقنا لتأكيد موعد الشحن والتسليم."
-                              className="bg-black/40 border-white/10 text-xs h-10 rounded-xl text-white"
-                            />
-                          </div>
-                        </div>
-
-                        {/* 4. DYNAMIC FAQ BUILDER (الأسئلة الشائعة القابلة للتخصيص الكامل) */}
-                        <div className="space-y-3 pt-3 border-t border-white/10">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <Label className="text-xs font-bold text-white flex items-center gap-1.5">
-                                <HelpCircle className="w-4 h-4 text-cyan-400" />
-                                <span>الأسئلة الشائعة (FAQ) القابلة للتعديل</span>
-                              </Label>
-                              <p className="text-[10px] text-gray-400 mt-0.5">
-                                أضف الأسئلة الشائعة التي تطمئن الزبون وتزيد المبيعات
-                              </p>
+                              <Badge className="bg-cyan-400 text-black font-extrabold text-[10px]">
+                                تعديل مباشر Live
+                              </Badge>
                             </div>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={handleLoadDefaultFaqs}
-                              className="text-[10px] h-7 px-2.5 rounded-lg border-white/10 text-cyan-400 hover:bg-cyan-500/10"
-                            >
-                              الأسئلة الافتراضية
-                            </Button>
-                          </div>
+                            {/* 1. ANNOUNCEMENT BAR EDITOR */}
+                            {selectedStudioSection === "announcement" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                                    <Truck className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">شريط الإعلانات أعلى الموقع</h4>
+                                    <p className="text-[11px] text-gray-400">يظهر في أعلى كل صفحات المتجر</p>
+                                  </div>
+                                </div>
 
-                          {/* Existing FAQ items list */}
-                          <div className="space-y-2">
-                            {(profileForm.storeSettings?.faqList || []).map((faq, idx) => (
-                              <div
-                                key={idx}
-                                className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5"
-                              >
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">نص الإعلان أو التنبيه</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.announcementText ?? "🚚 توصيل متوفر لجميع ولايات الوطن (58 ولاية) - الدفع عند الاستلام"}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), announcementText: e.target.value }
+                                    })}
+                                    placeholder="اكتب الإعلان الترويجي أو التنبيه للزبائن..."
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 2. HEADER & BRANDING EDITOR */}
+                            {selectedStudioSection === "header" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                                    <Store className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">هيدر المتجر واللوغو والشعار</h4>
+                                    <p className="text-[11px] text-gray-400">واجهة المتجر وهويته الرئيسية</p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">اسم المتجر / البراند</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.storeName ?? profileForm.fullName ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      fullName: e.target.value,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), storeName: e.target.value }
+                                    })}
+                                    placeholder="اسم المتجر الذي يظهر للزبون"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">الشعار والوصف الترويجي (Slogan / Bio)</Label>
+                                  <Textarea
+                                    rows={2}
+                                    value={profileForm.bio || profileForm.storeSettings?.storeBio || ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      bio: e.target.value,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), storeBio: e.target.value }
+                                    })}
+                                    placeholder="جملة ترويجية للمتجر تظهر تحت الاسم مباشرة..."
+                                    className="bg-black/60 border-white/10 text-xs rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">شارة الثقة في الهيدر</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.heroBadgeText ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), heroBadgeText: e.target.value }
+                                    })}
+                                    placeholder="افتراضي: متجر موثوق ومعتمد (أو: ماركة أصلية 100%)"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">نص زر الواتساب في الهيدر</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.heroWhatsappBtnText ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), heroWhatsappBtnText: e.target.value }
+                                    })}
+                                    placeholder="افتراضي: تواصل عبر واتساب"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="pt-2 border-t border-white/10">
+                                  <Label className="text-xs text-gray-300 font-bold block mb-2">لوغو وصورة المتجر</Label>
+                                  <ImageUploadInput
+                                    value={profileForm.avatarUrl || ""}
+                                    onChange={(url) => setProfileForm({ ...profileForm, avatarUrl: url })}
+                                    label="تغيير لوغو المتجر"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 3. TRUST BADGES EDITOR */}
+                            {selectedStudioSection === "trust" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <ShieldCheck className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">شارات المزايا الأربعة</h4>
+                                    <p className="text-[11px] text-gray-400">تظهر تحت الهيدر لبناء ثقة الزبائن وتشجيعهم على الشراء</p>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3">
+                                  {/* Badge 1 */}
+                                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+                                    <span className="text-xs font-bold text-cyan-300">الميزة 1: التوصيل</span>
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge1Title ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge1Title: e.target.value }
+                                      })}
+                                      placeholder="العنوان (افتراضي: توصيل 58 ولاية)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge1Desc ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge1Desc: e.target.value }
+                                      })}
+                                      placeholder="الوصف (افتراضي: سريع لباب المنزل)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                  </div>
+
+                                  {/* Badge 2 */}
+                                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+                                    <span className="text-xs font-bold text-emerald-300">الميزة 2: الدفع</span>
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge2Title ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge2Title: e.target.value }
+                                      })}
+                                      placeholder="العنوان (افتراضي: الدفع عند الاستلام)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge2Desc ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge2Desc: e.target.value }
+                                      })}
+                                      placeholder="الوصف (افتراضي: عاين المنتج ثم ادفع)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                  </div>
+
+                                  {/* Badge 3 */}
+                                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+                                    <span className="text-xs font-bold text-amber-300">الميزة 3: الضمان</span>
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge3Title ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge3Title: e.target.value }
+                                      })}
+                                      placeholder="العنوان (افتراضي: استبدال واسترجاع)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge3Desc ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge3Desc: e.target.value }
+                                      })}
+                                      placeholder="الوصف (افتراضي: ضمان الرضا التام)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                  </div>
+
+                                  {/* Badge 4 */}
+                                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+                                    <span className="text-xs font-bold text-purple-300">الميزة 4: الدعم</span>
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge4Title ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge4Title: e.target.value }
+                                      })}
+                                      placeholder="العنوان (افتراضي: خدمة الزبائن)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                    <Input
+                                      value={profileForm.storeSettings?.trustBadge4Desc ?? ""}
+                                      onChange={(e) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), trustBadge4Desc: e.target.value }
+                                      })}
+                                      placeholder="الوصف (افتراضي: تواصل مباشر عبر واتساب)"
+                                      className="bg-black/60 border-white/10 text-xs h-9 rounded-xl text-white"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 4. PROMO BANNER EDITOR */}
+                            {selectedStudioSection === "promo" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                                    <Flame className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">بانر العروض الترويجية الحصرية</h4>
+                                    <p className="text-[11px] text-gray-400">بانر لافت يظهر بالصفحة الرئيسية لتحفيز الشراء السريع</p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">عنوان العرض والتخفيض</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.promoBannerTitle ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), promoBannerTitle: e.target.value }
+                                    })}
+                                    placeholder="مثال: 🔥 تخفيضات الموسم - وفر حتى 40% على جميع المنتجات"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">تفاصيل العرض الترويجي</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.promoBannerSubtitle ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), promoBannerSubtitle: e.target.value }
+                                    })}
+                                    placeholder="مثال: الشحن مجاني عند طلب قطعتين أو أكثر • الكمية محدودة جداً"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 5. PRODUCTS & CHECKOUT CTA EDITOR */}
+                            {selectedStudioSection === "products" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                                    <Tag className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">عرض المنتجات وأزرار الشراء</h4>
+                                    <p className="text-[11px] text-gray-400">تخصيص عبارات الأزرار واستمارة الطلب السريع</p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">نص زر الشراء السريع بالمنتج</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.orderButtonText ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), orderButtonText: e.target.value }
+                                    })}
+                                    placeholder="افتراضي: شراء الآن (أو: اطلب الآن والدفع عند الاستلام)"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">نص زر الطلب عبر واتساب</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.whatsappOrderButtonText ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), whatsappOrderButtonText: e.target.value }
+                                    })}
+                                    placeholder="افتراضي: طلب عبر واتساب"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">رسالة شكر الزبون بعد إرسال الطلب</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.thankYouMessage ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), thankYouMessage: e.target.value }
+                                    })}
+                                    placeholder="شكراً لطلبك! سنتصل بك هاتفياً لتأكيد العنوان والشحن."
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="pt-2 border-t border-white/10 space-y-2">
+                                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                    <span className="text-xs text-gray-200">إظهار زر واتساب المباشر بالمنتج</span>
+                                    <Switch
+                                      checked={profileForm.storeSettings?.showDirectWhatsappBtn !== false}
+                                      onCheckedChange={(val) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), showDirectWhatsappBtn: val }
+                                      })}
+                                    />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                    <span className="text-xs text-gray-200">إظهار شارة نفاذ المخزون والطلب</span>
+                                    <Switch
+                                      checked={profileForm.storeSettings?.showStockCounter !== false}
+                                      onCheckedChange={(val) => setProfileForm({
+                                        ...profileForm,
+                                        storeSettings: { ...(profileForm.storeSettings || {}), showStockCounter: val }
+                                      })}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 6. FAQ EDITOR */}
+                            {selectedStudioSection === "faq" && (
+                              <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                                    <span className="w-4 h-4 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] flex items-center justify-center font-bold">
-                                      {idx + 1}
-                                    </span>
-                                    <span>{faq.q}</span>
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                                      <HelpCircle className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                      <h4 className="text-sm font-bold text-white">الأسئلة الشائعة (FAQ)</h4>
+                                      <p className="text-[11px] text-gray-400">إجابات استباقية تطمئن الزبون</p>
+                                    </div>
+                                  </div>
+
                                   <Button
                                     size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleRemoveFaqItem(idx)}
-                                    className="text-gray-400 hover:text-red-400 h-6 w-6 p-0"
-                                    title="حذف هذا السؤال"
+                                    variant="outline"
+                                    onClick={handleLoadDefaultFaqs}
+                                    className="text-[10px] h-7 px-2.5 rounded-lg border-white/10 text-cyan-400 hover:bg-cyan-500/10"
                                   >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    تحميل أسئلة مقترحة
                                   </Button>
                                 </div>
-                                <p className="text-[11px] text-gray-300 leading-relaxed pr-5">
-                                  {faq.a}
-                                </p>
+
+                                <div className="space-y-2">
+                                  {(profileForm.storeSettings?.faqList || []).map((faq, idx) => (
+                                    <div key={idx} className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                                          <span className="w-4 h-4 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] flex items-center justify-center font-bold">
+                                            {idx + 1}
+                                          </span>
+                                          <span>{faq.q}</span>
+                                        </span>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => handleRemoveFaqItem(idx)}
+                                          className="text-gray-400 hover:text-red-400 h-6 w-6 p-0"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </Button>
+                                      </div>
+                                      <p className="text-[11px] text-gray-300 leading-relaxed pr-5">{faq.a}</p>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                                  <div className="text-[11px] font-bold text-cyan-400">إضافة سؤال جديد:</div>
+                                  <Input
+                                    value={newFaqQ}
+                                    onChange={(e) => setNewFaqQ(e.target.value)}
+                                    placeholder="نص السؤال (مثال: هل الشحن متوفر للبلديات النائية؟)"
+                                    className="bg-black/50 border-white/10 text-xs h-9 rounded-xl text-white"
+                                  />
+                                  <Textarea
+                                    rows={2}
+                                    value={newFaqA}
+                                    onChange={(e) => setNewFaqA(e.target.value)}
+                                    placeholder="نص الإجابة الشافية للزبون..."
+                                    className="bg-black/50 border-white/10 text-xs rounded-xl text-white"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={handleAddFaqItem}
+                                    className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs h-8 px-4 rounded-xl gap-1.5 w-full"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>إضافة السؤال</span>
+                                  </Button>
+                                </div>
                               </div>
-                            ))}
-                          </div>
+                            )}
 
-                          {/* Add New FAQ Form */}
-                          <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2 pt-3">
-                            <div className="text-[11px] font-bold text-cyan-400">إضافة سؤال وإجابة جديدة:</div>
-                            <Input
-                              value={newFaqQ}
-                              onChange={(e) => setNewFaqQ(e.target.value)}
-                              placeholder="نص السؤال (مثال: هل يتوفر الدفع عند الاستلام؟)"
-                              className="bg-black/50 border-white/10 text-xs h-9 rounded-xl text-white"
-                            />
-                            <Textarea
-                              rows={2}
-                              value={newFaqA}
-                              onChange={(e) => setNewFaqA(e.target.value)}
-                              placeholder="نص الإجابة (مثال: نعم، الدفع يتم نقداً بعد فحص المنتج...)"
-                              className="bg-black/50 border-white/10 text-xs rounded-xl resize-none text-white"
-                            />
-                            <Button
-                              size="sm"
-                              onClick={handleAddFaqItem}
-                              className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs h-8 px-4 rounded-xl gap-1.5 w-full shadow-md"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>إضافة هذا السؤال للـ FAQ</span>
-                            </Button>
-                          </div>
-                        </div>
+                            {/* 7. ABOUT STORY EDITOR */}
+                            {selectedStudioSection === "about" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                                    <FileText className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">قصة المتجر (صفحة من نحن)</h4>
+                                    <p className="text-[11px] text-gray-400">التعريف بالبراند ورسالتكم لزبائنكم</p>
+                                  </div>
+                                </div>
 
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">عنوان قصة المتجر</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.aboutStoryTitle ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryTitle: e.target.value }
+                                    })}
+                                    placeholder="مثال: قصة متجرنا وشغفنا بالتميز"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">النص الكامل للتعريف بالمتجر</Label>
+                                  <Textarea
+                                    rows={4}
+                                    value={profileForm.storeSettings?.aboutStoryText ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), aboutStoryText: e.target.value }
+                                    })}
+                                    placeholder="اكتب نبذة عن تأسيس المتجر، رسالتكم، التزامكم بالجودة..."
+                                    className="bg-black/60 border-white/10 text-xs rounded-xl text-white"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 8. SHIPPING & GUARANTEE POLICY EDITOR */}
+                            {selectedStudioSection === "shipping" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                                    <Truck className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">سياسة الشحن والضمان</h4>
+                                    <p className="text-[11px] text-gray-400">تطمينات التوصيل لـ 58 ولاية والاسترجاع</p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">حق الفحص والمعاينة قبل الدفع</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.deliveryNotice ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), deliveryNotice: e.target.value }
+                                    })}
+                                    placeholder="مثال: يحق لك فحص ومعاينة المنتج قبل تسليم المبلغ للموزع."
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">شروط وضمان الاستبدال والاسترجاع</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.returnPolicyNotice ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), returnPolicyNotice: e.target.value }
+                                    })}
+                                    placeholder="مثال: نضمن استبدال المنتج في حال وجود أي عيب مصنعي خلال 48 ساعة بكل سهولة."
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 9. CONTACT US & HOURS EDITOR */}
+                            {selectedStudioSection === "contact" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <Phone className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">اتصل بنا وخدمة الزبائن</h4>
+                                    <p className="text-[11px] text-gray-400">بيانات الاتصال ومواعيد العمل</p>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">عنوان صفحة التواصل</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.contactTitle ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), contactTitle: e.target.value }
+                                    })}
+                                    placeholder="افتراضي: نحن هنا لمساعدتك والإجابة على كل استفساراتك 🤝"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">ساعات ومواعيد العمل</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.businessHours ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), businessHours: e.target.value }
+                                    })}
+                                    placeholder="مثال: يومياً من 8:00 صباحاً حتى 10:00 مساءً"
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs text-gray-300 font-bold">مقر أو عنوان المتجر</Label>
+                                  <Input
+                                    value={profileForm.storeSettings?.addressDetails ?? profileForm.location ?? ""}
+                                    onChange={(e) => setProfileForm({
+                                      ...profileForm,
+                                      location: e.target.value,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), addressDetails: e.target.value }
+                                    })}
+                                    placeholder="مثال: الجزائر العاصمة، القبة أو وهران..."
+                                    className="bg-black/60 border-white/10 text-xs h-10 rounded-xl text-white"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 10. FOOTER EDITOR */}
+                            {selectedStudioSection === "footer" && (
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-9 h-9 rounded-xl bg-gray-500/20 text-gray-300 flex items-center justify-center shrink-0">
+                                    <FileText className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-bold text-white">الفوتر السفلي وحقوق المتجر</h4>
+                                    <p className="text-[11px] text-gray-400">تذييل الموقع وروابط الأمان والحقوق</p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 rounded-2xl bg-black/40 border border-white/5">
+                                  <span className="text-xs text-gray-200">إظهار الفوتر السفلي للموقع</span>
+                                  <Switch
+                                    checked={profileForm.siteSections?.footer !== false}
+                                    onCheckedChange={(val) => setProfileForm({
+                                      ...profileForm,
+                                      siteSections: { ...(profileForm.siteSections || {}), footer: val }
+                                    })}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          /* CASE 2: VISUAL SECTIONS TREE (WIX / SHOPIFY 2.0 STYLE) */
+                          <div className="space-y-4">
+                            {/* 1-CLICK PRO MARKETING COPY PRESETS (باقات صياغة جاهزة بنقرة واحدة) */}
+                            <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-cyan-950/40 via-purple-950/30 to-black/60 border border-cyan-500/30 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                                  <h4 className="text-xs sm:text-sm font-extrabold text-white">باقات نصوص بيعية جاهزة لـ 58 ولاية</h4>
+                                </div>
+                                <Badge className="bg-cyan-400 text-black font-extrabold text-[10px]">1-Click</Badge>
+                              </div>
+                              <p className="text-[11px] text-gray-300 leading-relaxed">
+                                بنقرة واحدة يتم ملء كامل شارات المتجر والإعلانات ورسائل الشحن بأفضل عبارات بيعية محترفة:
+                              </p>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                {PRO_COPY_PRESETS.map((p) => (
+                                  <button
+                                    key={p.id}
+                                    type="button"
+                                    onClick={() => applyProCopyPreset(p)}
+                                    className="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/60 text-right transition-all group"
+                                  >
+                                    <div className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">
+                                      {p.name}
+                                    </div>
+                                    <div className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{p.desc}</div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* SECTION CARDS LIST (خريطة الأقسام البصرية) */}
+                            <div className="p-4 sm:p-5 rounded-3xl bg-white/[0.03] border border-white/10 space-y-3">
+                              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                                <div>
+                                  <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                                    <Layers className="w-4 h-4 text-cyan-400" />
+                                    <span>خريطة أقسام المتجر (Shopify 2.0)</span>
+                                  </h4>
+                                  <p className="text-[10px] text-gray-400 mt-0.5">
+                                    انقر على أي قسم لتعديله، أو انقر عليه مباشرة في شاشة المعاينة
+                                  </p>
+                                </div>
+                                <Badge variant="outline" className="text-[10px] border-white/15 text-gray-400">
+                                  10 أقسام
+                                </Badge>
+                              </div>
+
+                              <div className="space-y-2">
+                                {[
+                                  {
+                                    id: "announcement",
+                                    title: "شريط الإعلانات العلوي",
+                                    desc: profileForm.storeSettings?.announcementText || "توصيل 58 ولاية • الدفع عند الاستلام",
+                                    icon: "📢",
+                                    enabled: profileForm.siteSections?.announcementBar !== false,
+                                    onToggle: (val: boolean) => setProfileForm({
+                                      ...profileForm,
+                                      siteSections: { ...(profileForm.siteSections || {}), announcementBar: val }
+                                    }),
+                                  },
+                                  {
+                                    id: "header",
+                                    title: "هيدر المتجر واللوغو والشعار",
+                                    desc: profileForm.storeSettings?.storeName || profileForm.fullName || "الهيدر الرئيسي والبراند",
+                                    icon: "🏷️",
+                                    enabled: profileForm.siteSections?.heroBanner !== false,
+                                    onToggle: (val: boolean) => setProfileForm({
+                                      ...profileForm,
+                                      siteSections: { ...(profileForm.siteSections || {}), heroBanner: val }
+                                    }),
+                                  },
+                                  {
+                                    id: "trust",
+                                    title: "شارات المزايا والضمان (4 كروت)",
+                                    desc: "توصيل 58 ولاية • الدفع عند الاستلام • استبدال 48h",
+                                    icon: "⭐",
+                                    enabled: (profileForm.storeSettings?.showTrustBadges !== false) && (profileForm.siteSections?.trustBadges !== false),
+                                    onToggle: (val: boolean) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: { ...(profileForm.storeSettings || {}), showTrustBadges: val },
+                                      siteSections: { ...(profileForm.siteSections || {}), trustBadges: val }
+                                    }),
+                                  },
+                                  {
+                                    id: "promo",
+                                    title: "بانر العروض والتخفيضات",
+                                    desc: profileForm.storeSettings?.promoBannerTitle || "تخفيضات حصرية لزيادة الطلبات",
+                                    icon: "🔥",
+                                    enabled: Boolean(profileForm.storeSettings?.promoBannerTitle),
+                                    onToggle: (val: boolean) => setProfileForm({
+                                      ...profileForm,
+                                      storeSettings: {
+                                        ...(profileForm.storeSettings || {}),
+                                        promoBannerTitle: val ? "🔥 تخفيضات الموسم - وفر حتى 40% على جميع المنتجات" : ""
+                                      }
+                                    }),
+                                  },
+                                  {
+                                    id: "products",
+                                    title: "كتالوج المنتجات وأزرار الشراء",
+                                    desc: `عرض ${profileForm.products?.length || 0} منتج • الشراء السريع والواتساب`,
+                                    icon: "🛍️",
+                                    enabled: true,
+                                    onToggle: null,
+                                  },
+                                  {
+                                    id: "faq",
+                                    title: "قسم الأسئلة الشائعة (FAQ)",
+                                    desc: `${profileForm.storeSettings?.faqList?.length || 4} أسئلة شائعة تطمئن الزبون`,
+                                    icon: "❓",
+                                    enabled: profileForm.siteSections?.faqAccordion !== false,
+                                    onToggle: (val: boolean) => setProfileForm({
+                                      ...profileForm,
+                                      siteSections: { ...(profileForm.siteSections || {}), faqAccordion: val }
+                                    }),
+                                  },
+                                  {
+                                    id: "about",
+                                    title: "قصة المتجر ورسالتنا (من نحن)",
+                                    desc: profileForm.storeSettings?.aboutStoryTitle || "نبذة عن البراند ومصداقيتكم",
+                                    icon: "ℹ️",
+                                    enabled: true,
+                                    onToggle: null,
+                                  },
+                                  {
+                                    id: "shipping",
+                                    title: "سياسة الشحن والمعاينة والضمان",
+                                    desc: "تفاصيل التوصيل لـ 58 ولاية والاسترجاع",
+                                    icon: "🚚",
+                                    enabled: true,
+                                    onToggle: null,
+                                  },
+                                  {
+                                    id: "contact",
+                                    title: "اتصل بنا ومواعيد العمل",
+                                    desc: profileForm.storeSettings?.businessHours || "أوقات العمل وأرقام الواتساب",
+                                    icon: "📞",
+                                    enabled: true,
+                                    onToggle: null,
+                                  },
+                                  {
+                                    id: "footer",
+                                    title: "الفوتر السفلي وحقوق المتجر",
+                                    desc: "روابط سريعة وشارات الأمان",
+                                    icon: "📄",
+                                    enabled: profileForm.siteSections?.footer !== false,
+                                    onToggle: (val: boolean) => setProfileForm({
+                                      ...profileForm,
+                                      siteSections: { ...(profileForm.siteSections || {}), footer: val }
+                                    }),
+                                  },
+                                ].map((sec) => (
+                                  <div
+                                    key={sec.id}
+                                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                                      selectedStudioSection === sec.id
+                                        ? "bg-cyan-500/15 border-cyan-400/50 shadow-md"
+                                        : "bg-black/30 border-white/5 hover:border-white/20"
+                                    }`}
+                                  >
+                                    <div
+                                      onClick={() => setSelectedStudioSection(sec.id)}
+                                      className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
+                                    >
+                                      <span className="text-xl shrink-0">{sec.icon}</span>
+                                      <div className="truncate">
+                                        <div className="text-xs font-bold text-white flex items-center gap-2">
+                                          <span>{sec.title}</span>
+                                        </div>
+                                        <div className="text-[11px] text-gray-400 truncate mt-0.5">{sec.desc}</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {sec.onToggle && (
+                                        <Switch
+                                          checked={sec.enabled}
+                                          onCheckedChange={sec.onToggle}
+                                          title="إظهار / إخفاء القسم"
+                                        />
+                                      )}
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setSelectedStudioSection(sec.id)}
+                                        className="text-[11px] h-7 px-2.5 rounded-xl border-white/10 hover:border-cyan-400 text-cyan-300 bg-white/5 gap-1"
+                                      >
+                                        <Edit2 className="w-3 h-3" />
+                                        <span>تخصيص</span>
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -2710,6 +2777,24 @@ export default function Dashboard() {
                       </div>
                     </div>
 
+                    {/* Visual Interactive Hint Banner */}
+                    <div className="flex items-center justify-between gap-2 p-2.5 px-4 rounded-2xl bg-cyan-950/30 border border-cyan-500/20 text-xs">
+                      <div className="flex items-center gap-2 text-cyan-300 font-bold">
+                        <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+                        <span>ميزة التعديل المرئي: اضغط على أي قسم أو بطاقة في الموقع لتعديلها مباشرة!</span>
+                      </div>
+                      {selectedStudioSection && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSelectedStudioSection(null)}
+                          className="text-[11px] h-6 px-2 text-gray-400 hover:text-white"
+                        >
+                          إلغاء التحديد ✕
+                        </Button>
+                      )}
+                    </div>
+
                     {/* Interactive Canvas Viewport */}
                     <div className="w-full flex justify-center bg-black/80 rounded-3xl p-2 sm:p-4 border border-white/10 shadow-2xl overflow-hidden min-h-[680px]">
                       <div
@@ -2725,6 +2810,11 @@ export default function Dashboard() {
                           activeStudioPage={studioActivePage}
                           onPageChange={(page) => setStudioActivePage(page)}
                           isOwnerPreview={true}
+                          selectedSectionId={selectedStudioSection}
+                          onSelectSection={(secId) => {
+                            setSelectedStudioSection(secId);
+                            setStudioActiveTab("sections");
+                          }}
                         />
                       </div>
                     </div>

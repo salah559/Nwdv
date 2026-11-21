@@ -26,36 +26,48 @@ export function ProfileTemplateRenderer({
   profile,
   activeStudioPage,
   onPageChange,
-  isOwnerPreview = false
+  isOwnerPreview = false,
+  selectedSectionId,
+  onSelectSection
 }: { 
   profile: UserProfile;
   activeStudioPage?: string;
   onPageChange?: (page: string) => void;
   isOwnerPreview?: boolean;
+  selectedSectionId?: string | null;
+  onSelectSection?: (sectionId: string) => void;
 }) {
   // 🛍️ Store Portfolio Templates
   if (profile.templateId?.startsWith("store")) {
+    const commonProps = {
+      profile,
+      activeStudioPage,
+      onPageChange,
+      isOwnerPreview,
+      selectedSectionId,
+      onSelectSection
+    };
     switch (profile.templateId) {
       case "store-minimal-boutique":
       case "store_minimal":
-        return <StoreTemplateView profile={profile} variant="minimal" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+        return <StoreTemplateView {...commonProps} variant="minimal" />;
       case "store-cyber-tech":
       case "store_cyber":
-        return <StoreTemplateView profile={profile} variant="cyber" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+        return <StoreTemplateView {...commonProps} variant="cyber" />;
       case "store-luxury-brand":
       case "store_luxury":
-        return <StoreTemplateView profile={profile} variant="luxury" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+        return <StoreTemplateView {...commonProps} variant="luxury" />;
       case "store-organic-nature":
       case "store_organic":
-        return <StoreTemplateView profile={profile} variant="organic" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+        return <StoreTemplateView {...commonProps} variant="organic" />;
       case "store-streetwear-bold":
       case "store_streetwear":
-        return <StoreTemplateView profile={profile} variant="streetwear" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+        return <StoreTemplateView {...commonProps} variant="streetwear" />;
       case "store-instant-catalog":
       case "store_catalog":
-        return <StoreTemplateView profile={profile} variant="catalog" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+        return <StoreTemplateView {...commonProps} variant="catalog" />;
       default:
-        return <StoreTemplateView profile={profile} variant="minimal" activeStudioPage={activeStudioPage} onPageChange={onPageChange} />;
+        return <StoreTemplateView {...commonProps} variant="minimal" />;
     }
   }
 

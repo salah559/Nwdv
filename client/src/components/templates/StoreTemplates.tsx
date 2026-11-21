@@ -110,6 +110,9 @@ interface StoreTemplateProps {
   variant?: StoreVariant;
   activeStudioPage?: string;
   onPageChange?: (page: string) => void;
+  isOwnerPreview?: boolean;
+  selectedSectionId?: string | null;
+  onSelectSection?: (sectionId: string) => void;
 }
 
 interface CartItem {
@@ -121,7 +124,10 @@ export function StoreTemplateView({
   profile, 
   variant = "minimal",
   activeStudioPage,
-  onPageChange
+  onPageChange,
+  isOwnerPreview = false,
+  selectedSectionId,
+  onSelectSection
 }: StoreTemplateProps) {
   // Multi-Page Navigation State
   const [internalPage, setInternalPage] = useState<string>("home");
@@ -524,11 +530,19 @@ export function StoreTemplateView({
       {/* 1. TOP SHOPIFY-STYLE ANNOUNCEMENT TICKER */}
       {showAnnouncementBar && (
         <div 
-          className="w-full border-b border-white/10 py-2 px-4 text-center text-xs backdrop-blur-md sticky top-0 z-40"
+          onClick={() => isOwnerPreview && onSelectSection?.("announcement")}
+          className={`w-full border-b border-white/10 py-2 px-4 text-center text-xs backdrop-blur-md sticky top-0 z-40 transition-all ${
+            isOwnerPreview ? "cursor-pointer group hover:ring-2 hover:ring-cyan-400/80" : ""
+          } ${selectedSectionId === "announcement" ? "ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(6,255,240,0.5)]" : ""}`}
           style={{
             backgroundColor: settings.announcementBgColor || "rgba(8, 10, 16, 0.95)"
           }}
         >
+          {isOwnerPreview && (
+            <div className="hidden group-hover:flex absolute left-3 top-1/2 -translate-y-1/2 z-50 bg-cyan-400 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-lg items-center gap-1">
+              <span>✏️ تعديل الإعلان</span>
+            </div>
+          )}
           <div className="max-w-6xl mx-auto flex items-center justify-between font-medium gap-2">
             <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
               <Truck className="w-4 h-4 shrink-0 text-cyan-400 animate-pulse" />
@@ -703,7 +717,17 @@ export function StoreTemplateView({
         
         {/* 2. STORE MEGA HEADER & BRANDING */}
         {showHeroBanner && (
-          <div className="relative rounded-3xl overflow-hidden mb-6 border border-white/10 bg-white/[0.02] p-5 sm:p-7 backdrop-blur-xl">
+          <div 
+            onClick={() => isOwnerPreview && onSelectSection?.("header")}
+            className={`relative rounded-3xl overflow-hidden mb-6 border border-white/10 bg-white/[0.02] p-5 sm:p-7 backdrop-blur-xl transition-all ${
+              isOwnerPreview ? "cursor-pointer group hover:ring-2 hover:ring-cyan-400/80" : ""
+            } ${selectedSectionId === "header" ? "ring-2 ring-cyan-400 shadow-[0_0_25px_rgba(6,255,240,0.4)]" : ""}`}
+          >
+            {isOwnerPreview && (
+              <div className="hidden group-hover:flex absolute top-3 left-3 z-50 bg-cyan-400 text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-xl items-center gap-1">
+                <span>✏️ تعديل الهيدر والشعار</span>
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
               <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-right">
                 {/* Avatar / Brand Logo */}
@@ -803,33 +827,45 @@ export function StoreTemplateView({
 
         {/* 3. VALUE PROPOSITION BAR (مزايا التسوق) */}
         {showTrustBadges && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-6">
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-              <Truck className="w-5 h-5 text-cyan-400 shrink-0" />
-              <div className="text-right">
-                <div className="text-xs font-bold text-white">{badge1Title}</div>
-                <div className="text-[10px] text-gray-400">{badge1Desc}</div>
+          <div 
+            onClick={() => isOwnerPreview && onSelectSection?.("trust")}
+            className={`relative transition-all rounded-3xl p-1 mb-6 ${
+              isOwnerPreview ? "cursor-pointer group hover:ring-2 hover:ring-cyan-400/80" : ""
+            } ${selectedSectionId === "trust" ? "ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(6,255,240,0.4)]" : ""}`}
+          >
+            {isOwnerPreview && (
+              <div className="hidden group-hover:flex absolute -top-3 left-3 z-50 bg-cyan-400 text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-xl items-center gap-1">
+                <span>✏️ تعديل شارات المزايا</span>
               </div>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-              <div className="text-right">
-                <div className="text-xs font-bold text-white">{badge2Title}</div>
-                <div className="text-[10px] text-gray-400">{badge2Desc}</div>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+                <Truck className="w-5 h-5 text-cyan-400 shrink-0" />
+                <div className="text-right">
+                  <div className="text-xs font-bold text-white">{badge1Title}</div>
+                  <div className="text-[10px] text-gray-400">{badge1Desc}</div>
+                </div>
               </div>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-              <RotateCcw className="w-5 h-5 text-amber-400 shrink-0" />
-              <div className="text-right">
-                <div className="text-xs font-bold text-white">{badge3Title}</div>
-                <div className="text-[10px] text-gray-400">{badge3Desc}</div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div className="text-right">
+                  <div className="text-xs font-bold text-white">{badge2Title}</div>
+                  <div className="text-[10px] text-gray-400">{badge2Desc}</div>
+                </div>
               </div>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-              <Headphones className="w-5 h-5 text-purple-400 shrink-0" />
-              <div className="text-right">
-                <div className="text-xs font-bold text-white">{badge4Title}</div>
-                <div className="text-[10px] text-gray-400">{badge4Desc}</div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+                <RotateCcw className="w-5 h-5 text-amber-400 shrink-0" />
+                <div className="text-right">
+                  <div className="text-xs font-bold text-white">{badge3Title}</div>
+                  <div className="text-[10px] text-gray-400">{badge3Desc}</div>
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+                <Headphones className="w-5 h-5 text-purple-400 shrink-0" />
+                <div className="text-right">
+                  <div className="text-xs font-bold text-white">{badge4Title}</div>
+                  <div className="text-[10px] text-gray-400">{badge4Desc}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -837,7 +873,17 @@ export function StoreTemplateView({
 
         {/* 4. PROMO / SPECIAL OFFER BANNER (بانر العروض الترويجية) */}
         {currentPage === "home" && (settings.promoBannerTitle || settings.promoBannerUrl) && (
-          <div className="relative rounded-3xl overflow-hidden mb-6 p-6 sm:p-8 bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-purple-500/20 border border-amber-500/30 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div 
+            onClick={() => isOwnerPreview && onSelectSection?.("promo")}
+            className={`relative rounded-3xl overflow-hidden mb-6 p-6 sm:p-8 bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-purple-500/20 border border-amber-500/30 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 transition-all ${
+              isOwnerPreview ? "cursor-pointer group hover:ring-2 hover:ring-cyan-400/80" : ""
+            } ${selectedSectionId === "promo" ? "ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(6,255,240,0.4)]" : ""}`}
+          >
+            {isOwnerPreview && (
+              <div className="hidden group-hover:flex absolute top-3 left-3 z-50 bg-cyan-400 text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-xl items-center gap-1">
+                <span>✏️ تعديل بانر العروض</span>
+              </div>
+            )}
             <div className="space-y-2 text-center sm:text-right">
               <Badge className="bg-amber-400 text-black font-extrabold text-[11px] px-3 py-1">
                 🔥 عرض خاص وتخفيض حصري
@@ -1285,7 +1331,17 @@ export function StoreTemplateView({
 
         {/* 7. FAQ ACCORDION SECTION (الأسئلة الشائعة لزيادة ثقة الزبون) */}
         {showFaqSection && displayFaqList.length > 0 && (
-          <div className="mt-14 p-6 sm:p-8 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
+          <div 
+            onClick={() => isOwnerPreview && onSelectSection?.("faq")}
+            className={`mt-14 p-6 sm:p-8 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4 relative transition-all ${
+              isOwnerPreview ? "cursor-pointer group hover:ring-2 hover:ring-cyan-400/80" : ""
+            } ${selectedSectionId === "faq" ? "ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(6,255,240,0.4)]" : ""}`}
+          >
+            {isOwnerPreview && (
+              <div className="hidden group-hover:flex absolute top-3 left-4 z-50 bg-cyan-400 text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-xl items-center gap-1">
+                <span>✏️ تعديل الأسئلة الشائعة</span>
+              </div>
+            )}
             <div className="text-center max-w-lg mx-auto mb-6">
               <h4 className="text-lg font-black text-white flex items-center justify-center gap-2">
                 <HelpCircle className="w-5 h-5 text-cyan-400" />
@@ -1321,7 +1377,17 @@ export function StoreTemplateView({
 
         {/* 8. PROFESSIONAL E-COMMERCE FOOTER */}
         {showFooter && (
-          <div className="mt-14 pt-8 border-t border-white/10 text-center text-xs text-gray-400 space-y-4">
+          <div 
+            onClick={() => isOwnerPreview && onSelectSection?.("footer")}
+            className={`mt-14 pt-8 border-t border-white/10 text-center text-xs text-gray-400 space-y-4 relative transition-all rounded-2xl ${
+              isOwnerPreview ? "cursor-pointer group hover:ring-2 hover:ring-cyan-400/80" : ""
+            } ${selectedSectionId === "footer" ? "ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(6,255,240,0.4)]" : ""}`}
+          >
+            {isOwnerPreview && (
+              <div className="hidden group-hover:flex absolute top-2 left-4 z-50 bg-cyan-400 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-lg items-center gap-1">
+                <span>✏️ تعديل الفوتر</span>
+              </div>
+            )}
             {/* Quick Page Links in Footer */}
             <div className="flex items-center justify-center gap-4 text-xs font-bold text-gray-300 flex-wrap pb-2 border-b border-white/5">
               <button type="button" onClick={() => navigateToPage("home")} className="hover:text-cyan-400 transition-colors">
