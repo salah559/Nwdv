@@ -468,7 +468,7 @@ export default function Dashboard() {
 
   const currentTemplate = getTemplateById(profileForm.templateId || "default");
   const isStoreTemplate = Boolean(
-    profileForm.templateId?.startsWith("store-") ||
+    profileForm.templateId?.startsWith("store") ||
     currentTemplate?.category === "store"
   );
 
@@ -541,7 +541,7 @@ export default function Dashboard() {
     }
 
     const selectedTmpl = getTemplateById(templateId);
-    const isStore = templateId.startsWith("store-") || selectedTmpl?.category === "store";
+    const isStore = templateId.startsWith("store") || selectedTmpl?.category === "store";
 
     setProfileForm({ ...profileForm, templateId });
     try {
