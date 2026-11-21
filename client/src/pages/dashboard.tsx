@@ -49,7 +49,8 @@ import {
   FileSpreadsheet,
   HelpCircle,
   Sliders,
-  Flame
+  Flame,
+  Layers
 } from "lucide-react";
 import { ALGERIA_WILAYAS } from "@/lib/algeria-wilayas";
 import { Button } from "@/components/ui/button";
