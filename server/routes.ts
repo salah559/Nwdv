@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+// @ts-ignore
 import nodemailer from "nodemailer";
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
