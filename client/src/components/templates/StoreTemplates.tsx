@@ -174,6 +174,27 @@ export function StoreTemplateView({
   const showDirectWhatsappBtn = settings.showDirectWhatsappBtn !== false;
   const showStockCounter = settings.showStockCounter !== false;
 
+  // Total Copywriting & Text Freedom Variables (حرية كتابة ونصوص المتجر بالكامل)
+  const heroBadgeText = settings.heroBadgeText || "متجر موثوق ومعتمد";
+  const heroWhatsappBtnText = settings.heroWhatsappBtnText || "تواصل عبر واتساب";
+  const orderBtnText = settings.orderButtonText || "شراء الآن";
+  const whatsappOrderBtnText = settings.whatsappOrderButtonText || "طلب عبر واتساب";
+
+  const badge1Title = settings.trustBadge1Title || "توصيل 58 ولاية";
+  const badge1Desc = settings.trustBadge1Desc || "سريع لباب المنزل";
+
+  const badge2Title = settings.trustBadge2Title || "الدفع عند الاستلام";
+  const badge2Desc = settings.trustBadge2Desc || "عاين المنتج ثم ادفع";
+
+  const badge3Title = settings.trustBadge3Title || "استبدال واسترجاع";
+  const badge3Desc = settings.trustBadge3Desc || "ضمان الرضا التام";
+
+  const badge4Title = settings.trustBadge4Title || "خدمة الزبائن";
+  const badge4Desc = settings.trustBadge4Desc || "تواصل مباشر عبر واتساب";
+
+  const contactTitleText = settings.contactTitle || "نحن هنا لمساعدتك والإجابة على كل استفساراتك 🤝";
+  const contactSubtitleText = settings.contactSubtitle || "فريق متجرنا جاهز للرد على استفساراتكم ومتابعة طلباتكم بكل سرور.";
+
   // Dynamic FAQ list (custom or default Algeria COD FAQs)
   const displayFaqList = (settings.faqList && settings.faqList.length > 0)
     ? settings.faqList
@@ -701,7 +722,7 @@ export function StoreTemplateView({
                     </Badge>
                     <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px]">
                       <ShieldCheck className="w-3 h-3 mr-1" />
-                      متجر موثوق ومعتمد
+                      {heroBadgeText}
                     </Badge>
                   </div>
 
@@ -754,7 +775,7 @@ export function StoreTemplateView({
                     className="w-full bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs gap-1.5 rounded-xl h-9 shadow-md"
                   >
                     <MessageCircle className="w-3.5 h-3.5 fill-black" />
-                    <span>تواصل عبر واتساب</span>
+                    <span>{heroWhatsappBtnText}</span>
                   </Button>
                 </a>
               </div>
@@ -786,29 +807,29 @@ export function StoreTemplateView({
             <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
               <Truck className="w-5 h-5 text-cyan-400 shrink-0" />
               <div className="text-right">
-                <div className="text-xs font-bold text-white">توصيل 58 ولاية</div>
-                <div className="text-[10px] text-gray-400">سريع لباب المنزل</div>
+                <div className="text-xs font-bold text-white">{badge1Title}</div>
+                <div className="text-[10px] text-gray-400">{badge1Desc}</div>
               </div>
             </div>
             <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
               <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
               <div className="text-right">
-                <div className="text-xs font-bold text-white">الدفع عند الاستلام</div>
-                <div className="text-[10px] text-gray-400">عاين المنتج ثم ادفع</div>
+                <div className="text-xs font-bold text-white">{badge2Title}</div>
+                <div className="text-[10px] text-gray-400">{badge2Desc}</div>
               </div>
             </div>
             <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
               <RotateCcw className="w-5 h-5 text-amber-400 shrink-0" />
               <div className="text-right">
-                <div className="text-xs font-bold text-white">استبدال واسترجاع</div>
-                <div className="text-[10px] text-gray-400">ضمان الرضا التام</div>
+                <div className="text-xs font-bold text-white">{badge3Title}</div>
+                <div className="text-[10px] text-gray-400">{badge3Desc}</div>
               </div>
             </div>
             <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
               <Headphones className="w-5 h-5 text-purple-400 shrink-0" />
               <div className="text-right">
-                <div className="text-xs font-bold text-white">خدمة الزبائن</div>
-                <div className="text-[10px] text-gray-400">تواصل مباشر عبر واتساب</div>
+                <div className="text-xs font-bold text-white">{badge4Title}</div>
+                <div className="text-[10px] text-gray-400">{badge4Desc}</div>
               </div>
             </div>
           </div>
@@ -940,10 +961,10 @@ export function StoreTemplateView({
             <div className="p-6 sm:p-10 rounded-3xl bg-white/[0.02] border border-white/10 backdrop-blur-xl">
               <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-xs mb-3">اتصل بنا وخدمة الزبائن</Badge>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">
-                نحن هنا لمساعدتك والإجابة على كل استفساراتك 🤝
+                {contactTitleText}
               </h2>
               <p className="text-xs sm:text-sm text-gray-400 mb-6">
-                فريق متجرنا جاهز للرد على استفساراتكم ومتابعة طلباتكم بكل سرور.
+                {contactSubtitleText}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -1213,7 +1234,7 @@ export function StoreTemplateView({
                       }`}
                     >
                       <Zap className="w-3.5 h-3.5" />
-                      <span>شراء الآن</span>
+                      <span>{orderBtnText}</span>
                     </Button>
                   </div>
 
@@ -1226,7 +1247,7 @@ export function StoreTemplateView({
                         className="flex-1 text-xs h-8 text-[#25D366] hover:bg-[#25D366]/10 gap-1.5 font-bold"
                       >
                         <MessageCircle className="w-3.5 h-3.5 fill-[#25D366]" />
-                        <span>طلب عبر واتساب</span>
+                        <span>{whatsappOrderBtnText}</span>
                       </Button>
                     )}
 

@@ -142,6 +142,21 @@ export interface StoreSettings {
   businessHours?: string;
   addressDetails?: string;
   faqList?: { q: string; a: string }[];
+  // Total Copywriting & Text Freedom (الحرية التامة في كتابات وعبارات المتجر)
+  heroBadgeText?: string;
+  heroWhatsappBtnText?: string;
+  orderButtonText?: string;
+  whatsappOrderButtonText?: string;
+  trustBadge1Title?: string;
+  trustBadge1Desc?: string;
+  trustBadge2Title?: string;
+  trustBadge2Desc?: string;
+  trustBadge3Title?: string;
+  trustBadge3Desc?: string;
+  trustBadge4Title?: string;
+  trustBadge4Desc?: string;
+  contactTitle?: string;
+  contactSubtitle?: string;
 }
 
 export interface UserProfile {
